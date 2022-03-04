@@ -1,4 +1,4 @@
-package tiles
+package strategy
 
 import (
 	"cex-bot/handlers"
