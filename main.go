@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cex-bot/handler"
 	"cex-bot/impl"
 	"cex-bot/types"
 	"fmt"
@@ -23,34 +24,29 @@ func main() {
 	symbols = append(symbols, eth)
 	symbols = append(symbols, btc)
 
-	caches := make(map[string]map[types.TimeFrame]*types.CandleCache)
+	candleCollection := handler.NewCandleCollection()
 
 	for _, timeFrame := range []types.TimeFrame{types.M1, types.M5, types.H1} {
 		for _, symbol := range symbols {
-			candles, err := exchangeImpl.GetCandles(symbol, timeFrame, 500)
+			candleCollection.RegisterSymbol(symbol)
+
+			candles, err := exchangeImpl.GetCandles(symbol, timeFrame, 1000)
 			if err != nil {
 				panic(err)
 			}
 
-			cache := types.NewCandleCache(candles, timeFrame, 500)
-
-			if caches[symbol.String()] == nil {
-				caches[symbol.String()] = make(map[types.TimeFrame]*types.CandleCache)
-			}
-			caches[symbol.String()][timeFrame] = cache
+			candleCollection.InitializeTimeFrame(symbol, timeFrame, candles)
 		}
 	}
 
 	keepaliveCh := make(chan string)
 
 	_, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
-		timeFrameCaches := caches[trade.Symbol.String()]
+		candleCollection.AddTrade(trade.Symbol, trade)
 
-		for timeFrame, cache := range timeFrameCaches {
-			newCandle := cache.AddTrade(trade.Price, trade.Quantity, trade.Time)
+		cache := candleCollection.GetCache(trade.Symbol, types.M5)
 
-			fmt.Println(trade.Symbol.String(), newCandle, cache.GetCurrentRate(), timeFrame)
-		}
+		fmt.Println(trade.Symbol.String(), cache.GetCurrentRate())
 	}, func(err error) {
 		fmt.Println(err)
 	})
