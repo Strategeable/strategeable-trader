@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"cex-bot/types"
@@ -22,7 +22,7 @@ type IndicatorSettings struct {
 	RealTime    bool
 	CandlesBack int
 	TimeFrame   types.TimeFrame
-	Symbol      string
+	Symbol      *types.Symbol
 }
 
 type IndicatorSignal struct {
@@ -32,9 +32,9 @@ type IndicatorSignal struct {
 	Persistence int
 }
 
-func (i *IndicatorSignal) HasSignal(candles []*types.Candle) (bool, error) {
-	candlesA := getCandles(candles, i.IndicatorA)
-	candlesB := getCandles(candles, i.IndicatorB)
+func (i *IndicatorSignal) HasSignal(candleCollection *CandleCollection, symbol types.Symbol) (bool, error) {
+	candlesA := getCandles(candleCollection, symbol, i.IndicatorA)
+	candlesB := getCandles(candleCollection, symbol, i.IndicatorB)
 
 	valuesA := i.IndicatorA.Indicator.Calculate(candlesA)
 	valuesB := i.IndicatorB.Indicator.Calculate(candlesB)
@@ -96,7 +96,13 @@ func (i *IndicatorSignal) HasSignal(candles []*types.Candle) (bool, error) {
 	return true, nil
 }
 
-func getCandles(candles []*types.Candle, settings IndicatorSettings) []*types.Candle {
+func getCandles(candleCollection *CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
+	if settings.Symbol != nil {
+		symbol = *settings.Symbol
+	}
+
+	candles := candleCollection.GetCache(symbol, settings.TimeFrame).GetCandles()
+
 	finalCandles := candles[:len(candles)-settings.CandlesBack]
 	if !settings.RealTime {
 		finalCandles = finalCandles[:len(finalCandles)-1]

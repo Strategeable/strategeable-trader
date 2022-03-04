@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cex-bot/handler"
+	"cex-bot/handlers"
 	"cex-bot/impl"
 	"cex-bot/types"
 	"fmt"
@@ -24,7 +24,7 @@ func main() {
 	symbols = append(symbols, eth)
 	symbols = append(symbols, btc)
 
-	candleCollection := handler.NewCandleCollection()
+	candleCollection := handlers.NewCandleCollection()
 
 	for _, timeFrame := range []types.TimeFrame{types.M1, types.M5, types.H1} {
 		for _, symbol := range symbols {
