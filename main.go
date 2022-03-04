@@ -1,11 +1,10 @@
 package main
 
 import (
-	"cex-bot/handlers"
 	"cex-bot/helpers"
 	"cex-bot/impl"
 	"cex-bot/indicators"
-	"cex-bot/tiles"
+	"cex-bot/strategy"
 	"cex-bot/types"
 	"fmt"
 )
@@ -27,7 +26,7 @@ func main() {
 	symbols = append(symbols, eth)
 	// symbols = append(symbols, btc)
 
-	candleCollection := handlers.NewCandleCollection()
+	candleCollection := types.NewCandleCollection()
 
 	for _, timeFrame := range []types.TimeFrame{types.M1, types.M5, types.H1} {
 		for _, symbol := range symbols {
@@ -44,10 +43,10 @@ func main() {
 
 	keepaliveCh := make(chan string)
 
-	path := &tiles.Path{
-		Tiles: []tiles.Tile{
-			&tiles.SignalTile{
-				IndicatorA: tiles.IndicatorSettings{
+	path := &strategy.Path{
+		Tiles: []strategy.Tile{
+			&strategy.SignalTile{
+				IndicatorA: strategy.IndicatorSettings{
 					Indicator: &indicators.RsiIndicator{
 						Config: indicators.RsiIndicatorConfig{
 							CandlePosition: helpers.CLOSE,
@@ -58,17 +57,17 @@ func main() {
 					CandlesBack: 0,
 					TimeFrame:   types.M1,
 				},
-				IndicatorB: tiles.IndicatorSettings{
+				IndicatorB: strategy.IndicatorSettings{
 					Indicator: &indicators.NumberIndicator{
 						Config: indicators.NumberIndicatorConfig{
-							Number: 55,
+							Number: 32,
 						},
 					},
 					RealTime:    true,
 					CandlesBack: 0,
 					TimeFrame:   types.M1,
 				},
-				Operand:     tiles.GREATER_THAN,
+				Operand:     strategy.GREATER_THAN,
 				Persistence: 1,
 			},
 		},

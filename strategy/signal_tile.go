@@ -1,7 +1,6 @@
 package strategy
 
 import (
-	"cex-bot/handlers"
 	"cex-bot/types"
 	"errors"
 )
@@ -33,7 +32,7 @@ type SignalTile struct {
 	Persistence int
 }
 
-func (s *SignalTile) HasSignal(candleCollection *handlers.CandleCollection, symbol types.Symbol) (bool, error) {
+func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
 	candlesA := getCandles(candleCollection, symbol, s.IndicatorA)
 	candlesB := getCandles(candleCollection, symbol, s.IndicatorB)
 
@@ -97,7 +96,7 @@ func (s *SignalTile) HasSignal(candleCollection *handlers.CandleCollection, symb
 	return true, nil
 }
 
-func getCandles(candleCollection *handlers.CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
+func getCandles(candleCollection *types.CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
 	if settings.Symbol != nil {
 		symbol = *settings.Symbol
 	}

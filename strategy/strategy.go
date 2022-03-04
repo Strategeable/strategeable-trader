@@ -1,7 +1,6 @@
 package strategy
 
 import (
-	"cex-bot/handlers"
 	"cex-bot/types"
 	"time"
 )
@@ -13,15 +12,15 @@ type Strategy struct {
 	BuyCooldown      time.Duration
 }
 
-func (s *Strategy) HasBuySignal(candleCollection *handlers.CandleCollection, symbol types.Symbol) (bool, error) {
+func (s *Strategy) HasBuySignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
 	return hasSignal(s.BuyPaths, candleCollection, symbol)
 }
 
-func (s *Strategy) HasSellSignal(candleCollection *handlers.CandleCollection, symbol types.Symbol) (bool, error) {
+func (s *Strategy) HasSellSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
 	return hasSignal(s.SellPaths, candleCollection, symbol)
 }
 
-func hasSignal(paths []*Path, candleCollection *handlers.CandleCollection, symbol types.Symbol) (bool, error) {
+func hasSignal(paths []*Path, candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
 	var pathError error
 
 	for _, path := range paths {
