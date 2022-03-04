@@ -3,13 +3,15 @@ package types
 import "time"
 
 type Trade struct {
-	Symbol        Symbol
-	Time          time.Time
-	TradeId       string
-	Price         float64
-	Quantity      float64
-	BuyerOrderId  string
-	SellerOrderId string
+	Symbol   Symbol
+	Time     time.Time
+	TradeId  string
+	Price    float64
+	Quantity float64
+}
+
+type SubscriptionManager interface {
+	Close()
 }
 
 type ExchangeImplementation interface {
@@ -32,5 +34,5 @@ type ExchangeImplementation interface {
 	GetTicker(symbol Symbol) (Ticker, error)
 
 	// Real-time
-	WatchTrades(symbols []Symbol, handleTrade func(trade Trade), handleError func(error))
+	WatchTrades(symbols []Symbol, handleTrade func(trade Trade), handleClose func(error)) (func(), error)
 }

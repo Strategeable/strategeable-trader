@@ -111,20 +111,33 @@ func (b *binanceExchangeImpl) GetTicker(symbol types.Symbol) (types.Ticker, erro
 }
 
 // Real-time
-func (b *binanceExchangeImpl) WatchTrades(symbols []types.Symbol, handleTrade func(trade types.Trade), handleError func(error)) {
+func (b *binanceExchangeImpl) WatchTrades(symbols []types.Symbol, handleTrade func(trade types.Trade), handleClose func(error)) (func(), error) {
+	symbolMapping := make(map[string]types.Symbol)
+
+	allSymbols := make([]string, 0)
 	for _, symbol := range symbols {
-		binance.WsAggTradeServe(b.FormatSymbol(symbol), func(event *binance.WsAggTradeEvent) {
-			handleTrade(types.Trade{
-				Symbol:        symbol,
-				Time:          time.Unix(0, event.TradeTime*int64(time.Millisecond)),
-				TradeId:       fmt.Sprintf("%d", event.AggTradeID),
-				Price:         parseFloatUnsafe(event.Price),
-				Quantity:      parseFloatUnsafe(event.Quantity),
-				BuyerOrderId:  fmt.Sprintf("%d", event.FirstBreakdownTradeID),
-				SellerOrderId: fmt.Sprintf("%d", event.LastBreakdownTradeID),
-			})
-		}, handleError)
+		binanceSymbol := b.FormatSymbol(symbol)
+		allSymbols = append(allSymbols, binanceSymbol)
+
+		symbolMapping[binanceSymbol] = symbol
 	}
+
+	_, stopCh, err := binance.WsCombinedAggTradeServe(allSymbols, func(event *binance.WsAggTradeEvent) {
+		handleTrade(types.Trade{
+			Symbol:   symbolMapping[event.Symbol],
+			Time:     time.Unix(0, event.TradeTime*int64(time.Millisecond)),
+			TradeId:  fmt.Sprintf("%d", event.AggTradeID),
+			Price:    parseFloatUnsafe(event.Price),
+			Quantity: parseFloatUnsafe(event.Quantity),
+		})
+	}, handleClose)
+	if err != nil {
+		return nil, err
+	}
+
+	return func() {
+		stopCh <- struct{}{}
+	}, nil
 }
 
 // Helper functions
