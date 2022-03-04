@@ -2,6 +2,16 @@ package types
 
 import "time"
 
+type Trade struct {
+	Symbol        Symbol
+	Time          time.Time
+	TradeId       string
+	Price         float64
+	Quantity      float64
+	BuyerOrderId  string
+	SellerOrderId string
+}
+
 type ExchangeImplementation interface {
 	// Initialization
 	Init() error
@@ -20,4 +30,7 @@ type ExchangeImplementation interface {
 
 	// Ticker data
 	GetTicker(symbol Symbol) (Ticker, error)
+
+	// Real-time
+	WatchTrades(symbols []Symbol, handleTrade func(trade Trade), handleError func(error))
 }

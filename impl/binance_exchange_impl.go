@@ -110,6 +110,23 @@ func (b *binanceExchangeImpl) GetTicker(symbol types.Symbol) (types.Ticker, erro
 	return binanceTickerToTicker(ticker), nil
 }
 
+// Real-time
+func (b *binanceExchangeImpl) WatchTrades(symbols []types.Symbol, handleTrade func(trade types.Trade), handleError func(error)) {
+	for _, symbol := range symbols {
+		binance.WsAggTradeServe(b.FormatSymbol(symbol), func(event *binance.WsAggTradeEvent) {
+			handleTrade(types.Trade{
+				Symbol:        symbol,
+				Time:          time.Unix(0, event.TradeTime*int64(time.Millisecond)),
+				TradeId:       fmt.Sprintf("%d", event.AggTradeID),
+				Price:         parseFloatUnsafe(event.Price),
+				Quantity:      parseFloatUnsafe(event.Quantity),
+				BuyerOrderId:  fmt.Sprintf("%d", event.FirstBreakdownTradeID),
+				SellerOrderId: fmt.Sprintf("%d", event.LastBreakdownTradeID),
+			})
+		}, handleError)
+	}
+}
+
 // Helper functions
 func binanceTickerToTicker(ticker *binance.BookTicker) types.Ticker {
 	return types.NewTicker(

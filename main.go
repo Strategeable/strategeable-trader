@@ -1,10 +1,8 @@
 package main
 
 import (
-	"cex-bot/helpers"
 	"cex-bot/impl"
-	"cex-bot/indicators"
-	"cex-bot/trader/types"
+	"cex-bot/types"
 	"fmt"
 )
 
@@ -18,19 +16,21 @@ func main() {
 		panic(err)
 	}
 
-	candles, err := exchangeImpl.GetCandles(types.Symbol{BaseAsset: "BTC", QuoteAsset: "USDT"}, types.M15, 500)
+	btc := types.Symbol{BaseAsset: "BTC", QuoteAsset: "USDT"}
+	candles, err := exchangeImpl.GetCandles(btc, types.M1, 500)
 	if err != nil {
 		panic(err)
 	}
 
-	heikinAshiCandles := helpers.CandlesCopyToHeikinAshi(candles)
+	cache := types.NewCandleCache(candles, types.M1, 500)
 
-	emaIndicator := indicators.EmaIndicator{
-		Config: indicators.EmaIndicatorConfig{
-			CandlePosition: helpers.CLOSE,
-			Period:         25,
-		},
-	}
+	keepaliveCh := make(chan string)
 
-	fmt.Println(emaIndicator.Calculate(heikinAshiCandles))
+	exchangeImpl.WatchTrades([]types.Symbol{btc}, func(trade types.Trade) {
+		fmt.Println(cache.GetSize(), cache.AddTrade(trade.Price, trade.Quantity, trade.Time), cache.GetCurrentCandle())
+	}, func(err error) {
+		fmt.Println(err)
+	})
+
+	<-keepaliveCh
 }

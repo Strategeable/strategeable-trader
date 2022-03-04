@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -47,6 +48,10 @@ func NewCandle(openTime time.Time, closeTime time.Time, open float64, high float
 		Close:     close,
 		Volume:    volume,
 	}
+}
+
+func (c Candle) String() string {
+	return fmt.Sprintf("O: %.4f, H: %.4f, L: %.4f, C: %.4f, V: %.4f", c.Open, c.High, c.Low, c.Close, c.Volume)
 }
 
 func (c *Candle) addTrade(rate float64, volume float64, time time.Time) error {
