@@ -1,6 +1,7 @@
-package handlers
+package tiles
 
 import (
+	"cex-bot/handlers"
 	"cex-bot/types"
 	"errors"
 )
@@ -25,31 +26,31 @@ type IndicatorSettings struct {
 	Symbol      *types.Symbol
 }
 
-type IndicatorSignal struct {
+type SignalTile struct {
 	IndicatorA  IndicatorSettings
 	IndicatorB  IndicatorSettings
 	Operand     Operand
 	Persistence int
 }
 
-func (i *IndicatorSignal) HasSignal(candleCollection *CandleCollection, symbol types.Symbol) (bool, error) {
-	candlesA := getCandles(candleCollection, symbol, i.IndicatorA)
-	candlesB := getCandles(candleCollection, symbol, i.IndicatorB)
+func (s *SignalTile) HasSignal(candleCollection *handlers.CandleCollection, symbol types.Symbol) (bool, error) {
+	candlesA := getCandles(candleCollection, symbol, s.IndicatorA)
+	candlesB := getCandles(candleCollection, symbol, s.IndicatorB)
 
-	valuesA := i.IndicatorA.Indicator.Calculate(candlesA)
-	valuesB := i.IndicatorB.Indicator.Calculate(candlesB)
+	valuesA := s.IndicatorA.Indicator.Calculate(candlesA)
+	valuesB := s.IndicatorB.Indicator.Calculate(candlesB)
 
-	if len(valuesA) < i.Persistence || len(valuesB) < i.Persistence {
+	if len(valuesA) < s.Persistence || len(valuesB) < s.Persistence {
 		return false, errors.New("not enough candle values to cover persistence")
 	}
 
-	for j := 0; j < i.Persistence; j++ {
-		valueA := valuesA[len(valuesA)-i.Persistence-1+j]
-		valueB := valuesB[len(valuesB)-i.Persistence-1+j]
+	for j := 0; j < s.Persistence; j++ {
+		valueA := valuesA[len(valuesA)-s.Persistence+j]
+		valueB := valuesB[len(valuesB)-s.Persistence+j]
 
-		isFinalIndex := j == i.Persistence-1
+		isFinalIndex := j == s.Persistence-1
 
-		switch i.Operand {
+		switch s.Operand {
 		case GREATER_THAN:
 			if valueA <= valueB {
 				return false, nil
@@ -96,7 +97,7 @@ func (i *IndicatorSignal) HasSignal(candleCollection *CandleCollection, symbol t
 	return true, nil
 }
 
-func getCandles(candleCollection *CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
+func getCandles(candleCollection *handlers.CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
 	if settings.Symbol != nil {
 		symbol = *settings.Symbol
 	}

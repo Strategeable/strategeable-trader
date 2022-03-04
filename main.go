@@ -2,7 +2,10 @@ package main
 
 import (
 	"cex-bot/handlers"
+	"cex-bot/helpers"
 	"cex-bot/impl"
+	"cex-bot/indicators"
+	"cex-bot/tiles"
 	"cex-bot/types"
 	"fmt"
 )
@@ -18,11 +21,11 @@ func main() {
 	}
 
 	eth := types.Symbol{BaseAsset: "ETH", QuoteAsset: "USDT"}
-	btc := types.Symbol{BaseAsset: "BTC", QuoteAsset: "USDT"}
+	// btc := types.Symbol{BaseAsset: "BTC", QuoteAsset: "USDT"}
 
 	symbols := make([]types.Symbol, 0)
 	symbols = append(symbols, eth)
-	symbols = append(symbols, btc)
+	// symbols = append(symbols, btc)
 
 	candleCollection := handlers.NewCandleCollection()
 
@@ -41,12 +44,48 @@ func main() {
 
 	keepaliveCh := make(chan string)
 
+	path := &tiles.Path{
+		Tiles: []tiles.Tile{
+			&tiles.SignalTile{
+				IndicatorA: tiles.IndicatorSettings{
+					Indicator: &indicators.RsiIndicator{
+						Config: indicators.RsiIndicatorConfig{
+							CandlePosition: helpers.CLOSE,
+							Period:         14,
+						},
+					},
+					RealTime:    true,
+					CandlesBack: 0,
+					TimeFrame:   types.M1,
+				},
+				IndicatorB: tiles.IndicatorSettings{
+					Indicator: &indicators.NumberIndicator{
+						Config: indicators.NumberIndicatorConfig{
+							Number: 55,
+						},
+					},
+					RealTime:    true,
+					CandlesBack: 0,
+					TimeFrame:   types.M1,
+				},
+				Operand:     tiles.GREATER_THAN,
+				Persistence: 1,
+			},
+		},
+	}
+
 	_, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
 		candleCollection.AddTrade(trade.Symbol, trade)
 
-		cache := candleCollection.GetCache(trade.Symbol, types.M5)
+		cache := candleCollection.GetCache(trade.Symbol, types.M1)
 
-		fmt.Println(trade.Symbol.String(), cache.GetCurrentRate())
+		signal, err := path.HasSignal(candleCollection, trade.Symbol)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
 	}, func(err error) {
 		fmt.Println(err)
 	})
