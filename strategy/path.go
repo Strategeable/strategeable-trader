@@ -8,9 +8,9 @@ type Path struct {
 	Tiles []Tile
 }
 
-func (p *Path) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
+func (p *Path) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol, exchange types.Exchange) (bool, error) {
 	for _, tile := range p.Tiles {
-		signal, err := tile.HasSignal(candleCollection, symbol)
+		signal, err := tile.HasSignal(candleCollection, symbol, exchange)
 		if err != nil {
 			return false, err
 		}

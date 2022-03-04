@@ -23,6 +23,7 @@ type IndicatorSettings struct {
 	CandlesBack int
 	TimeFrame   types.TimeFrame
 	Symbol      *types.Symbol
+	Exchange    *types.Exchange
 }
 
 type SignalTile struct {
@@ -32,9 +33,9 @@ type SignalTile struct {
 	Persistence int
 }
 
-func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
-	candlesA := getCandles(candleCollection, symbol, s.IndicatorA)
-	candlesB := getCandles(candleCollection, symbol, s.IndicatorB)
+func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol, exchange types.Exchange) (bool, error) {
+	candlesA := getCandles(candleCollection, exchange, symbol, s.IndicatorA)
+	candlesB := getCandles(candleCollection, exchange, symbol, s.IndicatorB)
 
 	valuesA := s.IndicatorA.Indicator.Calculate(candlesA)
 	valuesB := s.IndicatorB.Indicator.Calculate(candlesB)
@@ -96,12 +97,15 @@ func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol 
 	return true, nil
 }
 
-func getCandles(candleCollection *types.CandleCollection, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
+func getCandles(candleCollection *types.CandleCollection, exchange types.Exchange, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
 	if settings.Symbol != nil {
 		symbol = *settings.Symbol
 	}
+	if settings.Exchange != nil {
+		exchange = *settings.Exchange
+	}
 
-	candles := candleCollection.GetCache(symbol, settings.TimeFrame).GetCandles()
+	candles := candleCollection.GetCache(exchange, symbol, settings.TimeFrame).GetCandles()
 
 	finalCandles := candles[:len(candles)-settings.CandlesBack]
 	if !settings.RealTime {

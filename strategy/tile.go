@@ -5,5 +5,5 @@ import (
 )
 
 type Tile interface {
-	HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error)
+	HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol, exchange types.Exchange) (bool, error)
 }

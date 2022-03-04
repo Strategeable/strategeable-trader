@@ -6,15 +6,9 @@ import (
 	"fmt"
 )
 
-type Exchange string
-
-const (
-	BINANCE Exchange = "BINANCE"
-)
-
 type ExchangeDetails struct {
 	Name     string
-	Exchange Exchange
+	Exchange types.Exchange
 	Live     bool
 }
 

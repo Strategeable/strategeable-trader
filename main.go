@@ -31,14 +31,14 @@ func main() {
 
 	for _, timeFrame := range []types.TimeFrame{types.M1, types.M5, types.H1} {
 		for _, symbol := range symbols {
-			candleCollection.RegisterSymbol(symbol)
+			candleCollection.RegisterSymbol(types.BINANCE, symbol)
 
 			candles, err := exchangeImpl.GetCandles(symbol, timeFrame, 1000)
 			if err != nil {
 				panic(err)
 			}
 
-			candleCollection.InitializeTimeFrame(symbol, timeFrame, candles)
+			candleCollection.InitializeTimeFrame(types.BINANCE, symbol, timeFrame, candles)
 		}
 	}
 
