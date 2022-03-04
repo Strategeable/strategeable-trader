@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cex-bot/handlers"
 	"cex-bot/helpers"
 	"cex-bot/impl"
 	"cex-bot/indicators"
@@ -73,18 +74,31 @@ func main() {
 		},
 	}
 
+	bot := handlers.NewBot("test bot", handlers.ExchangeDetails{}, strategy.Strategy{
+		BuyPaths: []*strategy.Path{path},
+	}, make([]*types.Position, 0), candleCollection)
+	bot2 := handlers.NewBot("other bot", handlers.ExchangeDetails{}, strategy.Strategy{
+		BuyPaths: []*strategy.Path{path},
+	}, make([]*types.Position, 0), candleCollection)
+
+	go bot.RunLoop()
+	go bot2.RunLoop()
+
 	_, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
 		candleCollection.AddTrade(trade.Symbol, trade)
 
-		cache := candleCollection.GetCache(trade.Symbol, types.M1)
+		// cache := candleCollection.GetCache(trade.Symbol, types.M1)
 
-		signal, err := path.HasSignal(candleCollection, trade.Symbol)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		// signal, err := path.HasSignal(candleCollection, trade.Symbol)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
 
-		fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
+		// fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
+
+		bot.TradeCh <- trade
+		bot2.TradeCh <- trade
 	}, func(err error) {
 		fmt.Println(err)
 	})

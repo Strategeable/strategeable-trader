@@ -8,8 +8,13 @@ import (
 type Strategy struct {
 	BuyPaths         []*Path
 	SellPaths        []*Path
+	Symbols          []types.Symbol
 	DefaultTimeFrame types.TimeFrame
 	BuyCooldown      time.Duration
+}
+
+func (s *Strategy) GetQuoteAsset() string {
+	return s.Symbols[0].QuoteAsset
 }
 
 func (s *Strategy) HasBuySignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
