@@ -12,6 +12,7 @@ type Strategy struct {
 	Symbols          []types.Symbol
 	DefaultTimeFrame types.TimeFrame
 	BuyCooldown      time.Duration
+	BuySize          float64
 }
 
 func (s *Strategy) GetQuoteAsset() string {
