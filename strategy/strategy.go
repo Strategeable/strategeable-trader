@@ -19,18 +19,18 @@ func (s *Strategy) GetQuoteAsset() string {
 }
 
 func (s *Strategy) HasBuySignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
-	return s.hasSignal(s.BuyPaths, candleCollection, symbol)
+	return s.hasSignal(s.BuyPaths, candleCollection, symbol, nil)
 }
 
-func (s *Strategy) HasSellSignal(candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
-	return s.hasSignal(s.SellPaths, candleCollection, symbol)
+func (s *Strategy) HasSellSignal(candleCollection *types.CandleCollection, symbol types.Symbol, position *types.Position) (bool, error) {
+	return s.hasSignal(s.SellPaths, candleCollection, symbol, position)
 }
 
-func (s *Strategy) hasSignal(paths []*Path, candleCollection *types.CandleCollection, symbol types.Symbol) (bool, error) {
+func (s *Strategy) hasSignal(paths []*Path, candleCollection *types.CandleCollection, symbol types.Symbol, position *types.Position) (bool, error) {
 	var pathError error
 
 	for _, path := range paths {
-		signal, err := path.HasSignal(candleCollection, symbol, s.Exchange)
+		signal, err := path.HasSignal(candleCollection, symbol, s.Exchange, position)
 		if err != nil {
 			pathError = err
 			continue

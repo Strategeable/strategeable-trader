@@ -3,7 +3,6 @@ package handlers
 import (
 	"cex-bot/strategy"
 	"cex-bot/types"
-	"fmt"
 )
 
 type ExchangeDetails struct {
@@ -15,19 +14,23 @@ type ExchangeDetails struct {
 type Bot struct {
 	Name             string
 	ExchangeDetails  ExchangeDetails
+	PositionManager  *PositionManager
+	SignalManager    *SignalManager
 	Strategy         strategy.Strategy
-	Positions        []*types.Position
 	stopCh           chan struct{}
 	TradeCh          chan types.Trade
 	CandleCollection *types.CandleCollection
 }
 
-func NewBot(name string, exchangeDetails ExchangeDetails, strategy strategy.Strategy, positions []*types.Position, candleCollection *types.CandleCollection) *Bot {
+func NewBot(name string, exchangeDetails ExchangeDetails, strategy strategy.Strategy, positions []*types.Position, closedPositions []*types.Position, candleCollection *types.CandleCollection) *Bot {
+	positionManager := newPositionManager(positions, closedPositions)
+
 	return &Bot{
 		Name:             name,
 		ExchangeDetails:  exchangeDetails,
 		Strategy:         strategy,
-		Positions:        positions,
+		PositionManager:  positionManager,
+		SignalManager:    newSignalManager(candleCollection, positionManager, strategy),
 		CandleCollection: candleCollection,
 		stopCh:           make(chan struct{}),
 		TradeCh:          make(chan types.Trade, 5),
@@ -44,7 +47,7 @@ func (b *Bot) RunLoop() {
 		case <-b.stopCh:
 			return
 		case trade := <-b.TradeCh:
-			fmt.Println(b.Name, trade)
+			b.SignalManager.handleTrigger(trade)
 		}
 	}
 }

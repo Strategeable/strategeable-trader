@@ -13,6 +13,6 @@ type CandlePositionValueIndicator struct {
 	Config CandlePositionValueIndicatorConfig
 }
 
-func (c *CandlePositionValueIndicator) Calculate(input []*types.Candle) []float64 {
+func (c *CandlePositionValueIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
 	return helpers.CandlesToValues(input, c.Config.CandlePosition)
 }

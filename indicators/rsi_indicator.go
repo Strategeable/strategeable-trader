@@ -15,7 +15,7 @@ type RsiIndicator struct {
 	Config RsiIndicatorConfig
 }
 
-func (r *RsiIndicator) Calculate(input []*types.Candle) []float64 {
+func (r *RsiIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
 	values := helpers.CandlesToValues(input, r.Config.CandlePosition)
 
 	return math.Rsi(values, r.Config.Period)

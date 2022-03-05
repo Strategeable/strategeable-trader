@@ -33,12 +33,18 @@ type SignalTile struct {
 	Persistence int
 }
 
-func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol, exchange types.Exchange) (bool, error) {
-	candlesA := getCandles(candleCollection, exchange, symbol, s.IndicatorA)
-	candlesB := getCandles(candleCollection, exchange, symbol, s.IndicatorB)
+func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol types.Symbol, exchange types.Exchange, position *types.Position) (bool, error) {
+	candlesA, err := getCandles(candleCollection, exchange, symbol, s.IndicatorA)
+	if err != nil {
+		return false, err
+	}
+	candlesB, err := getCandles(candleCollection, exchange, symbol, s.IndicatorB)
+	if err != nil {
+		return false, err
+	}
 
-	valuesA := s.IndicatorA.Indicator.Calculate(candlesA)
-	valuesB := s.IndicatorB.Indicator.Calculate(candlesB)
+	valuesA := s.IndicatorA.Indicator.Calculate(candlesA, position)
+	valuesB := s.IndicatorB.Indicator.Calculate(candlesB, position)
 
 	if len(valuesA) < s.Persistence || len(valuesB) < s.Persistence {
 		return false, errors.New("not enough candle values to cover persistence")
@@ -97,7 +103,7 @@ func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol 
 	return true, nil
 }
 
-func getCandles(candleCollection *types.CandleCollection, exchange types.Exchange, symbol types.Symbol, settings IndicatorSettings) []*types.Candle {
+func getCandles(candleCollection *types.CandleCollection, exchange types.Exchange, symbol types.Symbol, settings IndicatorSettings) ([]*types.Candle, error) {
 	if settings.Symbol != nil {
 		symbol = *settings.Symbol
 	}
@@ -105,11 +111,15 @@ func getCandles(candleCollection *types.CandleCollection, exchange types.Exchang
 		exchange = *settings.Exchange
 	}
 
-	candles := candleCollection.GetCache(exchange, symbol, settings.TimeFrame).GetCandles()
+	cache := candleCollection.GetCache(exchange, symbol, settings.TimeFrame)
+	if cache == nil {
+		return nil, errors.New("cache not found")
+	}
+	candles := cache.GetCandles()
 
 	finalCandles := candles[:len(candles)-settings.CandlesBack]
 	if !settings.RealTime {
 		finalCandles = finalCandles[:len(finalCandles)-1]
 	}
-	return finalCandles
+	return finalCandles, nil
 }

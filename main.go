@@ -8,6 +8,7 @@ import (
 	"cex-bot/strategy"
 	"cex-bot/types"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -44,7 +45,7 @@ func main() {
 
 	keepaliveCh := make(chan string)
 
-	path := &strategy.Path{
+	buyPath := &strategy.Path{
 		Tiles: []strategy.Tile{
 			&strategy.SignalTile{
 				IndicatorA: strategy.IndicatorSettings{
@@ -61,7 +62,7 @@ func main() {
 				IndicatorB: strategy.IndicatorSettings{
 					Indicator: &indicators.NumberIndicator{
 						Config: indicators.NumberIndicatorConfig{
-							Number: 32,
+							Number: 47,
 						},
 					},
 					RealTime:    true,
@@ -73,19 +74,48 @@ func main() {
 			},
 		},
 	}
+	sellPath := &strategy.Path{
+		Tiles: []strategy.Tile{
+			&strategy.SignalTile{
+				IndicatorA: strategy.IndicatorSettings{
+					Indicator: &indicators.RsiIndicator{
+						Config: indicators.RsiIndicatorConfig{
+							CandlePosition: helpers.CLOSE,
+							Period:         14,
+						},
+					},
+					RealTime:    true,
+					CandlesBack: 0,
+					TimeFrame:   types.M1,
+				},
+				IndicatorB: strategy.IndicatorSettings{
+					Indicator: &indicators.NumberIndicator{
+						Config: indicators.NumberIndicatorConfig{
+							Number: 47,
+						},
+					},
+					RealTime:    true,
+					CandlesBack: 0,
+					TimeFrame:   types.M1,
+				},
+				Operand:     strategy.LOWER_THAN,
+				Persistence: 1,
+			},
+		},
+	}
 
 	bot := handlers.NewBot("test bot", handlers.ExchangeDetails{}, strategy.Strategy{
-		BuyPaths: []*strategy.Path{path},
-	}, make([]*types.Position, 0), candleCollection)
-	bot2 := handlers.NewBot("other bot", handlers.ExchangeDetails{}, strategy.Strategy{
-		BuyPaths: []*strategy.Path{path},
-	}, make([]*types.Position, 0), candleCollection)
+		Exchange:    types.BINANCE,
+		Symbols:     symbols,
+		BuyPaths:    []*strategy.Path{buyPath},
+		SellPaths:   []*strategy.Path{sellPath},
+		BuyCooldown: 60 * time.Second,
+	}, make([]*types.Position, 0), make([]*types.Position, 0), candleCollection)
 
 	go bot.RunLoop()
-	go bot2.RunLoop()
 
 	_, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
-		candleCollection.AddTrade(trade.Symbol, trade)
+		candleCollection.AddTrade(types.BINANCE, trade.Symbol, trade)
 
 		// cache := candleCollection.GetCache(trade.Symbol, types.M1)
 
@@ -98,7 +128,6 @@ func main() {
 		// fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
 
 		bot.TradeCh <- trade
-		bot2.TradeCh <- trade
 	}, func(err error) {
 		fmt.Println(err)
 	})

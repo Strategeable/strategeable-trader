@@ -28,7 +28,7 @@ type BollingerBandIndicator struct {
 	Config BollingerBandIndicatorConfig
 }
 
-func (b *BollingerBandIndicator) Calculate(input []*types.Candle) []float64 {
+func (b *BollingerBandIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
 	values := helpers.CandlesToValues(input, b.Config.CandlePosition)
 
 	lower, middle, upper := math.BBands(values, b.Config.Period, b.Config.DeviationUp, b.Config.DeviationDown, b.Config.MaType)

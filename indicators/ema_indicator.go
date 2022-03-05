@@ -15,7 +15,7 @@ type EmaIndicator struct {
 	Config EmaIndicatorConfig
 }
 
-func (e *EmaIndicator) Calculate(input []*types.Candle) []float64 {
+func (e *EmaIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
 	values := helpers.CandlesToValues(input, e.Config.CandlePosition)
 
 	return math.Ema(values, e.Config.Period)
