@@ -20,11 +20,16 @@ func NewEngine(strategy strategy.Strategy, marketDataProvider types.MarketDataPr
 	}
 }
 
-func (e *Engine) Start() {
+func (e *Engine) Start() error {
+	err := e.MarketDataProvider.Init()
+	if err != nil {
+		return err
+	}
+
 	for {
 		select {
 		case <-e.stopCh:
-			return
+			return nil
 		case trade := <-e.MarketDataProvider.GetTradeCh():
 			e.SignalHandler.handleTrigger(trade)
 		}

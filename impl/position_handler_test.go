@@ -11,25 +11,21 @@ type testPositionHandler struct {
 	types.BasePositionHandler
 }
 
-func NewTestPositionHandler(positions []*types.Position, closedPositions []*types.Position) *testPositionHandler {
+func NewTestPositionHandler(accountSize float64, positions []*types.Position) *testPositionHandler {
 	positionMapping := make(map[string]*types.Position)
-	closedPositionMapping := make(map[string]*types.Position)
 
 	for _, position := range positions {
-		positionMapping[position.Symbol.String()] = position
-	}
-	for _, position := range closedPositions {
-		closedPositionMapping[position.Symbol.String()] = position
+		positionMapping[position.Symbol().String()] = position
 	}
 
 	positionHandler := &testPositionHandler{}
-	positionHandler.ClosedPositions = closedPositionMapping
 	positionHandler.Positions = positionMapping
+	positionHandler.TotalBalance = accountSize
 
 	return positionHandler
 }
 
-func (t *testPositionHandler) ClosePosition(symbol types.Symbol) {
+func (t *testPositionHandler) ClosePosition(symbol types.Symbol, rate float64, time time.Time) {
 	t.PositionsLock.Lock()
 	defer t.PositionsLock.Unlock()
 
@@ -38,32 +34,57 @@ func (t *testPositionHandler) ClosePosition(symbol types.Symbol) {
 		return
 	}
 
-	openPosition.CloseTime = time.Now()
+	openPosition.AddOrder(&types.Order{
+		Time:   time,
+		Side:   types.BUY,
+		Active: false,
+		Size:   openPosition.BaseSize(),
+		Rate:   rate,
+		Fills: []types.OrderFill{
+			{
+				Time:     time,
+				Rate:     rate,
+				Quantity: openPosition.BaseSize(),
+			},
+		},
+	})
 
-	t.ClosedPositionsLock.Lock()
-	t.ClosedPositions[symbol.String()] = openPosition
-	t.ClosedPositionsLock.Unlock()
-
-	delete(t.Positions, symbol.String())
+	openPosition.MarkClosed(time)
 
 	fmt.Printf("Closed position for %s.\n", symbol.String())
 }
 
-func (t *testPositionHandler) OpenNewPosition(symbol types.Symbol) error {
+func (t *testPositionHandler) OpenNewPosition(symbol types.Symbol, rate float64, quoteSize float64, time time.Time) (*types.Position, error) {
 	t.PositionsLock.Lock()
 	defer t.PositionsLock.Unlock()
 
 	if t.Positions[symbol.String()] != nil {
-		return errors.New("duplicate position")
+		return nil, errors.New("duplicate position")
 	}
 
-	position := &types.Position{
-		OpenTime: time.Now(),
-		Symbol:   symbol,
+	if t.GetAvailableBalance() < quoteSize {
+		return nil, errors.New("insufficient balance available")
 	}
+
+	position := types.NewPosition(symbol, types.OPEN, time, nil, make([]*types.Order, 0))
+
+	baseSize := quoteSize / rate
+
+	position.AddOrder(&types.Order{
+		Time:   time,
+		Side:   types.BUY,
+		Active: false,
+		Size:   baseSize,
+		Rate:   rate,
+		Fills: []types.OrderFill{
+			{
+				Time:     time,
+				Rate:     rate,
+				Quantity: baseSize,
+			},
+		},
+	})
 
 	t.Positions[symbol.String()] = position
-
-	fmt.Printf("Created new position for %s.\n", symbol.String())
-	return nil
+	return position, nil
 }

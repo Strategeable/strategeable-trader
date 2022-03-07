@@ -29,6 +29,8 @@ type Order struct {
 	Time    time.Time
 	Side    OrderSide
 	Active  bool
+	Size    float64
+	Rate    float64
 	Fills   []OrderFill
 }
 
@@ -53,17 +55,56 @@ func (o *Order) QuoteValue() float64 {
 }
 
 type Position struct {
-	Symbol    Symbol
-	State     PositionState
-	OpenTime  time.Time
-	CloseTime time.Time
-	Orders    []*Order
+	symbol    Symbol
+	state     PositionState
+	openTime  time.Time
+	closeTime *time.Time
+	orders    []*Order
+}
+
+func NewPosition(symbol Symbol, state PositionState, openTime time.Time, closeTime *time.Time, orders []*Order) *Position {
+	return &Position{
+		symbol:    symbol,
+		state:     state,
+		openTime:  openTime,
+		closeTime: closeTime,
+		orders:    orders,
+	}
+}
+
+func (p *Position) AddOrder(order *Order) {
+	p.orders = append(p.orders, order)
+}
+
+func (p *Position) State() PositionState {
+	return p.state
+}
+
+func (p *Position) Symbol() *Symbol {
+	return &p.symbol
+}
+
+func (p *Position) CloseTime() *time.Time {
+	return p.closeTime
+}
+
+func (p *Position) IsClosed() bool {
+	return p.closeTime != nil
+}
+
+func (p *Position) MarkClosed(time time.Time) {
+	p.closeTime = &time
+	p.SetState(CLOSED)
+}
+
+func (p *Position) SetState(state PositionState) {
+	p.state = state
 }
 
 func (p *Position) BaseSize() float64 {
 	total := float64(0)
 
-	for _, order := range p.Orders {
+	for _, order := range p.orders {
 		if order.Side == BUY {
 			total += order.FilledSize()
 		}
@@ -75,7 +116,7 @@ func (p *Position) BaseSize() float64 {
 func (p *Position) QuoteCost() float64 {
 	total := float64(0)
 
-	for _, order := range p.Orders {
+	for _, order := range p.orders {
 		if order.Side == BUY {
 			total += order.QuoteValue()
 		}
@@ -89,7 +130,7 @@ func (p *Position) QuoteValue(rate float64) float64 {
 
 	product := float64(0)
 
-	for _, order := range p.Orders {
+	for _, order := range p.orders {
 		if order.Side == SELL {
 			product += order.QuoteValue()
 			total -= order.FilledSize()
@@ -106,7 +147,7 @@ func (p *Position) AverageQuoteRate(rate float64) float64 {
 
 	product := float64(0)
 
-	for _, order := range p.Orders {
+	for _, order := range p.orders {
 		if order.Side == SELL {
 			product += order.QuoteValue()
 			total -= order.FilledSize()

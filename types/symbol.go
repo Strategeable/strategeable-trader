@@ -12,10 +12,6 @@ type Symbol struct {
 	// TODO: Add filters (LOT_SIZE, MIN_NOTIONAL, etc)
 }
 
-func (s *Symbol) String() string {
-	return fmt.Sprintf("%s/%s", s.BaseAsset, s.QuoteAsset)
-}
-
 func NewSymbol(baseAsset string, baseAssetPrecision int, quoteAsset string, quoteAssetPrecision int) Symbol {
 	return Symbol{
 		BaseAsset:           baseAsset,
@@ -23,4 +19,12 @@ func NewSymbol(baseAsset string, baseAssetPrecision int, quoteAsset string, quot
 		QuoteAsset:          quoteAsset,
 		QuoteAssetPrecision: quoteAssetPrecision,
 	}
+}
+
+func (s *Symbol) String() string {
+	return fmt.Sprintf("%s/%s", s.BaseAsset, s.QuoteAsset)
+}
+
+func (s *Symbol) MinQuoteSize() float64 {
+	return 1
 }

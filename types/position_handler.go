@@ -1,19 +1,22 @@
 package types
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type PositionHandler interface {
-	OpenNewPosition(symbol Symbol) error
-	ClosePosition(symbol Symbol) error
+	GetTotalBalance() float64
+	GetAvailableBalance() float64
+	OpenNewPosition(symbol Symbol, rate float64, quoteSize float64, time time.Time) (*Position, error)
+	ClosePosition(symbol Symbol, rate float64, time time.Time) error
 	GetPosition(symbol Symbol) *Position
-	GetClosedPosition(symbol Symbol) *Position
 }
 
 type BasePositionHandler struct {
-	Positions           map[string]*Position
-	PositionsLock       sync.RWMutex
-	ClosedPositions     map[string]*Position
-	ClosedPositionsLock sync.RWMutex
+	TotalBalance  float64
+	Positions     map[string]*Position
+	PositionsLock sync.RWMutex
 }
 
 func (b *BasePositionHandler) GetPosition(symbol Symbol) *Position {
@@ -23,9 +26,16 @@ func (b *BasePositionHandler) GetPosition(symbol Symbol) *Position {
 	return b.Positions[symbol.String()]
 }
 
-func (b *BasePositionHandler) GetClosedPosition(symbol Symbol) *Position {
-	b.ClosedPositionsLock.RLock()
-	defer b.ClosedPositionsLock.RUnlock()
+func (b *BasePositionHandler) GetTotalBalance() float64 {
+	return b.TotalBalance
+}
 
-	return b.ClosedPositions[symbol.String()]
+func (b *BasePositionHandler) GetAvailableBalance() float64 {
+	balance := b.TotalBalance
+
+	for _, position := range b.Positions {
+		balance -= position.QuoteCost()
+	}
+
+	return balance
 }

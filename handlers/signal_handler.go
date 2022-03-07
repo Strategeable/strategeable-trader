@@ -4,7 +4,6 @@ import (
 	"cex-bot/strategy"
 	"cex-bot/types"
 	"fmt"
-	"time"
 )
 
 type SignalHandler struct {
@@ -24,14 +23,14 @@ func newSignalHandler(marketDataProvider types.MarketDataProvider, positionHandl
 func (s *SignalHandler) handleTrigger(trade types.Trade) {
 	candleCollection := s.marketDataProvider.GetCandleCollection()
 
-	openPosition := s.positionHandler.GetPosition(trade.Symbol)
+	position := s.positionHandler.GetPosition(trade.Symbol)
 
-	if openPosition != nil {
-		if openPosition.State != types.OPEN {
+	if position != nil && !position.IsClosed() {
+		if position.State() != types.OPEN {
 			return
 		}
 
-		sellSignal, err := s.strategy.HasSellSignal(candleCollection, trade.Symbol, openPosition)
+		sellSignal, err := s.strategy.HasSellSignal(candleCollection, trade.Symbol, position)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -42,12 +41,11 @@ func (s *SignalHandler) handleTrigger(trade types.Trade) {
 		}
 
 		// Sell position
-		s.positionHandler.ClosePosition(trade.Symbol)
+		s.positionHandler.ClosePosition(trade.Symbol, trade.Price, trade.Time)
 		return
 	}
 
-	closedPosition := s.positionHandler.GetClosedPosition(trade.Symbol)
-	if closedPosition != nil && time.Since(closedPosition.CloseTime) < s.strategy.BuyCooldown {
+	if position != nil && position.IsClosed() && trade.Time.Sub(*position.CloseTime()) < s.strategy.BuyCooldown {
 		// Symbol is currently on a buy cooldown
 		return
 	}
@@ -62,6 +60,17 @@ func (s *SignalHandler) handleTrigger(trade types.Trade) {
 		return
 	}
 
+	availableBalance := s.positionHandler.GetAvailableBalance()
+
+	quoteSize := s.positionHandler.GetTotalBalance() / 100 * s.strategy.BuySize
+	if quoteSize > availableBalance {
+		if availableBalance < trade.Symbol.MinQuoteSize() {
+			return
+		}
+
+		quoteSize = availableBalance
+	}
+
 	// Open new position
-	s.positionHandler.OpenNewPosition(trade.Symbol)
+	s.positionHandler.OpenNewPosition(trade.Symbol, trade.Price, quoteSize, trade.Time)
 }
