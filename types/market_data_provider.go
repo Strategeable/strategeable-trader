@@ -5,3 +5,15 @@ type MarketDataProvider interface {
 	GetCandleCollection() *CandleCollection
 	GetTradeCh() chan Trade
 }
+
+type BaseMarketDataProvider struct {
+	candleCollection *CandleCollection
+}
+
+func (b *BaseMarketDataProvider) InitCandleCollection() {
+	b.candleCollection = NewCandleCollection()
+}
+
+func (b *BaseMarketDataProvider) GetCandleCollection() *CandleCollection {
+	return b.candleCollection
+}

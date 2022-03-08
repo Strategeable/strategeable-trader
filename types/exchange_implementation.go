@@ -20,6 +20,7 @@ type ExchangeImplementation interface {
 
 	// Basic data
 	GetSymbols() ([]Symbol, error)
+	GetExchange() Exchange
 	GetUniqueQuoteAssets() ([]string, error)
 	FormatSymbol(symbol Symbol) string
 
@@ -28,7 +29,7 @@ type ExchangeImplementation interface {
 
 	// Candle data
 	GetCandles(symbol Symbol, timeFrame TimeFrame, limit int) ([]*Candle, error)
-	GetHistoricalCandles(symbol Symbol, timeFrame TimeFrame, from time.Time, to time.Time, limit int) ([]*Candle, error)
+	GetHistoricalCandles(symbol Symbol, timeFrame TimeFrame, from time.Time, to time.Time) ([]*Candle, error)
 
 	// Ticker data
 	GetTicker(symbol Symbol) (Ticker, error)

@@ -16,6 +16,10 @@ type RsiIndicator struct {
 }
 
 func (r *RsiIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
+	if len(input) <= r.Config.Period {
+		return make([]float64, 0)
+	}
+
 	values := helpers.CandlesToValues(input, r.Config.CandlePosition)
 
 	return math.Rsi(values, r.Config.Period)

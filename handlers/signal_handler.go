@@ -72,5 +72,5 @@ func (s *SignalHandler) handleTrigger(trade types.Trade) {
 	}
 
 	// Open new position
-	s.positionHandler.OpenNewPosition(trade.Symbol, trade.Price, quoteSize, trade.Time)
+	s.positionHandler.OpenPosition(trade.Symbol, trade.Price, quoteSize, trade.Time)
 }

@@ -3,40 +3,39 @@ package impl
 import (
 	"cex-bot/types"
 	"errors"
-	"fmt"
 	"time"
 )
 
-type testPositionHandler struct {
+type simulatedPositionHandler struct {
 	types.BasePositionHandler
 }
 
-func NewTestPositionHandler(accountSize float64, positions []*types.Position) *testPositionHandler {
+func NewSimulatedPositionHandler(accountSize float64, positions []*types.Position) *simulatedPositionHandler {
 	positionMapping := make(map[string]*types.Position)
 
 	for _, position := range positions {
 		positionMapping[position.Symbol().String()] = position
 	}
 
-	positionHandler := &testPositionHandler{}
+	positionHandler := &simulatedPositionHandler{}
 	positionHandler.Positions = positionMapping
 	positionHandler.TotalBalance = accountSize
 
 	return positionHandler
 }
 
-func (t *testPositionHandler) ClosePosition(symbol types.Symbol, rate float64, time time.Time) {
-	t.PositionsLock.Lock()
-	defer t.PositionsLock.Unlock()
+func (s *simulatedPositionHandler) ClosePosition(symbol types.Symbol, rate float64, time time.Time) error {
+	s.PositionsLock.Lock()
+	defer s.PositionsLock.Unlock()
 
-	openPosition := t.Positions[symbol.String()]
+	openPosition := s.Positions[symbol.String()]
 	if openPosition == nil {
-		return
+		return nil
 	}
 
 	openPosition.AddOrder(&types.Order{
 		Time:   time,
-		Side:   types.BUY,
+		Side:   types.SELL,
 		Active: false,
 		Size:   openPosition.BaseSize(),
 		Rate:   rate,
@@ -49,20 +48,32 @@ func (t *testPositionHandler) ClosePosition(symbol types.Symbol, rate float64, t
 		},
 	})
 
+	s.TotalBalance += openPosition.ChangeAmount(rate)
+
+	s.EmitEvent(types.PositionHandlerEvent{
+		Type: types.TOTAL_BALANCE_CHANGED,
+		Data: s.TotalBalance,
+	})
+
 	openPosition.MarkClosed(time)
 
-	fmt.Printf("Closed position for %s.\n", symbol.String())
+	s.EmitEvent(types.PositionHandlerEvent{
+		Type: types.POSITION_CLOSED,
+		Data: openPosition,
+	})
+
+	return nil
 }
 
-func (t *testPositionHandler) OpenNewPosition(symbol types.Symbol, rate float64, quoteSize float64, time time.Time) (*types.Position, error) {
-	t.PositionsLock.Lock()
-	defer t.PositionsLock.Unlock()
+func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float64, quoteSize float64, time time.Time) (*types.Position, error) {
+	s.PositionsLock.Lock()
+	defer s.PositionsLock.Unlock()
 
-	if t.Positions[symbol.String()] != nil {
+	if s.Positions[symbol.String()] != nil {
 		return nil, errors.New("duplicate position")
 	}
 
-	if t.GetAvailableBalance() < quoteSize {
+	if s.GetAvailableBalance() < quoteSize {
 		return nil, errors.New("insufficient balance available")
 	}
 
@@ -85,6 +96,11 @@ func (t *testPositionHandler) OpenNewPosition(symbol types.Symbol, rate float64,
 		},
 	})
 
-	t.Positions[symbol.String()] = position
+	s.Positions[symbol.String()] = position
+
+	s.EmitEvent(types.PositionHandlerEvent{
+		Type: types.POSITION_CREATED,
+		Data: position,
+	})
 	return position, nil
 }

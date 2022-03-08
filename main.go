@@ -28,23 +28,6 @@ func main() {
 	symbols = append(symbols, eth)
 	// symbols = append(symbols, btc)
 
-	candleCollection := types.NewCandleCollection()
-
-	for _, timeFrame := range []types.TimeFrame{types.M1, types.M5, types.H1} {
-		for _, symbol := range symbols {
-			candleCollection.RegisterSymbol(types.BINANCE, symbol)
-
-			candles, err := exchangeImpl.GetCandles(symbol, timeFrame, 1000)
-			if err != nil {
-				panic(err)
-			}
-
-			candleCollection.InitializeTimeFrame(types.BINANCE, symbol, timeFrame, candles)
-		}
-	}
-
-	keepaliveCh := make(chan string)
-
 	buyPath := &strategy.Path{
 		Tiles: []strategy.Tile{
 			&strategy.SignalTile{
@@ -104,36 +87,53 @@ func main() {
 		},
 	}
 
-	bot := handlers.NewBot("test bot", handlers.ExchangeDetails{}, strategy.Strategy{
+	strategy := strategy.Strategy{
 		Exchange:    types.BINANCE,
 		Symbols:     symbols,
 		BuyPaths:    []*strategy.Path{buyPath},
 		SellPaths:   []*strategy.Path{sellPath},
 		BuyCooldown: 60 * time.Second,
-	}, make([]*types.Position, 0), make([]*types.Position, 0), candleCollection)
+	}
 
-	go bot.RunLoop()
+	from, _ := time.Parse("2006-01-02 15:04", "2022-03-08 22:00")
+	to, _ := time.Parse("2006-01-02 15:04", "2022-03-08 22:30")
 
-	_, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
-		candleCollection.AddTrade(types.BINANCE, trade.Symbol, trade)
+	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, symbols)
 
-		// cache := candleCollection.GetCache(trade.Symbol, types.M1)
+	positionHandler := impl.NewSimulatedPositionHandler(1000, make([]*types.Position, 0))
 
-		// signal, err := path.HasSignal(candleCollection, trade.Symbol)
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
+	eventCh := make(chan types.PositionHandlerEvent, 5)
+	positionHandler.SubscribeEvents(eventCh)
 
-		// fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
+	engine := handlers.NewEngine(strategy, marketDataProvider, positionHandler)
 
-		bot.TradeCh <- trade
-	}, func(err error) {
-		fmt.Println(err)
-	})
+	err = engine.Start()
 	if err != nil {
 		panic(err)
 	}
 
-	<-keepaliveCh
+	for event := range eventCh {
+		fmt.Println(event)
+	}
+
+	// _, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
+	// 	candleCollection.AddTrade(types.BINANCE, trade.Symbol, trade)
+
+	// 	// cache := candleCollection.GetCache(trade.Symbol, types.M1)
+
+	// 	// signal, err := path.HasSignal(candleCollection, trade.Symbol)
+	// 	// if err != nil {
+	// 	// 	fmt.Println(err)
+	// 	// 	return
+	// 	// }
+
+	// 	// fmt.Println(trade.Symbol.String(), cache.GetCurrentRate(), signal)
+
+	// 	bot.TradeCh <- trade
+	// }, func(err error) {
+	// 	fmt.Println(err)
+	// })
+	// if err != nil {
+	// 	panic(err)
+	// }
 }

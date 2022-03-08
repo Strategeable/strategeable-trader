@@ -32,6 +32,10 @@ func (b *binanceExchangeImpl) Init() error {
 	return nil
 }
 
+func (b *binanceExchangeImpl) GetExchange() types.Exchange {
+	return types.BINANCE
+}
+
 func (b *binanceExchangeImpl) GetAvailableTimeFrames() []types.TimeFrame {
 	return make([]types.TimeFrame, 0)
 }
@@ -88,8 +92,8 @@ func (b *binanceExchangeImpl) GetCandles(symbol types.Symbol, timeFrame types.Ti
 	return klinesToCandles(klines), nil
 }
 
-func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFrame types.TimeFrame, from time.Time, to time.Time, limit int) ([]*types.Candle, error) {
-	klines, err := b.klinesService.Interval(b.FormatTimeFrame(timeFrame)).Limit(limit).Symbol(b.FormatSymbol(symbol)).StartTime(from.Unix()).EndTime(to.Unix()).Do(context.Background())
+func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFrame types.TimeFrame, from time.Time, to time.Time) ([]*types.Candle, error) {
+	klines, err := b.klinesService.Interval(b.FormatTimeFrame(timeFrame)).Symbol(b.FormatSymbol(symbol)).StartTime(from.Unix()).EndTime(to.Unix()).Do(context.Background())
 	if err != nil {
 		return nil, err
 	}

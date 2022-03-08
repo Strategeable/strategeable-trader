@@ -72,6 +72,28 @@ func NewPosition(symbol Symbol, state PositionState, openTime time.Time, closeTi
 	}
 }
 
+func (p *Position) ChangePercentage(rate float64) float64 {
+	if len(p.orders) == 0 {
+		return 0
+	}
+
+	entryRate := p.AverageEntryRate()
+	exitRate := p.AverageExitRate(rate)
+
+	return (exitRate - entryRate) / entryRate * 100
+}
+
+func (p *Position) ChangeAmount(rate float64) float64 {
+	if len(p.orders) == 0 {
+		return 0
+	}
+
+	entryQuoteSize := p.QuoteCost()
+	exitQuoteSize := p.QuoteValue(rate)
+
+	return exitQuoteSize - entryQuoteSize
+}
+
 func (p *Position) AddOrder(order *Order) {
 	p.orders = append(p.orders, order)
 }
@@ -142,13 +164,21 @@ func (p *Position) QuoteValue(rate float64) float64 {
 	return product
 }
 
-func (p *Position) AverageQuoteRate(rate float64) float64 {
+func (p *Position) AverageEntryRate() float64 {
+	return p.averageRate(0, BUY)
+}
+
+func (p *Position) AverageExitRate(rate float64) float64 {
+	return p.averageRate(rate, SELL)
+}
+
+func (p *Position) averageRate(rate float64, side OrderSide) float64 {
 	total := p.BaseSize()
 
 	product := float64(0)
 
 	for _, order := range p.orders {
-		if order.Side == SELL {
+		if order.Side == side {
 			product += order.QuoteValue()
 			total -= order.FilledSize()
 		}

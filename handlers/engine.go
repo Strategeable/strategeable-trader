@@ -3,6 +3,7 @@ package handlers
 import (
 	"cex-bot/strategy"
 	"cex-bot/types"
+	"fmt"
 )
 
 type Engine struct {
@@ -32,6 +33,7 @@ func (e *Engine) Start() error {
 			return nil
 		case trade := <-e.MarketDataProvider.GetTradeCh():
 			e.SignalHandler.handleTrigger(trade)
+			fmt.Println(trade.Time)
 		}
 	}
 }
