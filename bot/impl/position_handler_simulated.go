@@ -70,7 +70,8 @@ func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float6
 	s.PositionsLock.Lock()
 	defer s.PositionsLock.Unlock()
 
-	if s.Positions[symbol.String()] != nil {
+	existingPosition := s.Positions[symbol.String()]
+	if existingPosition != nil && !existingPosition.IsClosed() {
 		return nil, errors.New("duplicate position")
 	}
 

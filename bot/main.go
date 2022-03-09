@@ -94,12 +94,13 @@ func main() {
 		BuyPaths:    []*strategy.Path{buyPath},
 		SellPaths:   []*strategy.Path{sellPath},
 		BuyCooldown: 60 * time.Second,
+		BuySize:     100,
 	}
 
-	from, _ := time.Parse("2006-01-02 15:04", "2022-03-08 22:00")
-	to, _ := time.Parse("2006-01-02 15:04", "2022-03-08 22:30")
+	from, _ := time.Parse("2006-01-02 15:04", "2022-03-06 22:00")
+	to, _ := time.Parse("2006-01-02 15:04", "2022-03-09 15:30")
 
-	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, symbols)
+	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, symbols, strategy.GetTimeFrames())
 
 	positionHandler := impl.NewSimulatedPositionHandler(1000, make([]*types.Position, 0))
 
@@ -108,14 +109,26 @@ func main() {
 
 	engine := handlers.NewEngine(strategy, marketDataProvider, positionHandler)
 
-	err = engine.Start()
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		err = engine.Start()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	for event := range eventCh {
-		fmt.Println(event)
+		switch event.Type {
+		case types.POSITION_CREATED:
+			fmt.Println("Opened position")
+		case types.POSITION_CLOSED:
+			fmt.Println("Closed position")
+		case types.TOTAL_BALANCE_CHANGED:
+			fmt.Printf("New balance: %.2f\n", event.Data.(float64))
+		}
 	}
+
+	keepaliveCh := make(chan string)
+	<-keepaliveCh
 
 	// _, err = exchangeImpl.WatchTrades(symbols, func(trade types.Trade) {
 	// 	candleCollection.AddTrade(types.BINANCE, trade.Symbol, trade)

@@ -4,6 +4,8 @@ type MarketDataProvider interface {
 	Init() error
 	GetCandleCollection() *CandleCollection
 	GetTradeCh() chan Trade
+	RequiresAcks() bool
+	GetAckCh() chan string
 }
 
 type BaseMarketDataProvider struct {

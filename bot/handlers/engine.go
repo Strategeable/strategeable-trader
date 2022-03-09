@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -34,7 +32,10 @@ func (e *Engine) Start() error {
 			return nil
 		case trade := <-e.MarketDataProvider.GetTradeCh():
 			e.SignalHandler.handleTrigger(trade)
-			fmt.Println(trade.Time)
+
+			if e.MarketDataProvider.RequiresAcks() {
+				e.MarketDataProvider.GetAckCh() <- trade.TradeId
+			}
 		}
 	}
 }
