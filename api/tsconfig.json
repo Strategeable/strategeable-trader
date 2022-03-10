@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "target": "es6",
+        "noImplicitAny": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist",
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "node_modules/*"
+            ]
+        },
+        "typeRoots": ["./typings", "./node_modules/@types"]
+    },
+    "include": [
+        "**/*"
+    ],
+    "exclude": [
+      "./node_modules/**/*"
+    ],
+    "typeRoots": ["./typings", "./node_modules/@types"]
+  }
+  
