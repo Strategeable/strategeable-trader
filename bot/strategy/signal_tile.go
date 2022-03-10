@@ -44,6 +44,10 @@ func (s *SignalTile) HasSignal(candleCollection *types.CandleCollection, symbol 
 		return false, err
 	}
 
+	if len(candlesA) == 0 || len(candlesB) == 0 {
+		return false, errors.New("no candles")
+	}
+
 	valuesA := s.IndicatorA.Indicator.Calculate(candlesA, position)
 	valuesB := s.IndicatorB.Indicator.Calculate(candlesB, position)
 
@@ -123,4 +127,17 @@ func getCandles(candleCollection *types.CandleCollection, exchange types.Exchang
 		finalCandles = finalCandles[:len(finalCandles)-1]
 	}
 	return finalCandles, nil
+}
+
+func (s *SignalTile) GetTimeFrames() []types.TimeFrame {
+	timeFrameMap := make(map[types.TimeFrame]bool)
+
+	timeFrameMap[s.IndicatorA.TimeFrame] = true
+	timeFrameMap[s.IndicatorB.TimeFrame] = true
+
+	timeFrames := make([]types.TimeFrame, 0)
+	for timeFrame := range timeFrameMap {
+		timeFrames = append(timeFrames, timeFrame)
+	}
+	return timeFrames
 }

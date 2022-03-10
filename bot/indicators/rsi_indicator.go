@@ -1,26 +1,21 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/helpers"
 	"github.com/Stratomicl/Trader/math"
 	"github.com/Stratomicl/Trader/types"
 )
 
-type RsiIndicatorConfig struct {
-	CandlePosition helpers.CandlePosition
-	Period         int
-}
-
 type RsiIndicator struct {
-	Config RsiIndicatorConfig
+	Source types.Indicator
+	Period int
 }
 
-func (r *RsiIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
-	if len(input) <= r.Config.Period {
+func (r *RsiIndicator) Calculate(input []*types.Candle, position *types.Position) []float64 {
+	if len(input) <= r.Period {
 		return make([]float64, 0)
 	}
 
-	values := helpers.CandlesToValues(input, r.Config.CandlePosition)
+	values := r.Source.Calculate(input, position)
 
-	return math.Rsi(values, r.Config.Period)
+	return math.Rsi(values, r.Period)
 }

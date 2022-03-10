@@ -3,7 +3,7 @@ package strategy
 import "github.com/Stratomicl/Trader/types"
 
 type AnySignalTile struct {
-	SignalTiles []SignalTile
+	SignalTiles []*SignalTile
 	Amount      int
 }
 
@@ -29,4 +29,20 @@ func (a *AnySignalTile) HasSignal(candleCollection *types.CandleCollection, symb
 	}
 
 	return false, err
+}
+
+func (a *AnySignalTile) GetTimeFrames() []types.TimeFrame {
+	timeFrameMap := make(map[types.TimeFrame]bool)
+
+	for _, tile := range a.SignalTiles {
+		for _, timeFrame := range tile.GetTimeFrames() {
+			timeFrameMap[timeFrame] = true
+		}
+	}
+
+	timeFrames := make([]types.TimeFrame, 0)
+	for timeFrame := range timeFrameMap {
+		timeFrames = append(timeFrames, timeFrame)
+	}
+	return timeFrames
 }
