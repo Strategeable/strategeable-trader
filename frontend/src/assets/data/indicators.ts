@@ -10,6 +10,7 @@ const indicators: Indicator[] = [
     hasTimeframe: true,
     fields: [
       {
+        key: 'source',
         name: 'Source',
         required: true,
         type: 'signal',
@@ -18,6 +19,7 @@ const indicators: Indicator[] = [
         default: 'CANDLE_CLOSE'
       },
       {
+        key: 'period',
         name: 'Period',
         required: true,
         type: 'number',
@@ -37,6 +39,7 @@ const indicators: Indicator[] = [
     hasTimeframe: true,
     fields: [
       {
+        key: 'source',
         name: 'Source',
         required: true,
         type: 'signal',
@@ -45,6 +48,7 @@ const indicators: Indicator[] = [
         default: 'CANDLE_CLOSE'
       },
       {
+        key: 'period',
         name: 'Period',
         required: true,
         type: 'number',
@@ -92,6 +96,7 @@ const indicators: Indicator[] = [
     hasTimeframe: false,
     fields: [
       {
+        key: 'number',
         name: 'Number',
         advanced: false,
         default: '0',

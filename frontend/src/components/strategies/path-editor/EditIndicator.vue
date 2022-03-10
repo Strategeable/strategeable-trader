@@ -15,7 +15,7 @@
         class="tf"
         v-for="tf in timeframes"
         :key="tf"
-        :class="{ active: finalIndicator.timeframe === tf }"
+        :class="{ active: finalIndicator.timeFrame === tf }"
         @click="() => selectTimeframe(tf)"
       >
         {{ tf }}
@@ -23,39 +23,39 @@
     </div>
     <div
       class="source input"
-      v-if="source"
+      v-if="source && ready"
     >
       <p>Source</p>
       <v-select
         :options="options"
         label="name"
         :reduce="x => x.key"
-        v-model="finalIndicator.sourceKey"
+        v-model="finalIndicator.data.source"
       />
     </div>
     <div
       class="input"
-      v-for="field in finalIndicator.fields.filter(f => f.name !== 'Source')"
-      :key="field.name"
+      v-for="key in Object.keys(indicator.data).filter(f => f !== 'source')"
+      :key="key"
     >
-      <p>{{ field.name }}</p>
+      <p>{{ key }}</p>
       <input
-        v-if="field.type === 'number'"
-        :type="field.type"
-        :max="field.max"
-        :min="field.min"
-        :placeholder="field.default"
-        v-model="field.value"
+        v-if="getFieldValues(key, 'type') === 'number'"
+        type="number"
+        :max="getFieldValues(key, 'max')"
+        :min="getFieldValues(key, 'min')"
+        :placeholder="getFieldValues(key, 'default')"
+        v-model="indicator.data[key]"
       >
       <input
-        v-if="field.type === 'text'"
-        :type="field.type"
-        v-model="field.value"
+        v-if="getFieldValues(key, 'type') === 'text'"
+        :type="getFieldValues(key, 'type')"
+        v-model="indicator.data[key]"
       >
       <input
-        v-if="field.type === 'checkbox'"
-        :type="field.type"
-        v-model="field.value"
+        v-if="getFieldValues(key, 'type') === 'checkbox'"
+        :type="getFieldValues(key, 'type')"
+        v-model="indicator.data[key]"
       >
     </div>
     <div
@@ -70,7 +70,7 @@
     </div>
     <div
       class="input"
-      v-if="finalIndicator.timeframe"
+      v-if="finalIndicator.timeFrame"
     >
       <p>Candles back</p>
       <input type="number"
@@ -84,7 +84,7 @@
 <script lang="ts">
 import indicators from '@/assets/data/indicators'
 import { IndicatorSettings, TimeFrame, timeframes } from '@/types/Path'
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, onMounted, PropType, ref } from 'vue'
 
 export default defineComponent({
   emits: ['delete'],
@@ -96,35 +96,39 @@ export default defineComponent({
   },
   setup (props) {
     const actualIndicator = indicators.find(indicator => indicator.key === props.indicator.indicatorKey)
-    const source = props.indicator.fields.find(f => f.name === 'Source')
-    const options: { key: string, name: string }[] = []
+    const options = ref<any[]>([])
+    const ready = ref<boolean>(false)
 
-    if (source) {
-      for (const src of source.options) {
-        options.push({ key: src, name: indicators.find(indicator => indicator.key === src)?.name || src })
-      }
-      if (source.options.length === 0) {
-        for (const indicator of indicators) {
-          if (indicator.hasTimeframe) {
-            options.push({ key: indicator.key, name: indicator.name })
+    onMounted(() => {
+      const source = props.indicator.data.source
+      if (source && actualIndicator) {
+        const sourceOptions: any = actualIndicator.fields.find(f => f.key === 'source')
+
+        for (const src of sourceOptions.options) {
+          options.value.push({ key: src, name: indicators.find(indicator => indicator.key === src)?.name || src })
+        }
+        if (sourceOptions.options.length === 0) {
+          for (const indicator of indicators) {
+            if (indicator.hasTimeframe) {
+              options.value.push({ key: indicator.key, name: indicator.name })
+            }
           }
         }
       }
-      if (source.default) {
-        // eslint-disable-next-line vue/no-mutating-props
-        props.indicator.sourceKey = source.default
-      }
-    }
 
-    for (const field of props.indicator.fields) {
-      if (field.default) {
-        field.value = field.default
-      }
-    }
+      ready.value = true
+    })
 
     function selectTimeframe (tf: TimeFrame) {
       // eslint-disable-next-line vue/no-mutating-props
-      props.indicator.timeframe = tf
+      props.indicator.timeFrame = tf
+    }
+
+    function getFieldValues (key: string, item: string): any {
+      if (!actualIndicator) return ''
+
+      const field: any = actualIndicator.fields.find(f => f.key === key)
+      return field[item]
     }
 
     return {
@@ -132,9 +136,12 @@ export default defineComponent({
       indicatorName: (actualIndicator || { name: 'Name not found' }).name,
       timeframes,
       hasTimeframe: (actualIndicator || { hasTimeframe: false }).hasTimeframe,
-      source,
+      source: props.indicator.data.source,
       options,
-      selectTimeframe
+      actualIndicator,
+      ready,
+      selectTimeframe,
+      getFieldValues
     }
   }
 })

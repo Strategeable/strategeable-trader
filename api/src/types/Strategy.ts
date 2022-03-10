@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb"
+
 export enum TimeFrame {
   m1 = '1m',
   m3 = '3m',
@@ -37,7 +39,7 @@ export enum StepType {
 }
 
 export interface IndicatorSettings {
-  timeFrame?: TimeFrame
+  timeframe?: TimeFrame
   candlesBack: number
   realTime: boolean
   offset: number
@@ -49,7 +51,7 @@ export interface IndicatorSettings {
 export interface SignalTile {
   id: string
   name: string
-  persistence: number
+  persistance: number
   operand?: Operand
   indicatorA?: IndicatorSettings
   indicatorB?: IndicatorSettings
@@ -80,4 +82,13 @@ export interface Path {
   whitelist: string[]
   steps: PathStep[]
   type: 'BUY' | 'SELL'
+}
+
+export default interface Strategy {
+  id?: ObjectId
+  creator: ObjectId
+  name: string
+  symbols: string[]
+  chunks: Chunk[]
+  paths: Path[]
 }
