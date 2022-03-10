@@ -31,30 +31,35 @@ func main() {
 
 	buyPath := &strategy.Path{
 		Tiles: []strategy.Tile{
-			&strategy.SignalTile{
-				IndicatorA: strategy.IndicatorSettings{
-					Indicator: &indicators.RsiIndicator{
-						Config: indicators.RsiIndicatorConfig{
-							CandlePosition: helpers.CLOSE,
-							Period:         14,
+			&strategy.AnySignalTile{
+				SignalTiles: []strategy.SignalTile{
+					{
+						IndicatorA: strategy.IndicatorSettings{
+							Indicator: &indicators.RsiIndicator{
+								Config: indicators.RsiIndicatorConfig{
+									CandlePosition: helpers.CLOSE,
+									Period:         14,
+								},
+							},
+							RealTime:    true,
+							CandlesBack: 0,
+							TimeFrame:   types.M1,
 						},
-					},
-					RealTime:    true,
-					CandlesBack: 0,
-					TimeFrame:   types.M1,
-				},
-				IndicatorB: strategy.IndicatorSettings{
-					Indicator: &indicators.NumberIndicator{
-						Config: indicators.NumberIndicatorConfig{
-							Number: 47,
+						IndicatorB: strategy.IndicatorSettings{
+							Indicator: &indicators.NumberIndicator{
+								Config: indicators.NumberIndicatorConfig{
+									Number: 47,
+								},
+							},
+							RealTime:    true,
+							CandlesBack: 0,
+							TimeFrame:   types.M1,
 						},
+						Operand:     strategy.GREATER_THAN,
+						Persistence: 1,
 					},
-					RealTime:    true,
-					CandlesBack: 0,
-					TimeFrame:   types.M1,
 				},
-				Operand:     strategy.GREATER_THAN,
-				Persistence: 1,
+				Amount: 1,
 			},
 		},
 	}
@@ -119,9 +124,9 @@ func main() {
 	for event := range eventCh {
 		switch event.Type {
 		case types.POSITION_CREATED:
-			fmt.Println("Opened position")
+			fmt.Println(event.Time, "Opened position")
 		case types.POSITION_CLOSED:
-			fmt.Println("Closed position")
+			fmt.Println(event.Time, "Closed position")
 		case types.TOTAL_BALANCE_CHANGED:
 			fmt.Printf("New balance: %.2f\n", event.Data.(float64))
 		}
