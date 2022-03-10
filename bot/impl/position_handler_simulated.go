@@ -52,6 +52,7 @@ func (s *simulatedPositionHandler) ClosePosition(symbol types.Symbol, rate float
 	s.TotalBalance += openPosition.ChangeAmount(rate)
 
 	s.EmitEvent(types.PositionHandlerEvent{
+		Time: time,
 		Type: types.TOTAL_BALANCE_CHANGED,
 		Data: s.TotalBalance,
 	})
@@ -59,6 +60,7 @@ func (s *simulatedPositionHandler) ClosePosition(symbol types.Symbol, rate float
 	openPosition.MarkClosed(time)
 
 	s.EmitEvent(types.PositionHandlerEvent{
+		Time: time,
 		Type: types.POSITION_CLOSED,
 		Data: openPosition,
 	})
@@ -70,7 +72,8 @@ func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float6
 	s.PositionsLock.Lock()
 	defer s.PositionsLock.Unlock()
 
-	if s.Positions[symbol.String()] != nil {
+	existingPosition := s.Positions[symbol.String()]
+	if existingPosition != nil && !existingPosition.IsClosed() {
 		return nil, errors.New("duplicate position")
 	}
 
@@ -100,6 +103,7 @@ func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float6
 	s.Positions[symbol.String()] = position
 
 	s.EmitEvent(types.PositionHandlerEvent{
+		Time: time,
 		Type: types.POSITION_CREATED,
 		Data: position,
 	})

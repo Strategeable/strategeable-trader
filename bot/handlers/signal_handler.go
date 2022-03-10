@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -33,7 +31,6 @@ func (s *SignalHandler) handleTrigger(trade types.Trade) {
 
 		sellSignal, err := s.strategy.HasSellSignal(candleCollection, trade.Symbol, position)
 		if err != nil {
-			fmt.Println(err)
 			return
 		}
 
@@ -53,7 +50,6 @@ func (s *SignalHandler) handleTrigger(trade types.Trade) {
 
 	buySignal, err := s.strategy.HasBuySignal(candleCollection, trade.Symbol)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 

@@ -16,6 +16,10 @@ type Strategy struct {
 	BuySize          float64
 }
 
+func (s *Strategy) GetTimeFrames() []types.TimeFrame {
+	return []types.TimeFrame{types.M1}
+}
+
 func (s *Strategy) GetQuoteAsset() string {
 	return s.Symbols[0].QuoteAsset
 }

@@ -56,7 +56,7 @@ func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Ti
 	}
 
 	if candle == nil {
-		closeTime := time.Unix(0, candleStartTime+CandleDurations[c.timeFrame].Nanoseconds())
+		closeTime := time.Unix(0, candleStartTime+CandleDurations[c.timeFrame].Nanoseconds()-1)
 
 		candle = NewCandle(
 			openTime,

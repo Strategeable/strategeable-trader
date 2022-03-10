@@ -94,12 +94,33 @@ func (b *binanceExchangeImpl) GetCandles(symbol types.Symbol, timeFrame types.Ti
 }
 
 func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFrame types.TimeFrame, from time.Time, to time.Time) ([]*types.Candle, error) {
-	klines, err := b.klinesService.Interval(b.FormatTimeFrame(timeFrame)).Symbol(b.FormatSymbol(symbol)).StartTime(from.Unix()).EndTime(to.Unix()).Do(context.Background())
-	if err != nil {
-		return nil, err
+	candles := make([]*types.Candle, 0)
+
+	batchSize := 1000
+	timeFromNow := from
+
+	for {
+		timeUntil := timeFromNow.Add(time.Duration(batchSize) * types.CandleDurations[timeFrame])
+
+		if timeUntil.After(to) {
+			timeUntil = to
+		}
+
+		klines, err := b.klinesService.Limit(1000).Interval(b.FormatTimeFrame(timeFrame)).Symbol(b.FormatSymbol(symbol)).StartTime(timeFromNow.UnixNano() / 1000000).EndTime(timeUntil.UnixNano() / 1000000).Do(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		candles = append(candles, klinesToCandles(klines)...)
+
+		if timeUntil.Equal(to) {
+			break
+		}
+
+		timeFromNow = timeUntil
 	}
 
-	return klinesToCandles(klines), nil
+	return candles, nil
 }
 
 func (b *binanceExchangeImpl) GetTicker(symbol types.Symbol) (types.Ticker, error) {

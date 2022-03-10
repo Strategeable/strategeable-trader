@@ -8,6 +8,7 @@ import (
 type PositionHandlerEventType int
 
 type PositionHandlerEvent struct {
+	Time time.Time
 	Type PositionHandlerEventType
 	Data interface{}
 }
