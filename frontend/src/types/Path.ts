@@ -37,7 +37,7 @@ export enum StepType {
 }
 
 export interface IndicatorSettings {
-  timeframe?: TimeFrame
+  timeFrame?: TimeFrame
   candlesBack: number
   realTime: boolean
   offset: number
@@ -49,7 +49,7 @@ export interface IndicatorSettings {
 export interface SignalTile {
   id: string
   name: string
-  persistance: number
+  persistence: number
   operand?: Operand
   indicatorA?: IndicatorSettings
   indicatorB?: IndicatorSettings

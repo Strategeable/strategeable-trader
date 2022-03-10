@@ -40,7 +40,7 @@ export default defineComponent({
   emits: ['delete'],
   setup (props) {
     function addSignal () {
-      props.tiles.signals.push({ id: v4(), name: '', persistance: 1 })
+      props.tiles.signals.push({ id: v4(), name: '', persistence: 1 })
     }
 
     function deleteSignal (id: string) {

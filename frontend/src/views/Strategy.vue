@@ -1,8 +1,9 @@
 <template>
   <div class="strategy">
-    <input type="file"
-      @change="handleUploadStrategy"
-    >
+    <div v-if="emptyStrategy" class="upload">
+      <p>Import strategy <span>.json</span> file</p>
+      <input type="file" @change="handleUploadStrategy">
+    </div>
     <div class="general-settings section">
       <div class="input">
         <p>Name</p>
@@ -129,6 +130,13 @@ export default defineComponent({
         paths: paths.value
       }
       return strat
+    })
+    const emptyStrategy = computed(() => {
+      if (paths.value.some(p => p.steps.length > 0)) return false
+      if (chunks.value.length > 0) return false
+      if (symbols.value.length > 0) return false
+      if (name.value.length > 0) return false
+      return true
     })
 
     let timeout: number
@@ -264,6 +272,7 @@ export default defineComponent({
       editingChunk,
       name,
       symbols,
+      emptyStrategy,
       newPath,
       newChunk,
       deletePath,
@@ -372,6 +381,16 @@ export default defineComponent({
         background-color: var(--primary-lighten);
       }
     }
+  }
+}
+
+.upload {
+  padding: 1rem;
+  background-color: var(--background-darken);
+  margin-bottom: 1rem;
+  p {
+    margin-bottom: 1rem;
+    font-weight: bold;
   }
 }
 </style>

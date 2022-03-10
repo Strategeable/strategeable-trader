@@ -15,7 +15,7 @@
         class="tf"
         v-for="tf in timeframes"
         :key="tf"
-        :class="{ active: finalIndicator.timeframe === tf }"
+        :class="{ active: finalIndicator.timeFrame === tf }"
         @click="() => selectTimeframe(tf)"
       >
         {{ tf }}
@@ -70,7 +70,7 @@
     </div>
     <div
       class="input"
-      v-if="finalIndicator.timeframe"
+      v-if="finalIndicator.timeFrame"
     >
       <p>Candles back</p>
       <input type="number"
@@ -121,7 +121,7 @@ export default defineComponent({
 
     function selectTimeframe (tf: TimeFrame) {
       // eslint-disable-next-line vue/no-mutating-props
-      props.indicator.timeframe = tf
+      props.indicator.timeFrame = tf
     }
 
     function getFieldValues (key: string, item: string): any {

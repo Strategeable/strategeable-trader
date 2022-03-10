@@ -50,6 +50,7 @@
         </button>
         <button
           @click="addStep(getStepType('CHUNK_ID'))"
+          v-if="chunks.length > 0"
         >
           Add chunk
         </button>
@@ -98,7 +99,7 @@ export default defineComponent({
       const p = props.path || props.chunk
       if (!p) return
 
-      const signalTile: SignalTile = { id: v4(), name: '', operand: Operand.GREATER_THAN, persistance: 1 }
+      const signalTile: SignalTile = { id: v4(), name: '', operand: Operand.GREATER_THAN, persistence: 1 }
       const anySignal: AnySignal = { signals: [], amount: 1 }
 
       switch (type) {

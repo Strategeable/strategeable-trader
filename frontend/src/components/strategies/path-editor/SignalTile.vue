@@ -23,8 +23,8 @@
             <input type="text" v-model="finalTile.name">
           </div>
           <div class="input">
-            <p>PERSISTANCE</p>
-            <input type="number" v-model="finalTile.persistance">
+            <p>PERSISTENCE</p>
+            <input type="number" v-model="finalTile.persistence">
           </div>
         </div>
         <div class="content">
@@ -120,7 +120,7 @@ export default defineComponent({
       }
 
       const settings: IndicatorSettings = {
-        timeframe: foundIndicator.hasTimeframe ? TimeFrame.h1 : undefined,
+        timeFrame: foundIndicator.hasTimeframe ? TimeFrame.h1 : undefined,
         candlesBack: 0,
         realTime: false,
         offset: 0,
