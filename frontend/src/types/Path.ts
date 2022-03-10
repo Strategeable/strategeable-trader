@@ -1,5 +1,3 @@
-import { IndicatorField } from './Indicator'
-
 export enum TimeFrame {
   m1 = '1m',
   m3 = '3m',
@@ -34,7 +32,7 @@ export enum Operand {
 
 export enum StepType {
   SIGNAL_TILE = 'SIGNAL_TILE',
-  MULTI_SIGNAL = 'MULTI_SIGNAL',
+  ANY_SIGNAL_TILE = 'ANY_SIGNAL_TILE',
   CHUNK_ID = 'CHUNK_ID'
 }
 
@@ -44,8 +42,7 @@ export interface IndicatorSettings {
   realTime: boolean
   offset: number
   indicatorKey: string
-  sourceKey: string
-  fields: IndicatorField[]
+  data: Record<string, any>
   symbol?: string
 }
 
@@ -68,9 +65,7 @@ type ChunkId = string
 export interface PathStep {
   id: string
   type: StepType
-  signalTile?: SignalTile
-  multipleSignalTiles?: AnySignal
-  chunkId?: ChunkId
+  data: SignalTile | AnySignal | ChunkId
 }
 
 export interface Chunk {

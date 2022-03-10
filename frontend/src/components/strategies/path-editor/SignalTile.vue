@@ -35,8 +35,8 @@
             />
             <edit-indicator
               v-if="finalTile.indicatorA"
-              :indicator="finalTile.indicatorA"
-              @delete="() => finalTile.indicatorA = undefined"
+              :indicator="tile.indicatorA"
+              @delete="() => tile.indicatorA = undefined"
             />
           </div>
           <div class="middle">
@@ -61,9 +61,9 @@
               @select="key => setIndicator('B', key)"
             />
             <edit-indicator
-              v-if="finalTile.indicatorB"
-              :indicator="finalTile.indicatorB"
-              @delete="() => finalTile.indicatorB = undefined"
+              v-if="tile.indicatorB"
+              :indicator="tile.indicatorB"
+              @delete="() => tile.indicatorB = undefined"
             />
           </div>
         </div>
@@ -113,14 +113,19 @@ export default defineComponent({
 
     function setIndicator (indicator: string, key: string) {
       const foundIndicator: Indicator = JSON.parse(JSON.stringify(indicators.find(i => i.key === key)))
+      const data: Record<string, any> = {}
+
+      for (const field of foundIndicator.fields) {
+        data[field.key] = field.default
+      }
+
       const settings: IndicatorSettings = {
         timeframe: foundIndicator.hasTimeframe ? TimeFrame.h1 : undefined,
         candlesBack: 0,
         realTime: false,
         offset: 0,
         indicatorKey: key,
-        fields: foundIndicator.fields,
-        sourceKey: ''
+        data
       }
       if (indicator === 'A') {
         props.tile.indicatorA = settings

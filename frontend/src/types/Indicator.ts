@@ -1,5 +1,6 @@
 export interface IndicatorField {
   name: string
+  key: string
   type: 'text' | 'number' | 'radio' | 'checkbox' | 'select' | 'signal'
   required: boolean
   advanced: boolean

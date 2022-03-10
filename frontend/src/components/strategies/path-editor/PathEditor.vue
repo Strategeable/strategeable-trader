@@ -16,17 +16,17 @@
         >
           <signal-tile-comp
             v-if="step.type === 'SIGNAL_TILE'"
-            :tile="step.signalTile"
+            :tile="step.data"
             @delete="deleteStep(step.id)"
           />
           <any-signal-tile-comp
-            v-if="step.type === 'MULTI_SIGNAL'"
-            :tiles="step.multipleSignalTiles"
+            v-if="step.type === 'ANY_SIGNAL_TILE'"
+            :tiles="step.data"
             @delete="deleteStep(step.id)"
           />
           <chunk-tile
             v-if="step.type === 'CHUNK_ID'"
-            :name="getChunkName(step.chunkId || '')"
+            :name="getChunkName(typeof step.data === 'string' ? step.data || '' : '')"
             @delete="deleteStep(step.id)"
           />
           <div class="next" v-if="finalPath && i != finalPath.steps.length - 1">
@@ -44,7 +44,7 @@
           Add signal
         </button>
         <button
-          @click="addStep(getStepType('MULTI_SIGNAL'))"
+          @click="addStep(getStepType('ANY_SIGNAL_TILE'))"
         >
           Add ANY group
         </button>
@@ -99,14 +99,14 @@ export default defineComponent({
       if (!p) return
 
       const signalTile: SignalTile = { id: v4(), name: '', operand: Operand.GREATER_THAN, persistance: 1 }
-      const multiSignal: AnySignal = { signals: [], amount: 1 }
+      const anySignal: AnySignal = { signals: [], amount: 1 }
 
       switch (type) {
         case StepType.SIGNAL_TILE:
-          p.steps.push({ id: v4(), type: StepType.SIGNAL_TILE, signalTile: signalTile })
+          p.steps.push({ id: v4(), type: StepType.SIGNAL_TILE, data: signalTile })
           break
-        case StepType.MULTI_SIGNAL:
-          p.steps.push({ id: v4(), type: StepType.MULTI_SIGNAL, multipleSignalTiles: multiSignal })
+        case StepType.ANY_SIGNAL_TILE:
+          p.steps.push({ id: v4(), type: StepType.ANY_SIGNAL_TILE, data: anySignal })
           break
         case StepType.CHUNK_ID:
           selectNewChunk.value = true
@@ -117,7 +117,7 @@ export default defineComponent({
       const p = props.path || props.chunk
       if (!p) return
 
-      p.steps.push({ id: v4(), type: StepType.CHUNK_ID, chunkId: id })
+      p.steps.push({ id: v4(), type: StepType.CHUNK_ID, data: id })
       selectNewChunk.value = false
     }
 
@@ -140,7 +140,7 @@ export default defineComponent({
 
     function getStepType (type: string): StepType {
       if (type === StepType.SIGNAL_TILE) return StepType.SIGNAL_TILE
-      if (type === StepType.MULTI_SIGNAL) return StepType.MULTI_SIGNAL
+      if (type === StepType.ANY_SIGNAL_TILE) return StepType.ANY_SIGNAL_TILE
       return StepType.CHUNK_ID
     }
 

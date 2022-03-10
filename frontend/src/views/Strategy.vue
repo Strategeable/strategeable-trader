@@ -1,5 +1,8 @@
 <template>
   <div class="strategy">
+    <input type="file"
+      @change="handleUploadStrategy"
+    >
     <div class="general-settings section">
       <div class="input">
         <p>Name</p>
@@ -98,6 +101,7 @@ import exportFromJSON from 'export-from-json'
 
 import { Chunk, Path } from '@/types/Path'
 import { Strategy } from '@/types/Strategy'
+import axios from '@/helpers/axios'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
 import ControlBar from '@/components/strategies/path-editor/ControlBar.vue'
@@ -118,8 +122,9 @@ export default defineComponent({
     const editHistory: string[] = []
     const strategy = computed(() => {
       const strat: Strategy = {
+        version: '0.0.1',
         name: name.value,
-        symbols: [],
+        symbols: symbols.value,
         chunks: chunks.value,
         paths: paths.value
       }
@@ -181,7 +186,7 @@ export default defineComponent({
       for (const path of paths.value) {
         for (const step of path.steps) {
           if (step.type === 'CHUNK_ID') {
-            if (step.chunkId === id) isUsed = true
+            if (step.data === id) isUsed = true
           }
         }
       }
@@ -214,11 +219,42 @@ export default defineComponent({
       // todo
     }
 
+    function handleUploadStrategy (e: any) {
+      const reader = new FileReader()
+      reader.onload = (data: any) => {
+        const strat = JSON.parse(data.target.result)
+        if (typeof strat === 'object' && strat.name && strat.symbols && strat.chunks && strat.paths && strat.version) {
+          paths.value = strat.paths
+          chunks.value = strat.chunks
+          symbols.value = strat.symbols
+          name.value = strat.name
+
+          if (paths.value.find(p => p.type === 'BUY')) {
+            openEditor.value.BUY = paths.value.find(p => p.type === 'BUY')?.id
+          }
+
+          if (paths.value.find(p => p.type === 'SELL')) {
+            openEditor.value.SELL = paths.value.find(p => p.type === 'SELL')?.id
+          }
+        }
+      }
+      reader.readAsText(e.target.files[0])
+    }
+
     function exportStrategy () {
       const fileName = `${name.value} - Strategy`
       const exportType = exportFromJSON.types.json
 
       exportFromJSON({ data: strategy.value, fileName, exportType })
+    }
+
+    async function backtest () {
+      try {
+        const result = await axios.post('/backtest', { strategy: strategy.value })
+        console.log(result)
+      } catch (err) {
+        console.error(err)
+      }
     }
 
     return {
@@ -239,7 +275,9 @@ export default defineComponent({
       undo,
       redo,
       save,
-      exportStrategy
+      exportStrategy,
+      backtest,
+      handleUploadStrategy
     }
   }
 })
