@@ -76,6 +76,10 @@
         </div>
       </div>
     </div>
+    <div class="backtests section">
+      <h2>Backtests</h2>
+      <button @click="backtest">Backtest</button>
+    </div>
     <div
       class="editor-overlay"
       v-if="!!editingChunk"
@@ -102,6 +106,7 @@ import exportFromJSON from 'export-from-json'
 
 import { Chunk, Path } from '@/types/Path'
 import { Strategy } from '@/types/Strategy'
+import { BacktestRequestParameters } from '@/types/Backtest'
 import axios from '@/helpers/axios'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
@@ -297,7 +302,18 @@ export default defineComponent({
 
     async function backtest () {
       try {
-        const result = await axios.post('/backtest', { strategy: strategy.value })
+        const stratId = strategyId.value
+        if (!stratId) {
+          alert('Save strategy first')
+          return
+        }
+        const data: BacktestRequestParameters = {
+          strategyId: stratId,
+          fromDate: new Date('2022-03-05'),
+          toDate: new Date('2022-03-10'),
+          startBalance: 1000
+        }
+        const result = await axios.post('/backtest', data)
         console.log(result)
       } catch (err) {
         console.error(err)
