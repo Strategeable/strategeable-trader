@@ -68,8 +68,8 @@ func (b *Backtest) performBacktest(backtest *strategy.Backtest) {
 		panic(err)
 	}
 
-	from := backtest.DateFrom
-	to := backtest.DateTo
+	from := backtest.FromDate.Time()
+	to := backtest.ToDate.Time()
 
 	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, strategy.Symbols, strategy.GetTimeFrames())
 
