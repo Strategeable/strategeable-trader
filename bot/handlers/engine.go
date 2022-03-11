@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -26,7 +29,11 @@ func (e *Engine) Start() error {
 		return err
 	}
 
+	start := time.Now()
+
 	for {
+		var done bool
+
 		select {
 		case <-e.stopCh:
 			return nil
@@ -36,8 +43,20 @@ func (e *Engine) Start() error {
 			if e.MarketDataProvider.RequiresAcks() {
 				e.MarketDataProvider.GetAckCh() <- trade.TradeId
 			}
+		case _, ok := <-e.MarketDataProvider.GetCloseCh():
+			if !ok {
+				done = true
+			}
+		}
+
+		if done {
+			break
 		}
 	}
+
+	fmt.Printf("backtesting took %s\n", time.Since(start))
+
+	return nil
 }
 
 func (e *Engine) Stop() {

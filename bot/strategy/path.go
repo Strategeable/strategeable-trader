@@ -1,8 +1,6 @@
 package strategy
 
 import (
-	"fmt"
-
 	"github.com/Stratomicl/Trader/types"
 )
 
@@ -14,7 +12,6 @@ func (p *Path) HasSignal(candleCollection *types.CandleCollection, symbol types.
 	for _, tile := range p.Tiles {
 		signal, err := tile.HasSignal(candleCollection, symbol, exchange, position)
 		if err != nil {
-			fmt.Println(err, symbol.String())
 			return false, err
 		}
 		if !signal {
