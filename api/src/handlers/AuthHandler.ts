@@ -12,6 +12,8 @@ export async function handleLogin(req: Request, res: Response) {
 
   try {
     const user = await getUserByUsername(username);
+    if(!user) return res.sendStatus(401);
+
     const valid = await bcrypt.compare(password, user.password);
     if(!valid) return res.sendStatus(401);
 

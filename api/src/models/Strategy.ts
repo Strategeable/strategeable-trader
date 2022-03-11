@@ -6,6 +6,14 @@ const schema: Schema<Strategy> = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true
   },
+  createdAt: {
+    type: Date,
+    required: true
+  },
+  lastEdited: {
+    type: Date,
+    required: true
+  },
   name: {
     type: mongoose.Schema.Types.String,
     required: true

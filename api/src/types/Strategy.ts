@@ -87,6 +87,8 @@ export interface Path {
 export default interface Strategy {
   _id?: ObjectId
   creator: ObjectId
+  createdAt: Date
+  lastEdited: Date
   name: string
   symbols: string[]
   chunks: Chunk[]
