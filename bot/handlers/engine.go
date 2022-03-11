@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -29,8 +26,6 @@ func (e *Engine) Start() error {
 		return err
 	}
 
-	start := time.Now()
-
 	for {
 		var done bool
 
@@ -53,8 +48,6 @@ func (e *Engine) Start() error {
 			break
 		}
 	}
-
-	fmt.Printf("backtesting took %s\n", time.Since(start))
 
 	return nil
 }
