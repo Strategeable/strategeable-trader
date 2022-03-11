@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import Strategy from "../types/Strategy";
 
 const schema: Schema<Strategy> = new Schema({
-  id: mongoose.Schema.Types.ObjectId,
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     required: true
@@ -72,6 +71,15 @@ const schema: Schema<Strategy> = new Schema({
       }
     }
   ]
+});
+
+schema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+  }
 });
 
 const model = mongoose.model('strategy', schema);

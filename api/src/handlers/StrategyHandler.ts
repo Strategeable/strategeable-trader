@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ObjectId } from "mongodb";
-import { createStrategy, updateStrategy } from "../services/StrategyService";
+import { createStrategy, getStrategies, updateStrategy } from "../services/StrategyService";
 
 export async function handleCreateStrategy(req: Request, res: Response) {
   const { strategy } = req.body;
@@ -26,4 +26,13 @@ export async function handleUpdateStrategy(req: Request, res: Response) {
   }
 
   return res.json(strat);
+}
+
+export async function handleGetStrategiesByUser(req: Request, res: Response) {
+  try {
+    const strategies = await getStrategies();
+    return res.json(strategies);
+  } catch(err) {
+    return res.sendStatus(500);
+  }
 }
