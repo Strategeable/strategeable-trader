@@ -1149,7 +1149,9 @@ func SarExt(inHigh []float64, inLow []float64,
 
 // Sma - Simple Moving Average
 func Sma(inReal []float64, inTimePeriod int) []float64 {
-
+	if len(inReal) < inTimePeriod {
+		return []float64{}
+	}
 	outReal := make([]float64, len(inReal))
 
 	lookbackTotal := inTimePeriod - 1

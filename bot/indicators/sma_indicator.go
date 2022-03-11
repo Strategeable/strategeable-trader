@@ -1,22 +1,17 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/helpers"
 	"github.com/Stratomicl/Trader/math"
 	"github.com/Stratomicl/Trader/types"
 )
 
-type SmaIndicatorConfig struct {
-	CandlePosition helpers.CandlePosition
-	Period         int
-}
-
 type SmaIndicator struct {
-	Config SmaIndicatorConfig
+	Source types.Indicator
+	Period int
 }
 
-func (s *SmaIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
-	values := helpers.CandlesToValues(input, s.Config.CandlePosition)
+func (s *SmaIndicator) Calculate(input []*types.Candle, position *types.Position) []float64 {
+	values := s.Source.Calculate(input, position)
 
-	return math.Sma(values, s.Config.Period)
+	return math.Sma(values, s.Period)
 }

@@ -8,10 +8,10 @@ import (
 type SignalHandler struct {
 	marketDataProvider types.MarketDataProvider
 	positionHandler    types.PositionHandler
-	strategy           strategy.Strategy
+	strategy           *strategy.Strategy
 }
 
-func newSignalHandler(marketDataProvider types.MarketDataProvider, positionHandler types.PositionHandler, strategy strategy.Strategy) *SignalHandler {
+func newSignalHandler(marketDataProvider types.MarketDataProvider, positionHandler types.PositionHandler, strategy *strategy.Strategy) *SignalHandler {
 	return &SignalHandler{
 		positionHandler:    positionHandler,
 		strategy:           strategy,

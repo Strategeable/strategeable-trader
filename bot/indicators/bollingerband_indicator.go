@@ -1,7 +1,6 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/helpers"
 	"github.com/Stratomicl/Trader/math"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -14,26 +13,22 @@ const (
 	LOWER
 )
 
-type BollingerBandIndicatorConfig struct {
-	CandlePosition helpers.CandlePosition
-	Period         int
-	DeviationUp    float64
-	DeviationDown  float64
-	MaType         math.MaType
+type BollingerBandIndicator struct {
+	Source        types.Indicator
+	Period        int
+	DeviationUp   float64
+	DeviationDown float64
+	MaType        math.MaType
 
 	Line ULMLine
 }
 
-type BollingerBandIndicator struct {
-	Config BollingerBandIndicatorConfig
-}
+func (b *BollingerBandIndicator) Calculate(input []*types.Candle, position *types.Position) []float64 {
+	values := b.Source.Calculate(input, position)
 
-func (b *BollingerBandIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
-	values := helpers.CandlesToValues(input, b.Config.CandlePosition)
+	lower, middle, upper := math.BBands(values, b.Period, b.DeviationUp, b.DeviationDown, b.MaType)
 
-	lower, middle, upper := math.BBands(values, b.Config.Period, b.Config.DeviationUp, b.Config.DeviationDown, b.Config.MaType)
-
-	switch b.Config.Line {
+	switch b.Line {
 	case UPPER:
 		return upper
 	case MIDDLE:

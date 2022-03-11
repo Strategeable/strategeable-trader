@@ -12,7 +12,7 @@ type Engine struct {
 	stopCh             chan struct{}
 }
 
-func NewEngine(strategy strategy.Strategy, marketDataProvider types.MarketDataProvider, positionHandler types.PositionHandler) *Engine {
+func NewEngine(strategy *strategy.Strategy, marketDataProvider types.MarketDataProvider, positionHandler types.PositionHandler) *Engine {
 	return &Engine{
 		MarketDataProvider: marketDataProvider,
 		SignalHandler:      newSignalHandler(marketDataProvider, positionHandler, strategy),

@@ -5,14 +5,10 @@ import (
 	"github.com/Stratomicl/Trader/types"
 )
 
-type CandlePositionValueIndicatorConfig struct {
+type CandlePositionValueIndicator struct {
 	CandlePosition helpers.CandlePosition
 }
 
-type CandlePositionValueIndicator struct {
-	Config CandlePositionValueIndicatorConfig
-}
-
-func (c *CandlePositionValueIndicator) Calculate(input []*types.Candle, _ *types.Position) []float64 {
-	return helpers.CandlesToValues(input, c.Config.CandlePosition)
+func (c *CandlePositionValueIndicator) Calculate(input []*types.Candle, position *types.Position) []float64 {
+	return helpers.CandlesToValues(input, c.CandlePosition)
 }

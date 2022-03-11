@@ -1,6 +1,8 @@
 package strategy
 
 import (
+	"fmt"
+
 	"github.com/Stratomicl/Trader/types"
 )
 
@@ -12,6 +14,7 @@ func (p *Path) HasSignal(candleCollection *types.CandleCollection, symbol types.
 	for _, tile := range p.Tiles {
 		signal, err := tile.HasSignal(candleCollection, symbol, exchange, position)
 		if err != nil {
+			fmt.Println(err, symbol.String())
 			return false, err
 		}
 		if !signal {
@@ -20,4 +23,20 @@ func (p *Path) HasSignal(candleCollection *types.CandleCollection, symbol types.
 	}
 
 	return true, nil
+}
+
+func (p *Path) GetTimeFrames() []types.TimeFrame {
+	timeFrameMap := make(map[types.TimeFrame]bool)
+
+	for _, tile := range p.Tiles {
+		for _, timeFrame := range tile.GetTimeFrames() {
+			timeFrameMap[timeFrame] = true
+		}
+	}
+
+	timeFrames := make([]types.TimeFrame, 0)
+	for timeFrame := range timeFrameMap {
+		timeFrames = append(timeFrames, timeFrame)
+	}
+	return timeFrames
 }

@@ -17,7 +17,23 @@ type Strategy struct {
 }
 
 func (s *Strategy) GetTimeFrames() []types.TimeFrame {
-	return []types.TimeFrame{types.M1}
+	timeFrameMap := make(map[types.TimeFrame]bool)
+
+	paths := make([]*Path, 0)
+	paths = append(paths, s.BuyPaths...)
+	paths = append(paths, s.SellPaths...)
+
+	for _, path := range paths {
+		for _, timeFrame := range path.GetTimeFrames() {
+			timeFrameMap[timeFrame] = true
+		}
+	}
+
+	timeFrames := make([]types.TimeFrame, 0)
+	for timeFrame := range timeFrameMap {
+		timeFrames = append(timeFrames, timeFrame)
+	}
+	return timeFrames
 }
 
 func (s *Strategy) GetQuoteAsset() string {

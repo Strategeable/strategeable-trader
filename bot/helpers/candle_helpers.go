@@ -6,14 +6,14 @@ import (
 	"github.com/Stratomicl/Trader/types"
 )
 
-type CandlePosition int
+type CandlePosition string
 
 const (
-	OPEN CandlePosition = iota
-	HIGH
-	LOW
-	CLOSE
-	VOLUME
+	OPEN   CandlePosition = "OPEN"
+	HIGH   CandlePosition = "HIGH"
+	LOW    CandlePosition = "LOW"
+	CLOSE  CandlePosition = "CLOSE"
+	VOLUME CandlePosition = "VOLUME"
 )
 
 func CandlesToValues(candles []*types.Candle, candlePosition CandlePosition) []float64 {
