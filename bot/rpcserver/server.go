@@ -2,9 +2,10 @@ package rpcserver
 
 import (
 	"fmt"
-	"net"
 	"net/http"
-	"net/rpc"
+
+	"github.com/gorilla/rpc/v2"
+	"github.com/gorilla/rpc/v2/json"
 
 	"github.com/Stratomicl/Trader/database"
 	"github.com/Stratomicl/Trader/handlers"
@@ -30,13 +31,11 @@ func (r *rpcServer) Start() error {
 		databaseHandler: r.databaseHandler,
 	}
 
-	rpc.Register(backtest)
-	rpc.HandleHTTP()
-	l, e := net.Listen("tcp", ":1234")
-	if e != nil {
-		return e
-	}
-	go http.Serve(l, nil)
+	s := rpc.NewServer()
+	s.RegisterCodec(json.NewCodec(), "application/json")
+	s.RegisterService(backtest, "Backtest")
+	http.Handle("/rpc", s)
+	http.ListenAndServe("localhost:1234", nil)
 
 	return nil
 }
@@ -45,9 +44,8 @@ type Backtest struct {
 	databaseHandler *database.DatabaseHandler
 }
 
-func (b *Backtest) Backtest(backtestId string, reply *int) error {
-	fmt.Println("hoii")
-	backtest, err := b.databaseHandler.GetBacktestById(backtestId)
+func (b *Backtest) Backtest(r *http.Request, backtestId *string, reply *int) error {
+	backtest, err := b.databaseHandler.GetBacktestById(*backtestId)
 	if err != nil {
 		return err
 	}

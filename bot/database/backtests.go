@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 
 	"github.com/Stratomicl/Trader/strategy"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,8 +20,8 @@ func (d *DatabaseHandler) GetBacktestById(id string) (*strategy.Backtest, error)
 		"_id": objId,
 	})
 
-	if result == nil {
-		return nil, errors.New("backtest not found")
+	if result.Err() != nil {
+		return nil, result.Err()
 	}
 
 	backtest := &strategy.Backtest{}
