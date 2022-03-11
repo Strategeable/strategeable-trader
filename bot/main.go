@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/rpc"
+
 	"github.com/Stratomicl/Trader/database"
 	"github.com/Stratomicl/Trader/rpcserver"
 )
@@ -15,17 +19,17 @@ func main() {
 	server := rpcserver.NewRpcServer(databaseHandler)
 	server.Start()
 
-	// client, err := rpc.DialHTTP("tcp", "localhost:1234")
-	// if err != nil {
-	// 	log.Fatal("dialing:", err)
-	// }
+	client, err := rpc.DialHTTP("tcp", "localhost:1234")
+	if err != nil {
+		log.Fatal("dialing:", err)
+	}
 
-	// args := "622b29ec5d2a54feb2635894"
-	// var reply int
-	// err = client.Call("Backtest.Backtest", args, &reply)
-	// if err != nil {
-	// 	log.Fatal("backtest error:", err)
-	// }
+	args := "622b29ec5d2a54feb2635894"
+	var reply int
+	err = client.Call("Backtest.Backtest", args, &reply)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// for event := range eventCh {
 	// 	switch event.Type {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -321,6 +322,14 @@ func rawIndicatorToIndicator(raw rawIndicator) (types.Indicator, error) {
 
 		if fieldType == "helpers.CandlePosition" {
 			value = helpers.CandlePosition(value.(string))
+		}
+
+		if fieldType == "int" && valueType == "string" {
+			v, err := strconv.Atoi(value.(string))
+			if err != nil {
+				return nil, err
+			}
+			value = v
 		}
 
 		field.Set(reflect.ValueOf(value))

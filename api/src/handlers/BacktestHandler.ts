@@ -36,7 +36,7 @@ export async function handleRunBacktest(req: ServerRequest, res: Response) {
   const client = new JsonRpc(process.env.RPC_ENDPOINT);
 
   try {
-    const response = await client.call('Backtest.Backtest', backtest._id.toString());
+    const response = await client.call('Backtest.Backtest', [ backtest._id.toString() ]);
     console.log(response);
     res.sendStatus(200);
   } catch(err) {
