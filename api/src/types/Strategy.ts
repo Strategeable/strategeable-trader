@@ -51,7 +51,7 @@ export interface IndicatorSettings {
 export interface SignalTile {
   id: string
   name: string
-  persistance: number
+  persistence: number
   operand?: Operand
   indicatorA?: IndicatorSettings
   indicatorB?: IndicatorSettings
@@ -85,7 +85,7 @@ export interface Path {
 }
 
 export default interface Strategy {
-  id?: ObjectId
+  _id?: ObjectId
   creator: ObjectId
   name: string
   symbols: string[]

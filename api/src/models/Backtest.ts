@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import Backtest from "../types/Backtest";
 
 const schema: Schema<Backtest> = new Schema({
-  id: mongoose.Schema.Types.ObjectId,
   startBalance: {
     type: Number,
     required: true
@@ -72,6 +71,15 @@ const schema: Schema<Backtest> = new Schema({
         }
       }
     ]
+  }
+});
+
+schema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
   }
 });
 

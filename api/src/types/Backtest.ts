@@ -14,7 +14,7 @@ interface Trade {
 }
 
 export default interface Backtest {
-  id?: ObjectId
+  _id?: ObjectId
   strategyId: ObjectId
   strategy: string
   startDate: Date
