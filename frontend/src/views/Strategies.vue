@@ -13,16 +13,14 @@
 
 <script lang="ts">
 import StrategiesTable from '@/components/strategies/Table.vue'
-import { defineComponent } from '@vue/runtime-core'
+import { computed, defineComponent } from '@vue/runtime-core'
+import { useStore } from 'vuex'
 
 export default defineComponent({
   components: { StrategiesTable },
   setup () {
-    const strategies = [
-      { id: '1', name: 'Trend Hero', markets: 'BTC, USDT', running: 1, lastEdited: new Date() },
-      { id: '2', name: 'Trend Hero', markets: 'BTC, USDT', running: 1, lastEdited: new Date() },
-      { id: '3', name: 'Trend Hero', markets: 'BTC, USDT', running: 1, lastEdited: new Date() }
-    ]
+    const store = useStore()
+    const strategies = computed(() => store.getters.strategies)
 
     return {
       strategies

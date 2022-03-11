@@ -106,6 +106,8 @@ import axios from '@/helpers/axios'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
 import ControlBar from '@/components/strategies/path-editor/ControlBar.vue'
+import { useStore } from 'vuex'
+import { useRoute } from 'vue-router'
 
 type EditorType = 'BUY' | 'SELL'
 
@@ -114,16 +116,27 @@ export default defineComponent({
     PathEditor, ControlBar
   },
   setup () {
+    const store = useStore()
+    const route = useRoute()
+
     const paths = ref<Path[]>([])
     const openEditor = ref<{ SELL: string | undefined, BUY: string | undefined }>({ SELL: undefined, BUY: undefined })
     const chunks = ref<Chunk[]>([])
     const name = ref<string>('')
     const symbols = ref<string[]>([])
     const editingChunk = ref<Chunk>()
+    const strategyId = ref<string | undefined>()
+    const strategyCreatedAt = ref<Date>(new Date())
+    const strategyLastEdited = ref<Date>(new Date())
+
     const editHistory: string[] = []
+
     const strategy = computed(() => {
       const strat: Strategy = {
+        id: strategyId.value,
         version: '0.0.1',
+        createdAt: new Date(),
+        lastEdited: new Date(),
         name: name.value,
         symbols: symbols.value,
         chunks: chunks.value,
@@ -152,10 +165,39 @@ export default defineComponent({
       deep: true
     })
 
+    async function loadStrategy (id: string) {
+      const strat: Strategy | undefined = await store.dispatch('loadStrategy', id)
+      if (strat) {
+        paths.value = strat.paths
+        chunks.value = strat.chunks
+        symbols.value = strat.symbols
+        name.value = strat.name
+        strategyId.value = strat.id
+        strategyCreatedAt.value = strat.createdAt
+        strategyLastEdited.value = strat.lastEdited
+
+        openFirstPaths()
+      }
+    }
+
     onMounted(() => {
-      newPath('BUY')
-      newPath('SELL')
+      if (route.params.id === 'new') {
+        newPath('BUY')
+        newPath('SELL')
+      } else {
+        loadStrategy(String(route.params.id))
+      }
     })
+
+    function openFirstPaths () {
+      if (paths.value.find(p => p.type === 'BUY')) {
+        openEditor.value.BUY = paths.value.find(p => p.type === 'BUY')?.id
+      }
+
+      if (paths.value.find(p => p.type === 'SELL')) {
+        openEditor.value.SELL = paths.value.find(p => p.type === 'SELL')?.id
+      }
+    }
 
     function newPath (type: EditorType): void {
       const path: Path = { id: v4(), name: undefined, whitelist: [], steps: [], type }
@@ -223,8 +265,11 @@ export default defineComponent({
       // todo
     }
 
-    function save () {
-      // todo
+    async function save () {
+      const success = await store.dispatch('saveStrategy', strategy.value)
+      if (success) {
+        alert('Saved!')
+      }
     }
 
     function handleUploadStrategy (e: any) {
@@ -237,13 +282,7 @@ export default defineComponent({
           symbols.value = strat.symbols
           name.value = strat.name
 
-          if (paths.value.find(p => p.type === 'BUY')) {
-            openEditor.value.BUY = paths.value.find(p => p.type === 'BUY')?.id
-          }
-
-          if (paths.value.find(p => p.type === 'SELL')) {
-            openEditor.value.SELL = paths.value.find(p => p.type === 'SELL')?.id
-          }
+          openFirstPaths()
         }
       }
       reader.readAsText(e.target.files[0])
