@@ -46,6 +46,7 @@ type Backtest struct {
 }
 
 func (b *Backtest) Backtest(backtestId string, reply *int) error {
+	fmt.Println("hoii")
 	backtest, err := b.databaseHandler.GetBacktestById(backtestId)
 	if err != nil {
 		return err

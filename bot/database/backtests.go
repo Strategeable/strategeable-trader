@@ -10,7 +10,7 @@ import (
 )
 
 func (d *DatabaseHandler) GetBacktestById(id string) (*strategy.Backtest, error) {
-	collection := d.database.Collection("backtest")
+	collection := d.database.Collection("backtests")
 
 	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
