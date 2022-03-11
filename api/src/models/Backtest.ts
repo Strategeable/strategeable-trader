@@ -2,29 +2,28 @@ import mongoose, { Schema } from "mongoose";
 import Backtest from "../types/Backtest";
 
 const schema: Schema<Backtest> = new Schema({
+  strategy: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true
+  },
   startBalance: {
     type: Number,
     required: true
   },
   endBalance: {
-    type: Number,
-    required: true
+    type: Number
   },
-  startDate: {
+  fromDate: {
     type: Date,
     required: true
   }  ,
-  endDate: {
+  toDate: {
     type: Date,
     required: true
   },
-  exchange: {
-    type: String,
-    required: true
-  },
-  strategy: {
-    type: String,
-    required: true
+  finished: {
+    type: Boolean,
+    default: false
   },
   trades: {
     type: [

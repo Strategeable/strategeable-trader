@@ -1,7 +1,10 @@
 import { Response } from "express";
 import { ObjectId } from "mongodb";
+import { JsonRpc } from 'node-jsonrpc-client';
+
 import ServerRequest from "../types/ServerRequest";
-import { getBacktestsByStrategyId } from "../services/BacktestService";
+import { createBacktest, getBacktestsByStrategyId } from "../services/BacktestService";
+import { getStrategyById } from "../services/StrategyService";
 
 export async function handleGetBacktestsByStrategyId(req: ServerRequest, res: Response) {
   const { strategyId } = req.params;
@@ -15,7 +18,29 @@ export async function handleGetBacktestsByStrategyId(req: ServerRequest, res: Re
 }
 
 export async function handleRunBacktest(req: ServerRequest, res: Response) {
-  const { strategyId, startBalance, startTimestamp, endTimestamp, symbols } = req.body;
+  const { strategyId, startBalance, fromDate, toDate } = req.body;
+  const strategy = await getStrategyById(strategyId);
+  if(!strategy) return res.sendStatus(400);
 
-  return res.sendStatus(200);
+  const backtest = await createBacktest({
+    strategy: strategy,
+    fromDate,
+    toDate,
+    startBalance: Number(startBalance),
+    trades: [],
+    finished: false
+  });
+
+  if(!backtest) return res.sendStatus(500);
+
+  const client = new JsonRpc(process.env.RPC_ENDPOINT);
+
+  try {
+    const response = await client.call('Backtest.Backtest', backtest._id.toString());
+    console.log(response);
+    res.sendStatus(200);
+  } catch(err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
 }

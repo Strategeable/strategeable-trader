@@ -10,3 +10,13 @@ export async function getBacktestsByStrategyId(id: ObjectId): Promise<Backtest[]
     return null;
   }
 }
+
+export async function createBacktest(backtest: Backtest): Promise<Backtest> {
+  try {
+    const model = new BacktestModel(backtest);
+    return model.save();
+  } catch(err) {
+    console.error(err);
+    return undefined;
+  }
+}

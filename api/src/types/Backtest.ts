@@ -15,12 +15,11 @@ interface Trade {
 
 export default interface Backtest {
   _id?: ObjectId
-  strategyId: ObjectId
-  strategy: string
-  startDate: Date
-  endDate: Date
+  strategy: any
+  fromDate: Date
+  toDate: Date
   startBalance: number
-  endBalance: number
-  exchange: string
+  endBalance?: number
   trades: Trade[]
+  finished: boolean
 }
