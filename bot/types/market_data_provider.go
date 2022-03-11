@@ -6,6 +6,7 @@ type MarketDataProvider interface {
 	GetTradeCh() chan Trade
 	RequiresAcks() bool
 	GetAckCh() chan string
+	GetCloseCh() chan string
 }
 
 type BaseMarketDataProvider struct {

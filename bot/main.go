@@ -1,68 +1,45 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
-	"time"
+	"net/rpc"
 
-	"github.com/Stratomicl/Trader/handlers"
-	"github.com/Stratomicl/Trader/impl"
-	"github.com/Stratomicl/Trader/strategy"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Stratomicl/Trader/database"
+	"github.com/Stratomicl/Trader/rpcserver"
 )
 
 func main() {
-	content, err := ioutil.ReadFile("strategy.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	text := string(content)
-
-	strategy, err := strategy.StrategyFromJson(text)
+	databaseHandler := &database.DatabaseHandler{}
+	err := databaseHandler.Connect()
 	if err != nil {
 		panic(err)
 	}
 
-	var exchangeImpl types.ExchangeImplementation
+	server := rpcserver.NewRpcServer(databaseHandler)
+	server.Start()
 
-	exchangeImpl = impl.NewBinanceExchangeImpl()
-
-	err = exchangeImpl.Init()
+	client, err := rpc.DialHTTP("tcp", "localhost:1234")
 	if err != nil {
-		panic(err)
+		log.Fatal("dialing:", err)
 	}
 
-	from, _ := time.Parse("2006-01-02 15:04", "2022-03-06 22:00")
-	to, _ := time.Parse("2006-01-02 15:04", "2022-03-10 18:30")
-
-	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, strategy.Symbols, strategy.GetTimeFrames())
-
-	positionHandler := impl.NewSimulatedPositionHandler(1000, make([]*types.Position, 0))
-
-	eventCh := make(chan types.PositionHandlerEvent, 5)
-	positionHandler.SubscribeEvents(eventCh)
-
-	engine := handlers.NewEngine(strategy, marketDataProvider, positionHandler)
-
-	go func() {
-		err = engine.Start()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	for event := range eventCh {
-		switch event.Type {
-		case types.POSITION_CREATED:
-			fmt.Println(event.Time, "Opened position", event.Data.(*types.Position).Symbol().String())
-		case types.POSITION_CLOSED:
-			fmt.Println(event.Time, "Closed position", event.Data.(*types.Position).Symbol().String())
-		case types.TOTAL_BALANCE_CHANGED:
-			fmt.Printf("New balance: %.2f\n", event.Data.(float64))
-		}
+	args := "622b29ec5d2a54feb2635894"
+	var reply int
+	err = client.Call("Backtest.Backtest", args, &reply)
+	if err != nil {
+		log.Fatal("backtest error:", err)
 	}
+
+	// for event := range eventCh {
+	// 	switch event.Type {
+	// 	case types.POSITION_CREATED:
+	// 		fmt.Println(event.Time, "Opened position", event.Data.(*types.Position).Symbol().String())
+	// 	case types.POSITION_CLOSED:
+	// 		fmt.Println(event.Time, "Closed position", event.Data.(*types.Position).Symbol().String())
+	// 	case types.TOTAL_BALANCE_CHANGED:
+	// 		fmt.Printf("New balance: %.2f\n", event.Data.(float64))
+	// 	}
+	// }
 
 	keepaliveCh := make(chan string)
 	<-keepaliveCh

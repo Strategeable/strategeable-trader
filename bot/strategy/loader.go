@@ -9,6 +9,7 @@ import (
 
 	"github.com/Stratomicl/Trader/helpers"
 	"github.com/Stratomicl/Trader/types"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type rawIndicator struct {
@@ -40,6 +41,71 @@ type rawStep struct {
 	Data interface{}
 }
 
+func (r *rawStep) UnmarshalBSON(data []byte) error {
+	type tempRawStep struct {
+		Id   string
+		Type string
+	}
+
+	temp := &tempRawStep{}
+	err := bson.Unmarshal(data, temp)
+	if err != nil {
+		return err
+	}
+
+	if temp.Type == "CHUNK_ID" {
+		type tempRawChunkStep struct {
+			Id   string
+			Type string
+			Data interface{}
+		}
+
+		chunkStep := &tempRawChunkStep{}
+		err := bson.Unmarshal(data, chunkStep)
+		if err != nil {
+			return err
+		}
+
+		r.Id = chunkStep.Id
+		r.Type = chunkStep.Type
+		r.Data = chunkStep.Data
+	} else if temp.Type == "SIGNAL_TILE" {
+		type tempRawSignalStep struct {
+			Id   string
+			Type string
+			Data rawSignalTile
+		}
+
+		signalStep := &tempRawSignalStep{}
+		err := bson.Unmarshal(data, signalStep)
+		if err != nil {
+			return err
+		}
+
+		r.Id = signalStep.Id
+		r.Type = signalStep.Type
+		r.Data = signalStep.Data
+	} else if temp.Type == "ANY_SIGNAL_TILE" {
+		type tempRawAnySignalStep struct {
+			Id   string
+			Type string
+			Data rawAnySignalTile
+		}
+
+		signalStep := &tempRawAnySignalStep{}
+		err := bson.Unmarshal(data, signalStep)
+		if err != nil {
+			return err
+		}
+
+		r.Id = signalStep.Id
+		r.Type = signalStep.Type
+		r.Data = signalStep.Data
+	}
+
+	return nil
+}
+
 type rawChunk struct {
 	Id    string
 	Name  string
@@ -60,10 +126,7 @@ type rawStrategy struct {
 	Paths   []rawPath
 }
 
-func StrategyFromJson(input string) (*Strategy, error) {
-	var strategy rawStrategy
-	json.Unmarshal([]byte(input), &strategy)
-
+func StrategyFromJson(strategy rawStrategy) (*Strategy, error) {
 	chunkMapping := make(map[string][]Tile)
 	for _, chunk := range strategy.Chunks {
 		tiles, err := stepsToTiles(chunk.Steps, chunkMapping)
@@ -130,8 +193,14 @@ func stepToTile(step rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
 	case "SIGNAL_TILE":
 		var data rawSignalTile
 
-		marshalled, _ := json.Marshal(step.Data)
-		json.Unmarshal(marshalled, &data)
+		marshalled, err := json.Marshal(step.Data)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(marshalled, &data)
+		if err != nil {
+			return nil, err
+		}
 
 		signalTile, err := rawSignalTileToSignalTile(data)
 		if err != nil {

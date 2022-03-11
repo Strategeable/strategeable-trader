@@ -19,6 +19,7 @@ type historicalMarketDataProvider struct {
 	fullCandleCollection *types.CandleCollection
 	tradeCh              chan types.Trade
 	ackCh                chan string
+	closeCh              chan string
 }
 
 func NewHistoricalMarketDataProvider(
@@ -33,6 +34,7 @@ func NewHistoricalMarketDataProvider(
 		fullCandleCollection: types.NewCandleCollection(),
 		tradeCh:              make(chan types.Trade),
 		ackCh:                make(chan string),
+		closeCh:              make(chan string),
 	}
 	provider.InitCandleCollection()
 	return provider
@@ -85,6 +87,8 @@ func (h *historicalMarketDataProvider) Init() error {
 
 			currentTime = currentTime.Add(1 * time.Minute)
 		}
+
+		close(h.closeCh)
 	}()
 	return nil
 }
@@ -99,4 +103,8 @@ func (h *historicalMarketDataProvider) RequiresAcks() bool {
 
 func (h *historicalMarketDataProvider) GetAckCh() chan string {
 	return h.ackCh
+}
+
+func (h *historicalMarketDataProvider) GetCloseCh() chan string {
+	return h.closeCh
 }
