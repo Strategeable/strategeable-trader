@@ -23,15 +23,10 @@
     </div>
     <div
       class="source input"
-      v-if="source && ready"
+      v-if="hasTimeframe"
     >
       <p>Source</p>
-      <v-select
-        :options="options"
-        label="name"
-        :reduce="x => x.key"
-        v-model="finalIndicator.data.source"
-      />
+      <select-source @update="val => finalIndicator.data.source = val" :source="sourceValue"/>
     </div>
     <div
       class="input"
@@ -84,9 +79,14 @@
 <script lang="ts">
 import indicators from '@/assets/data/indicators'
 import { IndicatorSettings, TimeFrame, timeframes } from '@/types/Path'
-import { defineComponent, onMounted, PropType, ref } from 'vue'
+import { defineComponent, onMounted, PropType, ref, watch } from 'vue'
+
+import SelectSource from '@/components/strategies/path-editor/SelectSource.vue'
 
 export default defineComponent({
+  components: {
+    SelectSource
+  },
   emits: ['delete'],
   props: {
     indicator: {
@@ -97,26 +97,22 @@ export default defineComponent({
   setup (props) {
     const actualIndicator = indicators.find(indicator => indicator.key === props.indicator.indicatorKey)
     const options = ref<any[]>([])
-    const ready = ref<boolean>(false)
+    const sourceValue = ref({
+      indicatorKey: props.indicator.data.source?.indicatorKey,
+      data: {}
+    })
 
     onMounted(() => {
-      const source = props.indicator.data.source
-      if (source && actualIndicator) {
-        const sourceOptions: any = actualIndicator.fields.find(f => f.key === 'source')
-
-        for (const src of sourceOptions.options) {
-          options.value.push({ key: src, name: indicators.find(indicator => indicator.key === src)?.name || src })
-        }
-        if (sourceOptions.options.length === 0) {
-          for (const indicator of indicators) {
-            if (indicator.hasTimeframe) {
-              options.value.push({ key: indicator.key, name: indicator.name })
-            }
-          }
-        }
+      if (props.indicator.data.source) {
+        sourceValue.value.indicatorKey = props.indicator.data.source.indicatorKey
+        sourceValue.value.data = props.indicator.data.source.data
       }
+    })
 
-      ready.value = true
+    watch(sourceValue, () => {
+      props.indicator.data.source = sourceValue
+    }, {
+      deep: true
     })
 
     function selectTimeframe (tf: TimeFrame) {
@@ -139,7 +135,7 @@ export default defineComponent({
       source: props.indicator.data.source,
       options,
       actualIndicator,
-      ready,
+      sourceValue,
       selectTimeframe,
       getFieldValues
     }

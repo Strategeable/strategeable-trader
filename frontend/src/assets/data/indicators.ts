@@ -10,15 +10,6 @@ const indicators: Indicator[] = [
     hasTimeframe: true,
     fields: [
       {
-        key: 'source',
-        name: 'Source',
-        required: true,
-        type: 'signal',
-        advanced: false,
-        options: ['CANDLE_OPEN', 'CANDLE_CLOSE', 'CANDLE_HIGH', 'CANDLE_LOW'],
-        default: 'CANDLE_CLOSE'
-      },
-      {
         key: 'period',
         name: 'Period',
         required: true,
@@ -39,15 +30,6 @@ const indicators: Indicator[] = [
     hasTimeframe: true,
     fields: [
       {
-        key: 'source',
-        name: 'Source',
-        required: true,
-        type: 'signal',
-        advanced: false,
-        options: [],
-        default: 'CANDLE_CLOSE'
-      },
-      {
         key: 'period',
         name: 'Period',
         required: true,
@@ -62,32 +44,21 @@ const indicators: Indicator[] = [
     ]
   },
   {
-    key: 'CANDLE_OPEN',
-    name: 'Candle Open',
-    shortName: 'Candle Open',
+    key: 'CANDLE_POSITION_VALUE',
+    name: 'Candle Position Value',
+    shortName: 'Candle Value',
     hasTimeframe: true,
-    fields: []
-  },
-  {
-    key: 'CANDLE_CLOSE',
-    name: 'Candle Close',
-    shortName: 'Candle Close',
-    hasTimeframe: true,
-    fields: []
-  },
-  {
-    key: 'CANDLE_HIGH',
-    name: 'Candle High',
-    shortName: 'Candle High',
-    hasTimeframe: true,
-    fields: []
-  },
-  {
-    key: 'CANDLE_LOW',
-    name: 'Candle Low',
-    shortName: 'Candle Low',
-    hasTimeframe: true,
-    fields: []
+    fields: [
+      {
+        key: 'candlePosition',
+        name: 'Candle Position',
+        required: true,
+        type: 'select',
+        advanced: false,
+        options: ['CLOSE', 'OPEN', 'HIGH', 'LOW'],
+        default: 'CLOSE'
+      }
+    ]
   },
   {
     key: 'NUMBER',
