@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
-	"time"
 
 	"github.com/Stratomicl/Trader/database"
 	"github.com/Stratomicl/Trader/handlers"
@@ -63,23 +62,19 @@ func (b *Backtest) performBacktest(backtest *strategy.Backtest) {
 		panic(err)
 	}
 
-	var exchangeImpl types.ExchangeImplementation
-
-	exchangeImpl = impl.NewBinanceExchangeImpl()
+	exchangeImpl := impl.NewBinanceExchangeImpl()
 
 	err = exchangeImpl.Init()
 	if err != nil {
 		panic(err)
 	}
 
-	from, _ := time.Parse("2006-01-02 15:04", "2022-03-06 22:00")
-	to, _ := time.Parse("2006-01-02 15:04", "2022-03-10 18:30")
-
-	fmt.Printf("Backtesting %.1f hours on %d symbols\n", to.Sub(from).Hours(), len(strategy.Symbols))
+	from := backtest.DateFrom
+	to := backtest.DateTo
 
 	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, strategy.Symbols, strategy.GetTimeFrames())
 
-	positionHandler := impl.NewSimulatedPositionHandler(1000, make([]*types.Position, 0))
+	positionHandler := impl.NewSimulatedPositionHandler(backtest.StartBalance, make([]*types.Position, 0))
 
 	eventCh := make(chan types.PositionHandlerEvent, 5)
 	positionHandler.SubscribeEvents(eventCh)
@@ -90,4 +85,6 @@ func (b *Backtest) performBacktest(backtest *strategy.Backtest) {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Printf("%.2f => %.2f\n", backtest.StartBalance, positionHandler.TotalBalance)
 }
