@@ -33,7 +33,7 @@
     </div>
     <div
       class="input"
-      v-for="key in Object.keys(indicator.data).filter(f => f !== 'source')"
+      v-for="key in Object.keys(indicator.data || {}).filter(f => f !== 'source')"
       :key="key"
     >
       <p>{{ key }}</p>
@@ -150,7 +150,6 @@ export default defineComponent({
       timeframes,
       hasTimeframe: hasTimeframe(),
       hasSource: hasSource(),
-      source: props.indicator.data.source,
       options,
       actualIndicator,
       selectTimeframe,
