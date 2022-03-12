@@ -36,8 +36,9 @@ func (d *DatabaseHandler) SaveBacktest(backtest *strategy.Backtest) error {
 
 	updateResult, err := collection.UpdateByID(context.Background(), backtest.Id, bson.M{
 		"$set": bson.M{
-			"finished":  backtest.Finished,
-			"positions": backtest.Positions,
+			"endBalance": backtest.EndBalance,
+			"finished":   backtest.Finished,
+			"positions":  backtest.Positions,
 		},
 	})
 	if err != nil {

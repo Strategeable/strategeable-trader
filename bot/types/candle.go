@@ -15,7 +15,10 @@ const (
 	M15 TimeFrame = "15m"
 	M30 TimeFrame = "30m"
 	H1  TimeFrame = "1h"
+	H2  TimeFrame = "2h"
+	H4  TimeFrame = "4h"
 	D1  TimeFrame = "1d"
+	W1  TimeFrame = "1w"
 )
 
 var (
@@ -26,7 +29,10 @@ var (
 		M15: 15 * time.Minute,
 		M30: 30 * time.Minute,
 		H1:  time.Hour,
+		H2:  2 * time.Hour,
+		H4:  4 * time.Hour,
 		D1:  24 * time.Hour,
+		W1:  7 * 24 * time.Hour,
 	}
 )
 
