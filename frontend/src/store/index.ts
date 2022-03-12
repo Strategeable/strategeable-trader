@@ -78,10 +78,10 @@ export default createStore({
         if (!response.data) return
 
         commit('SET_STRATEGY', strategy)
-        return true
+        return response.data.id
       } catch (err) {
         console.error(err)
-        return false
+        return undefined
       }
     }
   },

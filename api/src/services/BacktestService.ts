@@ -11,6 +11,15 @@ export async function getBacktestsByStrategyId(id: ObjectId): Promise<Backtest[]
   }
 }
 
+export async function getBacktestsById(id: ObjectId): Promise<Backtest> {
+  try {
+    return BacktestModel.findOne({ _id: id });
+  } catch(err) {
+    console.error(err);
+    return null;
+  }
+}
+
 export async function createBacktest(backtest: Backtest): Promise<Backtest> {
   try {
     const model = new BacktestModel(backtest);

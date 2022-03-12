@@ -78,7 +78,38 @@
     </div>
     <div class="backtests section">
       <h2>Backtests</h2>
-      <button @click="backtest">Backtest</button>
+      <div class="run-backtest">
+        <div class="backtest">
+          <div class="input">
+            <p>Start balance</p>
+            <input
+              type="number"
+              v-model="backtestParameters.startBalance"
+            >
+          </div>
+          <div class="input">
+            <p>From date</p>
+            <input
+              type="date"
+              :value="moment(backtestParameters.fromDate).format('YYYY-MM-DD')"
+              @change="e => backtestParameters.fromDate = new Date(e.target.value)"
+            >
+          </div>
+          <div class="input">
+            <p>To date</p>
+            <input
+              type="date"
+              :value="moment(backtestParameters.toDate).format('YYYY-MM-DD')"
+              @change="e => backtestParameters.toDate = new Date(e.target.value)"
+            >
+          </div>
+        </div>
+        <button @click="backtest">Backtest</button>
+      </div>
+      <div v-if="runningBacktest">
+        <p>{{ runningBacktest }}</p>
+      </div>
+      <backtest-result-comp v-if="backtestResult" :backtest="backtestResult" />
     </div>
     <div
       class="editor-overlay"
@@ -88,8 +119,8 @@
       <path-editor :chunk="editingChunk" :chunks="[]"/>
     </div>
     <control-bar
-      :canSave="true"
-      :canUndo="true"
+      :canSave="canSave"
+      :canUndo="false"
       :canRedo="false"
       @save="save"
       @undo="undo"
@@ -103,26 +134,29 @@
 import { computed, defineComponent, onMounted, ref, watch } from '@vue/runtime-core'
 import { v4 } from 'uuid'
 import exportFromJSON from 'export-from-json'
+import moment from 'moment'
 
 import { Chunk, Path } from '@/types/Path'
 import { Strategy } from '@/types/Strategy'
-import { BacktestRequestParameters } from '@/types/Backtest'
+import { BacktestRequestParameters, BacktestResult } from '@/types/Backtest'
 import axios from '@/helpers/axios'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
 import ControlBar from '@/components/strategies/path-editor/ControlBar.vue'
+import BacktestResultComp from '@/components/strategies/BacktestResult.vue'
 import { useStore } from 'vuex'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 type EditorType = 'BUY' | 'SELL'
 
 export default defineComponent({
   components: {
-    PathEditor, ControlBar
+    PathEditor, ControlBar, BacktestResultComp
   },
   setup () {
     const store = useStore()
     const route = useRoute()
+    const router = useRouter()
 
     const paths = ref<Path[]>([])
     const openEditor = ref<{ SELL: string | undefined, BUY: string | undefined }>({ SELL: undefined, BUY: undefined })
@@ -130,11 +164,20 @@ export default defineComponent({
     const name = ref<string>('')
     const symbols = ref<string[]>([])
     const editingChunk = ref<Chunk>()
+    const canSave = ref<boolean>(false)
+
     const strategyId = ref<string | undefined>()
     const strategyCreatedAt = ref<Date>(new Date())
     const strategyLastEdited = ref<Date>(new Date())
 
-    const editHistory: string[] = []
+    const backtestParameters = ref<BacktestRequestParameters>({
+      strategyId: '',
+      fromDate: new Date('2022-01-01'),
+      toDate: new Date('2022-03-10'),
+      startBalance: 1000
+    })
+    const backtestResult = ref<BacktestResult>()
+    const runningBacktest = ref<string>()
 
     const strategy = computed(() => {
       const strat: Strategy = {
@@ -149,25 +192,17 @@ export default defineComponent({
       }
       return strat
     })
+
+    watch(strategy, () => {
+      canSave.value = true
+    }, { deep: true })
+
     const emptyStrategy = computed(() => {
       if (paths.value.some(p => p.steps.length > 0)) return false
       if (chunks.value.length > 0) return false
       if (symbols.value.length > 0) return false
       if (name.value.length > 0) return false
       return true
-    })
-
-    let timeout: number
-    watch(strategy, strat => {
-      if (timeout) {
-        clearTimeout(timeout)
-      }
-      timeout = setTimeout(() => {
-        if (editHistory.includes(JSON.stringify(strat))) return
-        editHistory.push(JSON.stringify(strat))
-      }, 1500)
-    }, {
-      deep: true
     })
 
     async function loadStrategy (id: string) {
@@ -271,10 +306,11 @@ export default defineComponent({
     }
 
     async function save () {
-      const success = await store.dispatch('saveStrategy', strategy.value)
-      if (success) {
-        alert('Saved!')
+      const stratId = await store.dispatch('saveStrategy', strategy.value)
+      if (stratId && route.path.endsWith('new')) {
+        router.push(`/strategies/${stratId}`)
       }
+      canSave.value = false
     }
 
     function handleUploadStrategy (e: any) {
@@ -302,21 +338,37 @@ export default defineComponent({
 
     async function backtest () {
       try {
+        if (canSave.value) {
+          await save()
+        }
+
         const stratId = strategyId.value
         if (!stratId) {
           alert('Save strategy first')
           return
         }
-        const data: BacktestRequestParameters = {
-          strategyId: stratId,
-          fromDate: new Date('2017-08-05'),
-          toDate: new Date('2022-03-10'),
-          startBalance: 1000
+        backtestParameters.value.strategyId = stratId
+        runningBacktest.value = 'Backtesting...'
+
+        const response = await axios.post('/backtest', backtestParameters.value)
+        while (true) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          try {
+            const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
+            if (backtestResponse.status === 200) {
+              if (backtestResponse.data.finished) {
+                backtestResult.value = backtestResponse.data
+                break
+              }
+            }
+          } catch (err) {
+            continue
+          }
         }
-        const result = await axios.post('/backtest', data)
-        console.log(result)
+        runningBacktest.value = undefined
       } catch (err) {
         console.error(err)
+        runningBacktest.value = 'Something went wrong with the backtest... Try again.'
       }
     }
 
@@ -327,7 +379,11 @@ export default defineComponent({
       editingChunk,
       name,
       symbols,
+      backtestResult,
       emptyStrategy,
+      backtestParameters,
+      canSave,
+      runningBacktest,
       newPath,
       newChunk,
       deletePath,
@@ -341,7 +397,8 @@ export default defineComponent({
       save,
       exportStrategy,
       backtest,
-      handleUploadStrategy
+      handleUploadStrategy,
+      moment
     }
   }
 })
@@ -446,6 +503,24 @@ export default defineComponent({
   p {
     margin-bottom: 1rem;
     font-weight: bold;
+  }
+}
+
+.run-backtest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--background-darken);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+  .backtest {
+    display: flex;
+    .input {
+      display: flex;
+      flex-direction: column;
+      margin-right: 1rem;
+    }
   }
 }
 </style>

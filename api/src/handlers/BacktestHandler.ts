@@ -3,13 +3,24 @@ import { ObjectId } from "mongodb";
 import { JsonRpc } from 'node-jsonrpc-client';
 
 import ServerRequest from "../types/ServerRequest";
-import { createBacktest, getBacktestsByStrategyId } from "../services/BacktestService";
+import { createBacktest, getBacktestsById, getBacktestsByStrategyId } from "../services/BacktestService";
 import { getStrategyById } from "../services/StrategyService";
 
-export async function handleGetBacktestsByStrategyId(req: ServerRequest, res: Response) {
-  const { strategyId } = req.params;
+export async function handleGetBacktestsById(req: ServerRequest, res: Response) {
+  const { backtestId } = req.params;
 
-  const backtests = await getBacktestsByStrategyId(new ObjectId(strategyId));
+  const backtest = await getBacktestsById(new ObjectId(backtestId));
+  if(!backtest) {
+    return res.sendStatus(500);
+  }
+
+  return res.json(backtest);
+}
+
+export async function handleGetBacktestsByStrategyId(req: ServerRequest, res: Response) {
+  const { id } = req.params;
+
+  const backtests = await getBacktestsByStrategyId(new ObjectId(id));
   if(!backtests) {
     return res.sendStatus(500);
   }
@@ -35,9 +46,12 @@ export async function handleRunBacktest(req: ServerRequest, res: Response) {
   const client = new JsonRpc(process.env.RPC_ENDPOINT);
 
   try {
-    const response = await client.call('Backtest.Backtest', [ backtest._id.toString() ]);
-    console.log(response);
-    res.sendStatus(200);
+    const result = await client.call('Backtest.Backtest', [ backtest._id.toString() ]);
+    if(result.error) {
+      console.error(result.error);
+      return res.sendStatus(500);
+    }
+    res.json({ backtestId: backtest._id });
   } catch(err) {
     console.error(err);
     res.sendStatus(500);

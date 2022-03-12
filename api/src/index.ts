@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 
-import { handleGetBacktestsByStrategyId, handleRunBacktest } from './handlers/BacktestHandler';
+import { handleGetBacktestsById, handleGetBacktestsByStrategyId, handleRunBacktest } from './handlers/BacktestHandler';
 import { handleCreateStrategy, handleGetStrategies, handleGetStrategyById, handleUpdateStrategy } from './handlers/StrategyHandler';
 import { handleLogin } from './handlers/AuthHandler';
 import auth from './middleware/auth';
@@ -22,7 +22,8 @@ const port = process.env.PORT || 3000;
 
   app.use(auth);
 
-  app.get('/backtest/:strategyId', handleGetBacktestsByStrategyId);
+  app.get('/backtest/strategy/:id', handleGetBacktestsByStrategyId);
+  app.get('/backtest/:backtestId', handleGetBacktestsById);
   app.post('/backtest', handleRunBacktest);
 
   app.get('/strategy', handleGetStrategies);
