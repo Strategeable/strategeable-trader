@@ -15,6 +15,7 @@ interface Trade {
 
 export default interface Backtest {
   _id?: ObjectId
+  startedOn: Date
   strategy: any
   fromDate: Date
   toDate: Date

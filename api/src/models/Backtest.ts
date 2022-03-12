@@ -6,6 +6,10 @@ const schema: Schema<Backtest> = new Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true
   },
+  startedOn: {
+    type: Date,
+    required: true
+  },
   startBalance: {
     type: Number,
     required: true
