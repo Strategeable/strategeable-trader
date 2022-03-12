@@ -1,26 +1,41 @@
 package types
 
 import (
+	"sync"
 	"time"
 )
 
 type CandleCache struct {
-	candles    []*Candle
-	timeFrame  TimeFrame
-	windowSize int
+	candles           []*Candle
+	candleTimeMapping map[time.Time]*Candle
+	mappingLock       sync.RWMutex
+	timeFrame         TimeFrame
+	windowSize        int
 }
 
 func NewCandleCache(candles []*Candle, timeFrame TimeFrame, windowSize int) *CandleCache {
+	mapping := make(map[time.Time]*Candle)
 	initialCandles := candles
 	if len(initialCandles) > windowSize {
 		initialCandles = initialCandles[len(initialCandles)-windowSize:]
 	}
 
-	return &CandleCache{
-		candles:    initialCandles,
-		timeFrame:  timeFrame,
-		windowSize: windowSize,
+	for _, candle := range initialCandles {
+		mapping[candle.OpenTime] = candle
 	}
+
+	return &CandleCache{
+		candles:           initialCandles,
+		candleTimeMapping: mapping,
+		timeFrame:         timeFrame,
+		windowSize:        windowSize,
+	}
+}
+
+func (c *CandleCache) GetAvailableRanges(exchange Exchange, symbol Symbol, timeFrame TimeFrame) []DateRange {
+	ranges := make([]DateRange, 0)
+
+	return ranges
 }
 
 func (c *CandleCache) GetSize() int {
@@ -37,6 +52,13 @@ func (c *CandleCache) GetCurrentCandle() *Candle {
 
 func (c *CandleCache) GetCurrentRate() float64 {
 	return c.candles[len(c.candles)-1].Close
+}
+
+func (c *CandleCache) GetCandleAt(time time.Time) *Candle {
+	c.mappingLock.RLock()
+	defer c.mappingLock.RUnlock()
+
+	return c.candleTimeMapping[time]
 }
 
 func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Time) bool {
@@ -70,6 +92,10 @@ func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Ti
 
 		c.candles = append(c.candles, candle)
 		isNew = true
+
+		c.mappingLock.Lock()
+		c.candleTimeMapping[candle.OpenTime] = candle
+		c.mappingLock.Unlock()
 
 		if len(c.candles) > c.windowSize {
 			c.candles = c.candles[len(c.candles)-c.windowSize:]

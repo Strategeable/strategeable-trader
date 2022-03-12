@@ -14,7 +14,7 @@ type BaseMarketDataProvider struct {
 }
 
 func (b *BaseMarketDataProvider) InitCandleCollection() {
-	b.candleCollection = NewCandleCollection()
+	b.candleCollection = NewCandleCollection(1000)
 }
 
 func (b *BaseMarketDataProvider) GetCandleCollection() *CandleCollection {

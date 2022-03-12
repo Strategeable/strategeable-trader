@@ -29,7 +29,8 @@ func NewRpcServer(databaseHandler *database.DatabaseHandler) *rpcServer {
 
 func (r *rpcServer) Start() error {
 	backtest := &Backtest{
-		databaseHandler: r.databaseHandler,
+		databaseHandler:      r.databaseHandler,
+		mainCandleCollection: types.NewCandleCollection(10000000),
 	}
 
 	s := rpc.NewServer()
@@ -42,7 +43,8 @@ func (r *rpcServer) Start() error {
 }
 
 type Backtest struct {
-	databaseHandler *database.DatabaseHandler
+	databaseHandler      *database.DatabaseHandler
+	mainCandleCollection *types.CandleCollection
 }
 
 func (b *Backtest) Backtest(r *http.Request, backtestId *string, reply *int) error {
@@ -72,7 +74,7 @@ func (b *Backtest) performBacktest(backtest *strategy_types.Backtest) {
 	from := backtest.FromDate.Time()
 	to := backtest.ToDate.Time()
 
-	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, strategy.Symbols, strategy.GetTimeFrames())
+	marketDataProvider := impl.NewHistoricalMarketDataProvider(exchangeImpl, from, to, strategy.Symbols, strategy.GetTimeFrames(), b.mainCandleCollection)
 
 	positionHandler := impl.NewSimulatedPositionHandler(backtest.StartBalance, make([]*types.Position, 0))
 
@@ -103,10 +105,10 @@ func (b *Backtest) performBacktest(backtest *strategy_types.Backtest) {
 
 				positions = append(positions, position)
 
-				fmt.Printf("[BACKTEST] Position created: %s at %.2f.\n", position.Symbol().String(), position.AverageEntryRate())
+				fmt.Printf("[BACKTEST] %s - Position created: %s at %.2f.\n", event.Time.Format(time.RFC822), position.Symbol().String(), position.AverageEntryRate())
 			case types.POSITION_CLOSED:
 				position := event.Data.(*types.Position)
-				fmt.Printf("[BACKTEST] Position closed: %s at %.2f. Change %%: %.2f.\n", position.Symbol().String(), position.AverageExitRate(0), position.ChangePercentage(0))
+				fmt.Printf("[BACKTEST] %s - Position closed: %s at %.2f. Change %%: %.2f.\n", event.Time.Format(time.RFC822), position.Symbol().String(), position.AverageExitRate(0), position.ChangePercentage(0))
 			}
 		case _, ok := <-finishCh:
 			if ok {

@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/Stratomicl/Trader/types"
@@ -16,14 +17,17 @@ type historicalMarketDataProvider struct {
 	symbols    []types.Symbol
 	timeFrames []types.TimeFrame
 
+	mainCandleCollection *types.CandleCollection
 	fullCandleCollection *types.CandleCollection
-	tradeCh              chan types.Trade
-	ackCh                chan string
-	closeCh              chan string
+
+	tradeCh chan types.Trade
+	ackCh   chan string
+	closeCh chan string
 }
 
 func NewHistoricalMarketDataProvider(
 	exchangeImpl types.ExchangeImplementation, from time.Time, until time.Time, symbols []types.Symbol, timeFrames []types.TimeFrame,
+	mainCandleCollection *types.CandleCollection,
 ) *historicalMarketDataProvider {
 	provider := &historicalMarketDataProvider{
 		exchangeImpl:         exchangeImpl,
@@ -31,7 +35,8 @@ func NewHistoricalMarketDataProvider(
 		until:                until,
 		symbols:              symbols,
 		timeFrames:           timeFrames,
-		fullCandleCollection: types.NewCandleCollection(),
+		mainCandleCollection: mainCandleCollection,
+		fullCandleCollection: types.NewCandleCollection(1000000),
 		tradeCh:              make(chan types.Trade),
 		ackCh:                make(chan string),
 		closeCh:              make(chan string),
@@ -44,9 +49,62 @@ func (h *historicalMarketDataProvider) Init() error {
 	candleMapping := make(map[string]map[int64]*types.Candle)
 
 	for _, symbol := range h.symbols {
-		candles, err := h.exchangeImpl.GetHistoricalCandles(symbol, types.M1, h.from, h.until)
-		if err != nil {
-			return err
+		cache := h.mainCandleCollection.GetCache(h.exchangeImpl.GetExchange(), symbol, types.M1)
+
+		dateRanges := make([]types.DateRange, 0)
+
+		if cache != nil {
+			var currentDateRange *types.DateRange
+
+			currentTime := h.from
+			for currentTime.Before(h.until) || currentTime.Equal(h.until) {
+				if cache.GetCandleAt(currentTime) == nil {
+					if currentDateRange == nil {
+						currentDateRange = &types.DateRange{
+							From: currentTime,
+						}
+					}
+				} else {
+					if currentDateRange != nil {
+						currentDateRange.To = currentTime.Add(-1 * time.Minute)
+						dateRanges = append(dateRanges, *currentDateRange)
+						currentDateRange = nil
+					}
+				}
+
+				currentTime = currentTime.Add(time.Minute)
+			}
+			if currentDateRange != nil {
+				currentDateRange.To = currentTime
+				dateRanges = append(dateRanges, *currentDateRange)
+			}
+		} else {
+			dateRanges = append(dateRanges, types.DateRange{
+				From: h.from,
+				To:   h.until,
+			})
+		}
+
+		fmt.Println(len(dateRanges))
+
+		var candles []*types.Candle
+		if len(dateRanges) == 0 {
+			candles = make([]*types.Candle, 0)
+			currentTime := h.from
+			for currentTime.Before(h.until) || currentTime.Equal(h.until) {
+				candles = append(candles, cache.GetCandleAt(currentTime))
+				currentTime = currentTime.Add(time.Minute)
+			}
+		} else {
+			c, err := h.exchangeImpl.GetHistoricalCandles(symbol, types.M1, h.from, h.until)
+			if err != nil {
+				return err
+			}
+			candles = c
+		}
+
+		if cache == nil {
+			h.mainCandleCollection.InitializeTimeFrame(h.exchangeImpl.GetExchange(), symbol, types.M1, candles)
 		}
 
 		mapping := make(map[int64]*types.Candle)
