@@ -20,6 +20,5 @@ export default interface Backtest {
   toDate: Date
   startBalance: number
   endBalance?: number
-  trades: Trade[]
   finished: boolean
 }

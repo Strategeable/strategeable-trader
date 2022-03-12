@@ -45,6 +45,7 @@ func (s *simulatedPositionHandler) ClosePosition(symbol types.Symbol, rate float
 				Time:     time,
 				Rate:     rate,
 				Quantity: openPosition.BaseSize(),
+				QuoteFee: rate * openPosition.BaseSize() * 0.00075,
 			},
 		},
 	})
@@ -84,6 +85,7 @@ func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float6
 	position := types.NewPosition(symbol, types.OPEN, time, nil, make([]*types.Order, 0))
 
 	baseSize := quoteSize / rate
+	fees := baseSize * 0.00075
 
 	position.AddOrder(&types.Order{
 		Time:   time,
@@ -95,7 +97,8 @@ func (s *simulatedPositionHandler) OpenPosition(symbol types.Symbol, rate float6
 			{
 				Time:     time,
 				Rate:     rate,
-				Quantity: baseSize,
+				Quantity: baseSize - fees,
+				QuoteFee: fees * rate,
 			},
 		},
 	})

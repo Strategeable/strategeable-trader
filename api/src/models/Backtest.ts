@@ -24,52 +24,6 @@ const schema: Schema<Backtest> = new Schema({
   finished: {
     type: Boolean,
     default: false
-  },
-  trades: {
-    type: [
-      {
-        symbol: {
-          type: String,
-          required: true
-        },
-        amountIn: {
-          type: Number,
-          required: true
-        },
-        amountOut: {
-          type: Number,
-          required: true
-        },
-        entryPrice: {
-          type: Number,
-          required: true
-        },
-        exitPrice: {
-          type: Number,
-          required: true
-        },
-        entryDate: {
-          type: Date,
-          required: true
-        },
-        exitDate: {
-          type: Date,
-          required: true
-        },
-        fees: {
-          type: Number,
-          required: true
-        },
-        buyPathName: {
-          type: String,
-          required: true
-        },
-        sellPathName: {
-          type: String,
-          required: true
-        }
-      }
-    ]
   }
 });
 

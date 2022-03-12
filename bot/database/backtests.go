@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Stratomicl/Trader/strategy"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,4 +29,24 @@ func (d *DatabaseHandler) GetBacktestById(id string) (*strategy.Backtest, error)
 	err = result.Decode(backtest)
 
 	return backtest, err
+}
+
+func (d *DatabaseHandler) SaveBacktest(backtest *strategy.Backtest) error {
+	collection := d.database.Collection("backtests")
+
+	updateResult, err := collection.UpdateByID(context.Background(), backtest.Id, bson.M{
+		"$set": bson.M{
+			"finished":  backtest.Finished,
+			"positions": backtest.Positions,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	if updateResult.MatchedCount < 1 {
+		return errors.New("backtest not found")
+	}
+
+	return nil
 }

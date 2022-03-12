@@ -2,7 +2,13 @@ package types
 
 import (
 	"sync"
+	"time"
 )
+
+type DateRange struct {
+	From time.Time
+	To   time.Time
+}
 
 type CandleCollection struct {
 	windowSize int
@@ -10,9 +16,9 @@ type CandleCollection struct {
 	lock       sync.RWMutex
 }
 
-func NewCandleCollection() *CandleCollection {
+func NewCandleCollection(windowSize int) *CandleCollection {
 	return &CandleCollection{
-		windowSize: 1000,
+		windowSize: windowSize,
 		caches:     make(map[Exchange]map[string]map[TimeFrame]*CandleCache),
 	}
 }
