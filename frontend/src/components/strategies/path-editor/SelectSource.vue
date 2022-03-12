@@ -132,10 +132,6 @@ export default defineComponent({
       const idx = tempSources.findIndex(s => s.id === id)
       if (idx === -1) return
       data.id = id
-
-      if (JSON.stringify(tempSources[idx]) === JSON.stringify(data)) {
-        return
-      }
       tempSources.splice(idx, 1, data)
 
       if (!prevIsNotFinal(data.indicatorKey) || !data.indicatorKey) {
