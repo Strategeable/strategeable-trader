@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
@@ -21,10 +23,12 @@ func NewEngine(strategy *strategy.Strategy, marketDataProvider types.MarketDataP
 }
 
 func (e *Engine) Start() error {
+	fmt.Println("Initializing market data provider.")
 	err := e.MarketDataProvider.Init()
 	if err != nil {
 		return err
 	}
+	fmt.Println("Initialized market data provider.")
 
 	for {
 		var done bool

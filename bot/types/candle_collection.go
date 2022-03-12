@@ -34,7 +34,7 @@ func (c *CandleCollection) AddTrade(exchange Exchange, symbol Symbol, trade Trad
 func (c *CandleCollection) InitializeTimeFrame(exchange Exchange, symbol Symbol, timeFrame TimeFrame, candles []*Candle) {
 	caches := c.GetCaches(exchange, symbol)
 
-	caches[timeFrame] = NewCandleCache(candles, timeFrame, c.windowSize)
+	caches[timeFrame] = NewCandleCache(exchange, symbol, candles, timeFrame, c.windowSize)
 }
 
 func (c *CandleCollection) GetCaches(exchange Exchange, symbol Symbol) map[TimeFrame]*CandleCache {

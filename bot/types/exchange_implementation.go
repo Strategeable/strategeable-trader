@@ -28,8 +28,9 @@ type ExchangeImplementation interface {
 	FormatTimeFrame(timeFrame TimeFrame) string
 
 	// Candle data
+	GetFirstCandleTime(symbol Symbol) (time.Time, error)
 	GetCandles(symbol Symbol, timeFrame TimeFrame, limit int) ([]*Candle, error)
-	GetHistoricalCandles(symbol Symbol, timeFrame TimeFrame, from time.Time, to time.Time) ([]*Candle, error)
+	GetHistoricalCandles(symbol Symbol, timeFrame TimeFrame, from time.Time, to time.Time, candleCh chan []*Candle) ([]*Candle, error)
 
 	// Ticker data
 	GetTicker(symbol Symbol) (Ticker, error)
