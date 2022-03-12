@@ -3,6 +3,7 @@ package rpcserver
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
@@ -114,15 +115,22 @@ func (b *Backtest) performBacktest(backtest *strategy_types.Backtest) {
 
 			mappedPositions := make([]strategy_types.BacktestPosition, 0)
 			for _, position := range positions {
+				closeTime := time.Unix(0, 0)
+				if position.IsClosed() {
+					closeTime = *position.CloseTime()
+				}
 				mappedPositions = append(mappedPositions, strategy_types.BacktestPosition{
-					Date:   position.OpenTime(),
-					Symbol: position.Symbol().String(),
+					OpenedAt: position.OpenTime(),
+					ClosedAt: closeTime,
+					Symbol:   position.Symbol().String(),
 					EntryValue: strategy_types.BacktestPositionValue{
+						Date:      position.OpenTime(),
 						Rate:      position.AverageEntryRate(),
 						BaseSize:  position.BaseSize(),
 						QuoteFees: position.EntryQuoteFees(),
 					},
 					ExitValue: strategy_types.BacktestPositionValue{
+						Date:      closeTime,
 						Rate:      position.AverageExitRate(0),
 						BaseSize:  position.BaseSize(),
 						QuoteFees: position.ExitQuoteFees(),
