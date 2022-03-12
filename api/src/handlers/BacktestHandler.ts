@@ -27,7 +27,6 @@ export async function handleRunBacktest(req: ServerRequest, res: Response) {
     fromDate,
     toDate,
     startBalance: Number(startBalance),
-    trades: [],
     finished: false
   });
 

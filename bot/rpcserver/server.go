@@ -10,7 +10,7 @@ import (
 	"github.com/Stratomicl/Trader/database"
 	"github.com/Stratomicl/Trader/handlers"
 	"github.com/Stratomicl/Trader/impl"
-	"github.com/Stratomicl/Trader/strategy"
+	strategy_types "github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
 
@@ -55,8 +55,8 @@ func (b *Backtest) Backtest(r *http.Request, backtestId *string, reply *int) err
 	return nil
 }
 
-func (b *Backtest) performBacktest(backtest *strategy.Backtest) {
-	strategy, err := strategy.StrategyFromJson(backtest.Strategy)
+func (b *Backtest) performBacktest(backtest *strategy_types.Backtest) {
+	strategy, err := strategy_types.StrategyFromJson(backtest.Strategy)
 	if err != nil {
 		panic(err)
 	}
@@ -80,10 +80,67 @@ func (b *Backtest) performBacktest(backtest *strategy.Backtest) {
 
 	engine := handlers.NewEngine(strategy, marketDataProvider, positionHandler)
 
-	err = engine.Start()
-	if err != nil {
-		panic(err)
-	}
+	finishCh := make(chan string)
 
-	fmt.Printf("%.2f => %.2f\n", backtest.StartBalance, positionHandler.TotalBalance)
+	go func() {
+		err = engine.Start()
+		if err != nil {
+			panic(err)
+		}
+
+		close(finishCh)
+	}()
+
+	positions := make([]*types.Position, 0)
+
+	for {
+		select {
+		case event := <-eventCh:
+			switch event.Type {
+			case types.POSITION_CREATED:
+				position := event.Data.(*types.Position)
+
+				positions = append(positions, position)
+
+				fmt.Printf("[BACKTEST] Position created: %s at %.2f.\n", position.Symbol().String(), position.AverageEntryRate())
+			case types.POSITION_CLOSED:
+				position := event.Data.(*types.Position)
+				fmt.Printf("[BACKTEST] Position closed: %s at %.2f. Change %%: %.2f.\n", position.Symbol().String(), position.AverageExitRate(0), position.ChangePercentage(0))
+			}
+		case _, ok := <-finishCh:
+			if ok {
+				continue
+			}
+
+			mappedPositions := make([]strategy_types.BacktestPosition, 0)
+			for _, position := range positions {
+				mappedPositions = append(mappedPositions, strategy_types.BacktestPosition{
+					Date:   position.OpenTime(),
+					Symbol: position.Symbol().String(),
+					EntryValue: strategy_types.BacktestPositionValue{
+						Rate:      position.AverageEntryRate(),
+						BaseSize:  position.BaseSize(),
+						QuoteFees: position.EntryQuoteFees(),
+					},
+					ExitValue: strategy_types.BacktestPositionValue{
+						Rate:      position.AverageExitRate(0),
+						BaseSize:  position.BaseSize(),
+						QuoteFees: position.ExitQuoteFees(),
+					},
+				})
+			}
+
+			backtest.Finished = true
+			backtest.EndBalance = positionHandler.TotalBalance
+			backtest.Positions = mappedPositions
+
+			err := b.databaseHandler.SaveBacktest(backtest)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			fmt.Printf("%.2f => %.2f\n", backtest.StartBalance, positionHandler.TotalBalance)
+			return
+		}
+	}
 }

@@ -24,6 +24,7 @@ type OrderFill struct {
 	Time     time.Time
 	Rate     float64
 	Quantity float64
+	QuoteFee float64
 }
 
 type Order struct {
@@ -56,6 +57,16 @@ func (o *Order) QuoteValue() float64 {
 	return total
 }
 
+func (o *Order) QuoteFees() float64 {
+	total := float64(0)
+
+	for _, fill := range o.Fills {
+		total += fill.QuoteFee
+	}
+
+	return total
+}
+
 type Position struct {
 	symbol    Symbol
 	state     PositionState
@@ -79,10 +90,10 @@ func (p *Position) ChangePercentage(rate float64) float64 {
 		return 0
 	}
 
-	entryRate := p.AverageEntryRate()
-	exitRate := p.AverageExitRate(rate)
+	cost := p.QuoteCost()
+	value := p.QuoteValue(rate)
 
-	return (exitRate - entryRate) / entryRate * 100
+	return (value - cost) / cost * 100
 }
 
 func (p *Position) ChangeAmount(rate float64) float64 {
@@ -106,6 +117,10 @@ func (p *Position) State() PositionState {
 
 func (p *Position) Symbol() *Symbol {
 	return &p.symbol
+}
+
+func (p *Position) OpenTime() time.Time {
+	return p.openTime
 }
 
 func (p *Position) CloseTime() *time.Time {
@@ -142,7 +157,31 @@ func (p *Position) QuoteCost() float64 {
 
 	for _, order := range p.orders {
 		if order.Side == BUY {
-			total += order.QuoteValue()
+			total += order.QuoteValue() + order.QuoteFees()
+		}
+	}
+
+	return total
+}
+
+func (p *Position) EntryQuoteFees() float64 {
+	total := float64(0)
+
+	for _, order := range p.orders {
+		if order.Side == BUY {
+			total += order.QuoteFees()
+		}
+	}
+
+	return total
+}
+
+func (p *Position) ExitQuoteFees() float64 {
+	total := float64(0)
+
+	for _, order := range p.orders {
+		if order.Side == SELL {
+			total += order.QuoteFees()
 		}
 	}
 
@@ -152,18 +191,18 @@ func (p *Position) QuoteCost() float64 {
 func (p *Position) QuoteValue(rate float64) float64 {
 	total := p.BaseSize()
 
-	product := float64(0)
+	totalValue := float64(0)
 
 	for _, order := range p.orders {
 		if order.Side == SELL {
-			product += order.QuoteValue()
+			totalValue += order.QuoteValue()
 			total -= order.FilledSize()
 		}
 	}
 
-	product += total * rate
+	totalValue += (total - total*0.00075) * rate
 
-	return product
+	return totalValue
 }
 
 func (p *Position) AverageEntryRate() float64 {
