@@ -73,6 +73,7 @@ export default defineComponent({
     }, { deep: true })
 
     function updateTree (level: number, value: SourceTree) {
+      console.log(value)
       if (level === 1) {
         if (!value.indicatorKey || value.indicatorKey === null) {
           tree.value.indicatorKey = ''
@@ -83,21 +84,19 @@ export default defineComponent({
         tree.value.data = value.data
       }
       if (level === 2) {
-        if (!tree.value.data.source || !tree.value.data.source.indicatorKey) {
-          tree.value.data.source = {
-            indicatorKey: undefined,
-            data: {}
-          }
+        if (!value.indicatorKey || value.indicatorKey === null) {
+          tree.value.data.source.indicatorKey = ''
+          tree.value.data.source.data = {}
+          return
         }
         tree.value.data.source.indicatorKey = value.indicatorKey
         tree.value.data.source.data = value.data
       }
       if (level === 3) {
-        if (!tree.value.data.source.data.source || !tree.value.data.source.data.source.indicatorKey) {
-          tree.value.data.source.data.source = {
-            indicatorKey: undefined,
-            data: {}
-          }
+        if (!value.indicatorKey || value.indicatorKey === null) {
+          tree.value.data.source.data.source.indicatorKey = ''
+          tree.value.data.source.data.source.data = {}
+          return
         }
         tree.value.data.source.data.source.indicatorKey = value.indicatorKey
         tree.value.data.source.data.source.data = value.data

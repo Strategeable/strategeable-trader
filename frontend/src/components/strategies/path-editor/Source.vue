@@ -85,7 +85,6 @@ export default defineComponent({
     onMounted(() => {
       if (props.value) {
         const data = JSON.parse(JSON.stringify(props.value))
-        delete data.data.source
 
         sourceValue.value = {
           indicatorKey: data.indicatorKey,
