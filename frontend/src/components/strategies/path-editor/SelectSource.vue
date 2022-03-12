@@ -94,7 +94,7 @@ export default defineComponent({
       if (!indicator) return []
 
       const keys = indicator.fields.map(f => f.key)
-      if (indicatorKey !== 'CANDLE_POSITION_VALUE') keys.push('source')
+      if (indicator.hasSource) keys.push('source')
       return keys
     }
 
@@ -124,7 +124,9 @@ export default defineComponent({
     }, { deep: true })
 
     function prevIsNotFinal (val: string): boolean {
-      return val !== 'CANDLE_POSITION_VALUE' && val !== ''
+      const indicator = indicators.find(i => i.key === val)
+      if (!indicator) return false
+      return indicator.hasSource
     }
 
     function updateSource (id: string, data: any) {
