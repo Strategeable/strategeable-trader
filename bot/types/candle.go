@@ -15,6 +15,7 @@ const (
 	M15 TimeFrame = "15m"
 	M30 TimeFrame = "30m"
 	H1  TimeFrame = "1h"
+	D1  TimeFrame = "1d"
 )
 
 var (
@@ -25,21 +26,26 @@ var (
 		M15: 15 * time.Minute,
 		M30: 30 * time.Minute,
 		H1:  time.Hour,
+		D1:  24 * time.Hour,
 	}
 )
 
 type Candle struct {
-	OpenTime  time.Time
-	CloseTime time.Time
-	Open      float64
-	High      float64
-	Low       float64
-	Close     float64
-	Volume    float64
+	Symbol    string    `bson:"s"`
+	Exchange  Exchange  `bson:"e"`
+	OpenTime  time.Time `bson:"oT"`
+	CloseTime time.Time `bson:"cT"`
+	Open      float64   `bson:"o"`
+	High      float64   `bson:"h"`
+	Low       float64   `bson:"l"`
+	Close     float64   `bson:"c"`
+	Volume    float64   `bson:"v"`
 }
 
-func NewCandle(openTime time.Time, closeTime time.Time, open float64, high float64, low float64, close float64, volume float64) *Candle {
+func NewCandle(exchange Exchange, symbol string, openTime time.Time, closeTime time.Time, open float64, high float64, low float64, close float64, volume float64) *Candle {
 	return &Candle{
+		Symbol:    symbol,
+		Exchange:  exchange,
 		OpenTime:  openTime,
 		CloseTime: closeTime,
 		Open:      open,

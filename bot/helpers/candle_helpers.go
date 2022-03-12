@@ -49,6 +49,8 @@ func CandlesCopyToHeikinAshi(candles []*types.Candle) []*types.Candle {
 		}
 
 		result = append(result, types.NewCandle(
+			candle.Exchange,
+			candle.Symbol,
 			candle.OpenTime,
 			candle.CloseTime,
 			0.5*(prevOpen+prevClose),

@@ -84,16 +84,35 @@ func (b *binanceExchangeImpl) FormatSymbol(symbol types.Symbol) string {
 	return fmt.Sprintf("%s%s", symbol.BaseAsset, symbol.QuoteAsset)
 }
 
+func (b *binanceExchangeImpl) GetFirstCandleTime(symbol types.Symbol) (time.Time, error) {
+	klines, err := b.klinesService.StartTime(0).Interval(b.FormatTimeFrame(types.M1)).Limit(1).Symbol(b.FormatSymbol(symbol)).Do(context.Background())
+	if err != nil {
+		return time.Now(), err
+	}
+
+	if len(klines) == 0 {
+		return time.Now(), errors.New("no candle found")
+	}
+
+	candles := klinesToCandles(klines, symbol)
+
+	return candles[0].OpenTime, nil
+}
+
 func (b *binanceExchangeImpl) GetCandles(symbol types.Symbol, timeFrame types.TimeFrame, limit int) ([]*types.Candle, error) {
 	klines, err := b.klinesService.Interval(b.FormatTimeFrame(timeFrame)).Limit(limit).Symbol(b.FormatSymbol(symbol)).Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	return klinesToCandles(klines), nil
+	return klinesToCandles(klines, symbol), nil
 }
 
-func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFrame types.TimeFrame, from time.Time, to time.Time) ([]*types.Candle, error) {
+func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFrame types.TimeFrame, from time.Time, to time.Time, candleCh chan []*types.Candle) ([]*types.Candle, error) {
+	if candleCh != nil {
+		defer close(candleCh)
+	}
+
 	candles := make([]*types.Candle, 0)
 
 	batchSize := 1000
@@ -101,6 +120,8 @@ func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFram
 
 	for {
 		timeUntil := timeFromNow.Add(time.Duration(batchSize) * types.CandleDurations[timeFrame])
+
+		fmt.Printf("[BINANCE_CANDLES] Loading %s candles for %s between %s and %s.\n", timeFrame, symbol.String(), timeFromNow.Format(time.RFC822), timeUntil.Format(time.RFC822))
 
 		if timeUntil.After(to) {
 			timeUntil = to
@@ -111,7 +132,13 @@ func (b *binanceExchangeImpl) GetHistoricalCandles(symbol types.Symbol, timeFram
 			return nil, err
 		}
 
-		candles = append(candles, klinesToCandles(klines)...)
+		currentCandles := klinesToCandles(klines, symbol)
+		candles = append(candles, currentCandles...)
+
+		select {
+		case candleCh <- currentCandles:
+		default:
+		}
 
 		if timeUntil.Equal(to) {
 			break
@@ -176,8 +203,10 @@ func binanceTickerToTicker(ticker *binance.BookTicker) types.Ticker {
 	)
 }
 
-func klineToCandle(kline *binance.Kline) *types.Candle {
+func klineToCandle(kline *binance.Kline, symbol types.Symbol) *types.Candle {
 	return types.NewCandle(
+		types.BINANCE,
+		symbol.String(),
 		time.Unix(0, kline.OpenTime*int64(time.Millisecond)),
 		time.Unix(0, kline.CloseTime*int64(time.Millisecond)),
 		parseFloatUnsafe(kline.Open),
@@ -187,11 +216,11 @@ func klineToCandle(kline *binance.Kline) *types.Candle {
 		parseFloatUnsafe(kline.Volume),
 	)
 }
-func klinesToCandles(klines []*binance.Kline) []*types.Candle {
+func klinesToCandles(klines []*binance.Kline, symbol types.Symbol) []*types.Candle {
 	candles := make([]*types.Candle, 0)
 
 	for _, kline := range klines {
-		candles = append(candles, klineToCandle(kline))
+		candles = append(candles, klineToCandle(kline, symbol))
 	}
 
 	return candles

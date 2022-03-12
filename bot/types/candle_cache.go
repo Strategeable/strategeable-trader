@@ -6,25 +6,30 @@ import (
 )
 
 type CandleCache struct {
+	exchange          Exchange
+	symbol            Symbol
 	candles           []*Candle
-	candleTimeMapping map[time.Time]*Candle
+	candleTimeMapping map[int64]*Candle
 	mappingLock       sync.RWMutex
 	timeFrame         TimeFrame
 	windowSize        int
 }
 
-func NewCandleCache(candles []*Candle, timeFrame TimeFrame, windowSize int) *CandleCache {
-	mapping := make(map[time.Time]*Candle)
+func NewCandleCache(exchange Exchange, symbol Symbol, candles []*Candle, timeFrame TimeFrame, windowSize int) *CandleCache {
+	mapping := make(map[int64]*Candle)
 	initialCandles := candles
-	if len(initialCandles) > windowSize {
+
+	if windowSize != -1 && len(initialCandles) > windowSize {
 		initialCandles = initialCandles[len(initialCandles)-windowSize:]
 	}
 
 	for _, candle := range initialCandles {
-		mapping[candle.OpenTime] = candle
+		mapping[candle.OpenTime.Unix()] = candle
 	}
 
 	return &CandleCache{
+		exchange:          exchange,
+		symbol:            symbol,
 		candles:           initialCandles,
 		candleTimeMapping: mapping,
 		timeFrame:         timeFrame,
@@ -58,7 +63,7 @@ func (c *CandleCache) GetCandleAt(time time.Time) *Candle {
 	c.mappingLock.RLock()
 	defer c.mappingLock.RUnlock()
 
-	return c.candleTimeMapping[time]
+	return c.candleTimeMapping[time.Unix()]
 }
 
 func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Time) bool {
@@ -81,6 +86,8 @@ func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Ti
 		closeTime := time.Unix(0, candleStartTime+CandleDurations[c.timeFrame].Nanoseconds()-1)
 
 		candle = NewCandle(
+			c.exchange,
+			c.symbol.String(),
 			openTime,
 			closeTime,
 			rate,
@@ -94,10 +101,10 @@ func (c *CandleCache) AddTrade(rate float64, volume float64, currentTime time.Ti
 		isNew = true
 
 		c.mappingLock.Lock()
-		c.candleTimeMapping[candle.OpenTime] = candle
+		c.candleTimeMapping[candle.OpenTime.Unix()] = candle
 		c.mappingLock.Unlock()
 
-		if len(c.candles) > c.windowSize {
+		if c.windowSize != -1 && len(c.candles) > c.windowSize {
 			c.candles = c.candles[len(c.candles)-c.windowSize:]
 		}
 	}
