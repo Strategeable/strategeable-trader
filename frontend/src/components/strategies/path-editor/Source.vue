@@ -1,5 +1,5 @@
 <template>
-  <div class="source">
+  <div class="source" v-if="ready">
     <v-select
       :options="indicators.filter(i => i.hasTimeframe)"
       label="name"
@@ -71,6 +71,7 @@ export default defineComponent({
   },
   setup (props, context) {
     const selectedIndicatorKey = ref<string>()
+    const ready = ref<boolean>(false)
     const fields = computed(() => {
       const indicator = indicators.find(i => i.key === selectedIndicatorKey.value)
       if (!indicator) return []
@@ -92,6 +93,8 @@ export default defineComponent({
         }
         selectedIndicatorKey.value = data.indicatorKey
       }
+
+      ready.value = true
     })
 
     watch(sourceValue, () => {
@@ -101,14 +104,14 @@ export default defineComponent({
     watch(selectedIndicatorKey, () => {
       sourceValue.value.indicatorKey = selectedIndicatorKey.value
       if (!selectedIndicatorKey.value) sourceValue.value.data = {}
-      context.emit('update', sourceValue.value)
-    }, { deep: true })
+    })
 
     return {
       indicators,
       selectedIndicatorKey,
       fields,
-      sourceValue
+      sourceValue,
+      ready
     }
   }
 })

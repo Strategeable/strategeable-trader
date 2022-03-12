@@ -2,30 +2,17 @@
   <div class="select-source">
     <div
       class="selector"
-      v-if="ready"
+      v-if="sources.length > 0"
     >
-      <source-comp
-        :value="{ indicatorKey: tree.indicatorKey, data: tree.data }"
-        @update="val => updateTree(1, val)"
-      />
-      <div class="selector" v-if="prevIsNotFinal(tree.indicatorKey)">
+      <div
+        class="selector"
+        v-for="source in sources"
+        :key="source.id"
+      >
         <source-comp
-          :value="tree.data.source ? { indicatorKey: tree.data.source.indicatorKey, data: tree.data.source.data } : undefined"
-          @update="val => updateTree(2, val)"
+          :value="source"
+          @update="val => updateSource(source.id, val)"
         />
-        <div class="selector" v-if="tree.data.source && prevIsNotFinal(tree.data.source.indicatorKey)">
-          <source-comp
-            :value="tree.data.source.data.source ? { indicatorKey: tree.data.source.data.source.indicatorKey, data: tree.data.source.data.source.data } : undefined"
-            @update="val => updateTree(3, val)"
-          />
-          <div class="selector" v-if="tree.data.source.data.source && prevIsNotFinal(tree.data.source.data.source.indicatorKey)">
-            <source-comp
-              :last="true"
-              :value="{ indicatorKey: 'CANDLE_POSITION_VALUE', data: { candlePosition: tree.data.source.data.source ? tree.data.source.data.source.indicatorKey : '' } }"
-              @update="val => updateTree(4, val)"
-            />
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -36,8 +23,15 @@ import indicators from '@/assets/data/indicators'
 import { defineComponent, onMounted, ref, watch } from 'vue'
 
 import SourceComp from '@/components/strategies/path-editor/Source.vue'
+import { v4 } from 'uuid'
 
 interface SourceTree {
+  id: string
+  indicatorKey: string | undefined
+  data: Record<string, any>
+}
+
+interface SourceTreeWithoutId {
   indicatorKey: string | undefined
   data: Record<string, any>
 }
@@ -54,67 +48,120 @@ export default defineComponent({
   setup (props, context) {
     const indicatorKeys = indicators.map(i => i.key)
     const fields = ref<any[]>([])
-    const ready = ref<boolean>()
-    const tree = ref<SourceTree>({
-      indicatorKey: 'CANDLE_POSITION_VALUE',
-      data: {
-        candlePosition: 'CLOSE'
-      }
-    })
+    const sources = ref<SourceTree[]>([])
 
     onMounted(() => {
-      tree.value.indicatorKey = props.source.indicatorKey
-      tree.value.data = props.source.data
-      ready.value = true
+      let value = props.source
+      while (value) {
+        if (value.indicatorKey) {
+          sources.value.push({
+            id: v4(),
+            indicatorKey: value.indicatorKey,
+            data: value.data
+          })
+          if (value.data.source) {
+            value = value.data.source
+          } else {
+            value = undefined
+          }
+        } else {
+          value = undefined
+        }
+      }
+
+      const lastSource = sources.value[sources.value.length - 1]
+      const key = lastSource ? lastSource.indicatorKey || '' : ''
+      if (sources.value.length > 0 && prevIsNotFinal(key)) {
+        sources.value.push({
+          id: v4(),
+          indicatorKey: '',
+          data: {}
+        })
+      }
     })
 
-    watch(tree, () => {
-      context.emit('update', tree.value)
-    }, { deep: true })
+    function traverseTree (tree: SourceTreeWithoutId, index: number): SourceTreeWithoutId {
+      let localTree: SourceTreeWithoutId = tree
+      for (let i = 0; i < index; i++) {
+        localTree = localTree.data.source
+      }
 
-    function updateTree (level: number, value: SourceTree) {
-      console.log(value)
-      if (level === 1) {
-        if (!value.indicatorKey || value.indicatorKey === null) {
-          tree.value.indicatorKey = ''
-          tree.value.data = {}
-          return
-        }
-        tree.value.indicatorKey = value.indicatorKey
-        tree.value.data = value.data
-      }
-      if (level === 2) {
-        if (!value.indicatorKey || value.indicatorKey === null) {
-          tree.value.data.source.indicatorKey = ''
-          tree.value.data.source.data = {}
-          return
-        }
-        tree.value.data.source.indicatorKey = value.indicatorKey
-        tree.value.data.source.data = value.data
-      }
-      if (level === 3) {
-        if (!value.indicatorKey || value.indicatorKey === null) {
-          tree.value.data.source.data.source.indicatorKey = ''
-          tree.value.data.source.data.source.data = {}
-          return
-        }
-        tree.value.data.source.data.source.indicatorKey = value.indicatorKey
-        tree.value.data.source.data.source.data = value.data
-      }
+      return localTree
     }
+
+    function getIndicatorFieldKeys (indicatorKey: string): string[] {
+      const indicator = indicators.find(i => i.key === indicatorKey)
+      if (!indicator) return []
+
+      const keys = indicator.fields.map(f => f.key)
+      if (indicatorKey !== 'CANDLE_POSITION_VALUE') keys.push('source')
+      return keys
+    }
+
+    watch(sources, () => {
+      const tree: SourceTreeWithoutId = { indicatorKey: '', data: { source: {} } }
+
+      for (let i = 0; i < sources.value.length; i++) {
+        const source = sources.value[i]
+
+        const tracker = traverseTree(tree, i)
+        if (!tracker) continue
+        tracker.indicatorKey = source.indicatorKey
+        tracker.data = source.data
+        if (i !== sources.value.length - 1) {
+          tracker.data.source = {}
+        }
+
+        const keys = getIndicatorFieldKeys(source.indicatorKey || '')
+        for (const key of Object.keys(tracker.data)) {
+          if (!keys.includes(key)) {
+            delete tracker.data[key]
+          }
+        }
+      }
+
+      context.emit('update', tree)
+    }, { deep: true })
 
     function prevIsNotFinal (val: string): boolean {
       return val !== 'CANDLE_POSITION_VALUE' && val !== ''
+    }
+
+    function updateSource (id: string, data: any) {
+      let tempSources: SourceTree[] = JSON.parse(JSON.stringify(sources.value))
+      const idx = tempSources.findIndex(s => s.id === id)
+      if (idx === -1) return
+      data.id = id
+
+      if (JSON.stringify(tempSources[idx]) === JSON.stringify(data)) {
+        return
+      }
+      tempSources.splice(idx, 1, data)
+
+      if (!prevIsNotFinal(data.indicatorKey) || !data.indicatorKey) {
+        tempSources = tempSources.slice(0, idx + 1)
+      }
+
+      const lastSource = tempSources[tempSources.length - 1]
+      const key = lastSource ? lastSource.indicatorKey || '' : ''
+      if (tempSources.length > 0 && prevIsNotFinal(key)) {
+        tempSources.push({
+          id: v4(),
+          indicatorKey: '',
+          data: {}
+        })
+      }
+
+      sources.value = tempSources
     }
 
     return {
       indicatorKeys,
       indicators,
       fields,
-      tree,
-      ready,
-      updateTree,
-      prevIsNotFinal
+      sources,
+      prevIsNotFinal,
+      updateSource
     }
   }
 })
