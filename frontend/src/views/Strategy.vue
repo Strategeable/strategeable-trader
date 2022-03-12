@@ -309,7 +309,7 @@ export default defineComponent({
         }
         const data: BacktestRequestParameters = {
           strategyId: stratId,
-          fromDate: new Date('2017-08-05'),
+          fromDate: new Date('2020-08-05'),
           toDate: new Date('2022-03-10'),
           startBalance: 1000
         }

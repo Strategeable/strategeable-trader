@@ -18,5 +18,6 @@ export interface Indicator {
   name: string
   shortName: string
   hasTimeframe: boolean
+  hasSource: boolean
   fields: IndicatorField[]
 }

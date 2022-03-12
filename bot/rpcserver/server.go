@@ -103,7 +103,13 @@ func (b *Backtest) performBacktest(backtest *strategy_types.Backtest) {
 			case types.POSITION_CREATED:
 				position := event.Data.(*types.Position)
 
+				fmt.Printf("[BACKTEST] %s - Opened %s at %.2f.\n", event.Time.Format(time.RFC822), position.Symbol().String(), position.AverageEntryRate())
+
 				positions = append(positions, position)
+			case types.POSITION_CLOSED:
+				position := event.Data.(*types.Position)
+
+				fmt.Printf("[BACKTEST] %s - closed %s at %.2f. Change %%: %.2f. Current balance: %.2f.\n", event.Time.Format(time.RFC822), position.Symbol().String(), position.AverageExitRate(0), position.ChangePercentage(0), positionHandler.TotalBalance)
 			}
 		case _, ok := <-finishCh:
 			if ok {

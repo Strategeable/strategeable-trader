@@ -23,7 +23,7 @@
     </div>
     <div
       class="source input"
-      v-if="hasTimeframe && finalIndicator.indicatorKey !== 'CANDLE_POSITION_VALUE'"
+      v-if="hasSource"
     >
       <p>Source</p>
       <select-source
@@ -129,8 +129,12 @@ export default defineComponent({
       return (actualIndicator || { hasTimeframe: false }).hasTimeframe
     }
 
+    function hasSource (): boolean {
+      return (actualIndicator || { hasSource: false }).hasSource
+    }
+
     function getIndicatorSource (): any {
-      if (!props.indicator.data.source && hasTimeframe() && props.indicator.indicatorKey !== 'CANDLE_POSITION_VALUE') {
+      if (!props.indicator.data.source && hasSource()) {
         props.indicator.data.source = { indicatorKey: 'CANDLE_POSITION_VALUE', data: { candlePosition: 'CLOSE' } }
       }
       return props.indicator.data.source
@@ -145,6 +149,7 @@ export default defineComponent({
       indicatorName: (actualIndicator || { name: 'Name not found' }).name,
       timeframes,
       hasTimeframe: hasTimeframe(),
+      hasSource: hasSource(),
       source: props.indicator.data.source,
       options,
       actualIndicator,

@@ -55,10 +55,6 @@ func (h *historicalMarketDataProvider) Init() error {
 	for _, symbol := range h.symbols {
 		cache := h.mainCandleCollection.GetCache(h.exchangeImpl.GetExchange(), symbol, types.M1)
 
-		dateRanges := make([]types.DateRange, 0)
-
-		cacheCheckFrom := h.from
-
 		if cache == nil {
 			candles, err := h.databaseHandler.GetCandles(h.exchangeImpl.GetExchange(), symbol)
 			if err != nil {
@@ -74,8 +70,6 @@ func (h *historicalMarketDataProvider) Init() error {
 			if len(candles) > 0 {
 				latestCandleTime = candles[len(candles)-1].OpenTime.Add(1 * time.Minute)
 			}
-
-			cacheCheckFrom = latestCandleTime
 
 			if latestCandleTime.Before(time.Now().Add(-1 * time.Hour)) {
 				// Load all candles and save to database
@@ -108,53 +102,15 @@ func (h *historicalMarketDataProvider) Init() error {
 			cache = h.mainCandleCollection.GetCache(h.exchangeImpl.GetExchange(), symbol, types.M1)
 		}
 
-		var currentDateRange *types.DateRange
-
-		currentTime := cacheCheckFrom
+		candles := make([]*types.Candle, 0)
+		currentTime := h.from
 		for currentTime.Before(h.until) || currentTime.Equal(h.until) {
-			if cache.GetCandleAt(currentTime) == nil {
-				if currentDateRange == nil {
-					currentDateRange = &types.DateRange{
-						From: currentTime,
-					}
-				}
-			} else {
-				if currentDateRange != nil {
-					currentDateRange.To = currentTime.Add(-1 * time.Minute)
-					dateRanges = append(dateRanges, *currentDateRange)
-					currentDateRange = nil
-				}
-			}
-
+			candle := cache.GetCandleAt(currentTime)
 			currentTime = currentTime.Add(time.Minute)
-		}
-		if currentDateRange != nil {
-			currentDateRange.To = currentTime
-			dateRanges = append(dateRanges, *currentDateRange)
-		}
-
-		var candles []*types.Candle
-		if len(dateRanges) == 0 {
-			candles = make([]*types.Candle, 0)
-			currentTime := h.from
-			for currentTime.Before(h.until) || currentTime.Equal(h.until) {
-				candle := cache.GetCandleAt(currentTime)
-				currentTime = currentTime.Add(time.Minute)
-				if candle == nil {
-					continue
-				}
-				candles = append(candles, candle)
+			if candle == nil {
+				continue
 			}
-		} else {
-			c, err := h.exchangeImpl.GetHistoricalCandles(symbol, types.M1, h.from, h.until, nil)
-			if err != nil {
-				return err
-			}
-			candles = c
-		}
-
-		if cache == nil {
-			h.mainCandleCollection.InitializeTimeFrame(h.exchangeImpl.GetExchange(), symbol, types.M1, candles)
+			candles = append(candles, candle)
 		}
 
 		mapping := make(map[int64]*types.Candle)

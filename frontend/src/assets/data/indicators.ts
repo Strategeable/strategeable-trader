@@ -8,6 +8,7 @@ const indicators: Indicator[] = [
     name: 'Relative Strength Index',
     shortName: 'RSI',
     hasTimeframe: true,
+    hasSource: true,
     fields: [
       {
         key: 'period',
@@ -28,6 +29,7 @@ const indicators: Indicator[] = [
     name: 'Simple Moving Average',
     shortName: 'SMA',
     hasTimeframe: true,
+    hasSource: true,
     fields: [
       {
         key: 'period',
@@ -48,6 +50,7 @@ const indicators: Indicator[] = [
     name: 'Candle Position Value',
     shortName: 'Candle Value',
     hasTimeframe: true,
+    hasSource: false,
     fields: [
       {
         key: 'candlePosition',
@@ -65,6 +68,7 @@ const indicators: Indicator[] = [
     name: 'Number',
     shortName: 'Number',
     hasTimeframe: false,
+    hasSource: false,
     fields: [
       {
         key: 'number',
@@ -77,6 +81,14 @@ const indicators: Indicator[] = [
         placeholder: '0'
       }
     ]
+  },
+  {
+    key: 'POSITION_CHANGE',
+    name: 'Position Change %',
+    shortName: 'Position %',
+    hasTimeframe: true,
+    hasSource: false,
+    fields: []
   }
 ]
 
