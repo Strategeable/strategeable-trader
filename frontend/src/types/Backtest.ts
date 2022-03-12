@@ -24,6 +24,7 @@ export interface Position {
 
 export interface BacktestResult {
   strategy: Strategy
+  startedOn: Date
   startBalance: number
   fromDate: string
   toDate: string

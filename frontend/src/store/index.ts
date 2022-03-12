@@ -1,15 +1,18 @@
 import { createStore } from 'vuex'
 import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
+import { BacktestResult } from '@/types/Backtest'
 
 export default createStore({
   state: {
     token: undefined,
-    strategies: [] as Strategy[]
+    strategies: [] as Strategy[],
+    backtestsByStrategyId: {} as Record<string, BacktestResult[]>
   },
   getters: {
     loggedIn: state => !!state.token,
-    strategies: state => state.strategies
+    strategies: state => state.strategies,
+    backtests: state => state.backtestsByStrategyId
   },
   mutations: {
     SET_JWT (state, token) {
@@ -29,6 +32,14 @@ export default createStore({
           state.strategies.push(strategy)
         }
       }
+    },
+    ADD_BACKTEST_RESULT (state, result) {
+      let backtests = state.backtestsByStrategyId[result.strategy._id]
+      if (!backtests) backtests = []
+      backtests.push(result)
+    },
+    SET_BACKTESTS (state, { strategyId, backtests }) {
+      state.backtestsByStrategyId[strategyId] = backtests
     }
   },
   actions: {
@@ -82,6 +93,37 @@ export default createStore({
       } catch (err) {
         console.error(err)
         return undefined
+      }
+    },
+    async runBacktest ({ commit }, backtestParams) {
+      try {
+        const response = await axios.post('/backtest', backtestParams)
+        while (true) {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          try {
+            const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
+            if (backtestResponse.status === 200) {
+              if (backtestResponse.data.finished) {
+                commit('ADD_BACKTEST_RESULT', backtestResponse.data)
+                return backtestResponse.data
+              }
+            }
+          } catch (err) {
+            continue
+          }
+        }
+      } catch (err) {
+        console.error(err)
+        return undefined
+      }
+    },
+    async loadBacktests ({ commit }, strategyId) {
+      if (!strategyId) return
+      try {
+        const response = await axios.get(`/backtest/strategy/${strategyId}`)
+        commit('SET_BACKTESTS', { strategyId, backtests: response.data })
+      } catch (err) {
+        console.error(err)
       }
     }
   },

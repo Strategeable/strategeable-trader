@@ -109,7 +109,11 @@
       <div v-if="runningBacktest">
         <p>{{ runningBacktest }}</p>
       </div>
-      <backtest-result-comp v-if="backtestResult" :backtest="backtestResult" />
+      <backtest-result-comp
+        v-for="backest in backtestResults"
+        :key="backest.id"
+        :backtest="backest"
+      />
     </div>
     <div
       class="editor-overlay"
@@ -139,7 +143,6 @@ import moment from 'moment'
 import { Chunk, Path } from '@/types/Path'
 import { Strategy } from '@/types/Strategy'
 import { BacktestRequestParameters, BacktestResult } from '@/types/Backtest'
-import axios from '@/helpers/axios'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
 import ControlBar from '@/components/strategies/path-editor/ControlBar.vue'
@@ -176,7 +179,11 @@ export default defineComponent({
       toDate: new Date('2022-03-10'),
       startBalance: 1000
     })
-    const backtestResult = ref<BacktestResult>()
+    const backtestResults = computed(() => {
+      const id = route.path.split('/')[route.path.split('/').length - 1]
+      if (id === 'new') return []
+      return (store.getters.backtests[id] || []).sort((a: BacktestResult, b: BacktestResult) => new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime())
+    })
     const runningBacktest = ref<string>()
 
     const strategy = computed(() => {
@@ -205,6 +212,12 @@ export default defineComponent({
       return true
     })
 
+    async function loadBacktests () {
+      const id = route.path.split('/')[route.path.split('/').length - 1]
+      if (id === 'new') return
+      store.dispatch('loadBacktests', id)
+    }
+
     async function loadStrategy (id: string) {
       const strat: Strategy | undefined = await store.dispatch('loadStrategy', id)
       if (strat) {
@@ -221,6 +234,7 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      loadBacktests()
       if (route.params.id === 'new') {
         newPath('BUY')
         newPath('SELL')
@@ -297,14 +311,6 @@ export default defineComponent({
       return 'SELL'
     }
 
-    function undo () {
-      // todo
-    }
-
-    function redo () {
-      // todo
-    }
-
     async function save () {
       const stratId = await store.dispatch('saveStrategy', strategy.value)
       if (stratId && route.path.endsWith('new')) {
@@ -350,21 +356,8 @@ export default defineComponent({
         backtestParameters.value.strategyId = stratId
         runningBacktest.value = 'Backtesting...'
 
-        const response = await axios.post('/backtest', backtestParameters.value)
-        while (true) {
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          try {
-            const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
-            if (backtestResponse.status === 200) {
-              if (backtestResponse.data.finished) {
-                backtestResult.value = backtestResponse.data
-                break
-              }
-            }
-          } catch (err) {
-            continue
-          }
-        }
+        await store.dispatch('runBacktest', backtestParameters.value)
+
         runningBacktest.value = undefined
       } catch (err) {
         console.error(err)
@@ -379,7 +372,7 @@ export default defineComponent({
       editingChunk,
       name,
       symbols,
-      backtestResult,
+      backtestResults,
       emptyStrategy,
       backtestParameters,
       canSave,
@@ -392,8 +385,6 @@ export default defineComponent({
       closeChunkEditor,
       editPath,
       getType,
-      undo,
-      redo,
       save,
       exportStrategy,
       backtest,
