@@ -89,7 +89,7 @@ export default defineComponent({
 
         sourceValue.value = {
           indicatorKey: data.indicatorKey,
-          data: data.data
+          data: data.indicatorKey ? data.data : {}
         }
         selectedIndicatorKey.value = data.indicatorKey
       }
@@ -101,6 +101,7 @@ export default defineComponent({
 
     watch(selectedIndicatorKey, () => {
       sourceValue.value.indicatorKey = selectedIndicatorKey.value
+      if (!selectedIndicatorKey.value) sourceValue.value.data = {}
       context.emit('update', sourceValue.value)
     }, { deep: true })
 
