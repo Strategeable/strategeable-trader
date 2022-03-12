@@ -34,6 +34,7 @@ export async function handleRunBacktest(req: ServerRequest, res: Response) {
   if(!strategy) return res.sendStatus(400);
 
   const backtest = await createBacktest({
+    startedOn: new Date(),
     strategy: strategy,
     fromDate,
     toDate,
