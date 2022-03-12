@@ -23,10 +23,13 @@
     </div>
     <div
       class="source input"
-      v-if="hasTimeframe"
+      v-if="hasTimeframe && finalIndicator.indicatorKey !== 'CANDLE_POSITION_VALUE'"
     >
       <p>Source</p>
-      <select-source @update="val => finalIndicator.data.source = val" :source="sourceValue"/>
+      <select-source
+        @update="updateSource"
+        :source="getIndicatorSource()"
+      />
     </div>
     <div
       class="input"
@@ -52,6 +55,18 @@
         :type="getFieldValues(key, 'type')"
         v-model="indicator.data[key]"
       >
+      <select
+        v-if="getFieldValues(key, 'type') === 'select'"
+        v-model="indicator.data[key]"
+      >
+        <option
+          v-for="option in getFieldValues(key, 'options')"
+          :key="option"
+          :value="option"
+        >
+          {{ option }}
+        </option>
+      </select>
     </div>
     <div
       class="input"
@@ -79,7 +94,7 @@
 <script lang="ts">
 import indicators from '@/assets/data/indicators'
 import { IndicatorSettings, TimeFrame, timeframes } from '@/types/Path'
-import { defineComponent, onMounted, PropType, ref, watch } from 'vue'
+import { defineComponent, PropType, ref } from 'vue'
 
 import SelectSource from '@/components/strategies/path-editor/SelectSource.vue'
 
@@ -97,23 +112,6 @@ export default defineComponent({
   setup (props) {
     const actualIndicator = indicators.find(indicator => indicator.key === props.indicator.indicatorKey)
     const options = ref<any[]>([])
-    const sourceValue = ref({
-      indicatorKey: props.indicator.data.source?.indicatorKey,
-      data: {}
-    })
-
-    onMounted(() => {
-      if (props.indicator.data.source) {
-        sourceValue.value.indicatorKey = props.indicator.data.source.indicatorKey
-        sourceValue.value.data = props.indicator.data.source.data
-      }
-    })
-
-    watch(sourceValue, () => {
-      props.indicator.data.source = sourceValue
-    }, {
-      deep: true
-    })
 
     function selectTimeframe (tf: TimeFrame) {
       // eslint-disable-next-line vue/no-mutating-props
@@ -127,17 +125,33 @@ export default defineComponent({
       return field[item]
     }
 
+    function hasTimeframe (): boolean {
+      return (actualIndicator || { hasTimeframe: false }).hasTimeframe
+    }
+
+    function getIndicatorSource (): any {
+      if (!props.indicator.data.source && hasTimeframe() && props.indicator.indicatorKey !== 'CANDLE_POSITION_VALUE') {
+        props.indicator.data.source = { indicatorKey: 'CANDLE_POSITION_VALUE', data: { candlePosition: 'CLOSE' } }
+      }
+      return props.indicator.data.source
+    }
+
+    function updateSource (source: any) {
+      props.indicator.data.source = source
+    }
+
     return {
       finalIndicator: props.indicator,
       indicatorName: (actualIndicator || { name: 'Name not found' }).name,
       timeframes,
-      hasTimeframe: (actualIndicator || { hasTimeframe: false }).hasTimeframe,
+      hasTimeframe: hasTimeframe(),
       source: props.indicator.data.source,
       options,
       actualIndicator,
-      sourceValue,
       selectTimeframe,
-      getFieldValues
+      getFieldValues,
+      getIndicatorSource,
+      updateSource
     }
   }
 })
@@ -194,5 +208,11 @@ export default defineComponent({
       width: 100%;
     }
   }
+}
+
+.source {
+  padding: 0.6rem;
+  background-color: var(--background-darken);
+  border: 1px solid var(--border-color);
 }
 </style>

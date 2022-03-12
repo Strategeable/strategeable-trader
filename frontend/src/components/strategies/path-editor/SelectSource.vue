@@ -1,62 +1,32 @@
 <template>
   <div class="select-source">
-    <button
-      @click="toggleOpen"
-      class="select"
+    <div
+      class="selector"
+      v-if="ready"
     >
-      Select source
-    </button>
-    <div class="selector" v-if="open">
-      <v-select
-        :options="indicators"
-        label="name"
-        :reduce="x => x.key"
-        v-model="sourceValue.indicatorKey"
-        @option:selected="updateData"
+      <source-comp
+        :value="{ indicatorKey: tree.indicatorKey, data: tree.data }"
+        @update="val => updateTree(1, val)"
       />
-      <div class="fields">
-        <div
-          class="input"
-          v-for="field in fields"
-          :key="field.key"
-        >
-          <p>{{ field.name }}</p>
-          <input
-            v-if="field.type === 'number'"
-            type="number"
-            :max="field.max"
-            :min="field.min"
-            :placeholder="field.default"
-            v-model="sourceValue.data[field.key]"
-          >
-          <input
-            v-if="field.type === 'text'"
-            type="text"
-            :placeholder="field.default"
-            v-model="sourceValue.data[field.key]"
-          >
-          <input
-            v-if="field.type === 'checkbox'"
-            type="checkbox"
-            v-model="sourceValue.data[field.key]"
-          >
-          <select
-            v-if="field.type === 'select'"
-            v-model="sourceValue.data[field.key]"
-          >
-            <option
-              v-for="option in field.options"
-              :key="option"
-              :value="option"
-            >
-              {{ option }}
-            </option>
-          </select>
+      <div class="selector" v-if="prevIsNotFinal(tree.indicatorKey)">
+        <source-comp
+          :value="tree.data.source ? { indicatorKey: tree.data.source.indicatorKey, data: tree.data.source.data } : undefined"
+          @update="val => updateTree(2, val)"
+        />
+        <div class="selector" v-if="tree.data.source && prevIsNotFinal(tree.data.source.indicatorKey)">
+          <source-comp
+            :value="tree.data.source.data.source ? { indicatorKey: tree.data.source.data.source.indicatorKey, data: tree.data.source.data.source.data } : undefined"
+            @update="val => updateTree(3, val)"
+          />
+          <div class="selector" v-if="tree.data.source.data.source && prevIsNotFinal(tree.data.source.data.source.indicatorKey)">
+            <source-comp
+              :last="true"
+              :value="{ indicatorKey: 'CANDLE_POSITION_VALUE', data: { candlePosition: tree.data.source.data.source ? tree.data.source.data.source.indicatorKey : '' } }"
+              @update="val => updateTree(4, val)"
+            />
+          </div>
         </div>
       </div>
-      <button @click="$emit('select', { indicatorKey, data })">
-        Select
-      </button>
     </div>
   </div>
 </template>
@@ -65,8 +35,16 @@
 import indicators from '@/assets/data/indicators'
 import { defineComponent, onMounted, ref, watch } from 'vue'
 
+import SourceComp from '@/components/strategies/path-editor/Source.vue'
+
+interface SourceTree {
+  indicatorKey: string | undefined
+  data: Record<string, any>
+}
+
 export default defineComponent({
-  emits: ['select', 'update'],
+  components: { SourceComp },
+  emits: ['update'],
   props: {
     source: {
       type: Object as any,
@@ -74,69 +52,79 @@ export default defineComponent({
     }
   },
   setup (props, context) {
-    const open = ref<boolean>(false)
     const indicatorKeys = indicators.map(i => i.key)
-    const fields = ref<any>([])
-    const sourceValue = ref<any>(props.source || {
+    const fields = ref<any[]>([])
+    const ready = ref<boolean>()
+    const tree = ref<SourceTree>({
       indicatorKey: 'CANDLE_POSITION_VALUE',
       data: {
         candlePosition: 'CLOSE'
       }
     })
 
-    watch(sourceValue, () => {
-      context.emit('update', sourceValue.value)
-      updateData()
-    })
-
     onMounted(() => {
-      updateData()
+      tree.value.indicatorKey = props.source.indicatorKey
+      tree.value.data = props.source.data
+      ready.value = true
     })
 
-    function toggleOpen () {
-      open.value = !open.value
+    watch(tree, () => {
+      context.emit('update', tree.value)
+    }, { deep: true })
+
+    function updateTree (level: number, value: SourceTree) {
+      if (level === 1) {
+        if (!value.indicatorKey || value.indicatorKey === null) {
+          tree.value.indicatorKey = ''
+          tree.value.data = {}
+          return
+        }
+        tree.value.indicatorKey = value.indicatorKey
+        tree.value.data = value.data
+      }
+      if (level === 2) {
+        if (!tree.value.data.source || !tree.value.data.source.indicatorKey) {
+          tree.value.data.source = {
+            indicatorKey: undefined,
+            data: {}
+          }
+        }
+        tree.value.data.source.indicatorKey = value.indicatorKey
+        tree.value.data.source.data = value.data
+      }
+      if (level === 3) {
+        if (!tree.value.data.source.data.source || !tree.value.data.source.data.source.indicatorKey) {
+          tree.value.data.source.data.source = {
+            indicatorKey: undefined,
+            data: {}
+          }
+        }
+        tree.value.data.source.data.source.indicatorKey = value.indicatorKey
+        tree.value.data.source.data.source.data = value.data
+      }
     }
 
-    function updateData (e?: any) {
-      let key: string
-      if (!e) {
-        key = sourceValue.value.indicatorKey
-      } else {
-        key = e.key
-      }
-
-      console.log(key)
-
-      const indicator = indicators.find(i => i.key === key)
-      if (!indicator) return
-
-      if (e) {
-        sourceValue.value.indicatorKey = e.key
-      }
-
-      for (const localKey of Object.keys(sourceValue.value.data)) {
-        const field = indicator.fields.find(f => f.key === localKey)
-        if (!field) {
-          delete sourceValue.value.data[localKey]
-        } else if (field.default) {
-          sourceValue.value.data[localKey] = field.default
-        }
-      }
-
-      fields.value = indicator.fields
+    function prevIsNotFinal (val: string): boolean {
+      return val !== 'CANDLE_POSITION_VALUE' && val !== ''
     }
 
     return {
-      open,
       indicatorKeys,
       indicators,
-      selectedIndicatorKey: sourceValue.value.indicatorKey,
       fields,
-      data: sourceValue.value.data,
-      sourceValue,
-      toggleOpen,
-      updateData
+      tree,
+      ready,
+      updateTree,
+      prevIsNotFinal
     }
   }
 })
 </script>
+
+<style lang="scss" scoped>
+.selector {
+  margin: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--background);
+}
+</style>
