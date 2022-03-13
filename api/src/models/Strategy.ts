@@ -78,6 +78,26 @@ const schema: Schema<Strategy> = new Schema({
         required: true
       }
     }
+  ],
+  variables: [
+    {
+      id: {
+        type: String,
+        required: true
+      },
+      type: {
+        type: String,
+        enum: ['number', 'timeframe'],
+        required: true
+      },
+      key: {
+        type: String,
+        required: true
+      },
+      value: {
+        type: mongoose.Schema.Types.Mixed
+      }
+    }
   ]
 });
 
