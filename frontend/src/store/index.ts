@@ -88,7 +88,7 @@ export default createStore({
         const response = strategy.id ? await axios.put('/strategy', { strategy }) : await axios.post('/strategy', { strategy })
         if (!response.data) return
 
-        commit('SET_STRATEGY', strategy)
+        commit('SET_STRATEGY', response.data)
         return response.data.id
       } catch (err) {
         console.error(err)

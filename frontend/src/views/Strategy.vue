@@ -127,8 +127,6 @@
       :canUndo="false"
       :canRedo="false"
       @save="save"
-      @undo="undo"
-      @redo="redo"
       @exportStrategy="exportStrategy"
     />
   </div>
@@ -190,8 +188,8 @@ export default defineComponent({
       const strat: Strategy = {
         id: strategyId.value,
         version: '0.0.1',
-        createdAt: new Date(),
-        lastEdited: new Date(),
+        createdAt: new Date(strategyCreatedAt.value.toString()),
+        lastEdited: new Date(strategyLastEdited.value.toString()),
         name: name.value,
         symbols: symbols.value,
         chunks: chunks.value,

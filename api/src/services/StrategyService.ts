@@ -31,6 +31,8 @@ export async function updateStrategy(_id: ObjectId, strategyUpdate: any): Promis
       existing[key] = val;
     }
 
+    existing.lastEdited = new Date()
+
     await existing.save();
     return existing;
   } catch(err) {
