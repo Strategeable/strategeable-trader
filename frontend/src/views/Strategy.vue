@@ -22,6 +22,24 @@
       </div>
     </div>
     <div class="section">
+      <h2>Variables</h2>
+      <div
+        class="variable"
+        v-for="variable in variables"
+        :key="variable.id"
+      >
+        <div class="input">
+          <p>Name</p>
+          <input type="text" v-model="variable.key">
+        </div>
+        <div class="input">
+          <p>Value</p>
+          <input type="number" v-model="variable.value">
+        </div>
+      </div>
+      <button @click="newVariable">New variable</button>
+    </div>
+    <div class="section">
       <h2>Chunks</h2>
       <div class="chunks">
         <div
@@ -140,7 +158,7 @@ import exportFromJSON from 'export-from-json'
 import moment from 'moment'
 
 import { Chunk, Path } from '@/types/Path'
-import { Strategy } from '@/types/Strategy'
+import { Strategy, Variable } from '@/types/Strategy'
 import { BacktestRequestParameters, BacktestResult } from '@/types/Backtest'
 
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
@@ -165,6 +183,7 @@ export default defineComponent({
     const chunks = ref<Chunk[]>([])
     const name = ref<string>('')
     const symbols = ref<string[]>([])
+    const variables = ref<Variable[]>([])
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
 
@@ -194,7 +213,8 @@ export default defineComponent({
         name: name.value,
         symbols: symbols.value,
         chunks: chunks.value,
-        paths: paths.value
+        paths: paths.value,
+        variables: variables.value
       }
       return strat
     })
@@ -227,6 +247,7 @@ export default defineComponent({
         strategyId.value = strat.id
         strategyCreatedAt.value = strat.createdAt
         strategyLastEdited.value = strat.lastEdited
+        variables.value = strat.variables
 
         openFirstPaths()
       }
@@ -365,10 +386,15 @@ export default defineComponent({
     }
 
     function restoreStrategy (strat: Strategy) {
-      // paths.value = strat.paths
-      // chunks.value = strat.chunks
-      // name.value = strat.name
-      // symbols.value = strat.symbols
+    }
+
+    function newVariable () {
+      variables.value.push({
+        type: 'number',
+        id: v4(),
+        key: '',
+        value: undefined
+      })
     }
 
     return {
@@ -383,6 +409,7 @@ export default defineComponent({
       backtestParameters,
       canSave,
       runningBacktest,
+      variables,
       newPath,
       newChunk,
       deletePath,
@@ -396,6 +423,7 @@ export default defineComponent({
       backtest,
       handleUploadStrategy,
       restoreStrategy,
+      newVariable,
       moment
     }
   }

@@ -88,6 +88,12 @@ export interface Path {
   steps: PathStep[]
   type: 'BUY' | 'SELL'
 }
+export interface Variable {
+  type: 'number' | 'timeframe'
+  id: string
+  key: string
+  value: any
+}
 
 export default interface Strategy {
   _id?: ObjectId
@@ -98,4 +104,5 @@ export default interface Strategy {
   symbols: string[]
   chunks: Chunk[]
   paths: Path[]
+  variables: Variable[]
 }
