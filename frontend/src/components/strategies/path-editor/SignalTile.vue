@@ -36,6 +36,7 @@
             <edit-indicator
               v-if="finalTile.indicatorA"
               :indicator="tile.indicatorA"
+              :variables="variables"
               @delete="() => tile.indicatorA = undefined"
             />
           </div>
@@ -63,6 +64,7 @@
             <edit-indicator
               v-if="tile.indicatorB"
               :indicator="tile.indicatorB"
+              :variables="variables"
               @delete="() => tile.indicatorB = undefined"
             />
           </div>
@@ -80,6 +82,7 @@ import SearchIndicator from '@/components/strategies/path-editor/SearchIndicator
 import EditIndicator from '@/components/strategies/path-editor/EditIndicator.vue'
 import indicators from '@/assets/data/indicators'
 import { Indicator } from '@/types/Indicator'
+import { Variable } from '@/types/Strategy'
 
 export default defineComponent({
   components: { SearchIndicator, EditIndicator },
@@ -87,6 +90,10 @@ export default defineComponent({
     tile: {
       required: true,
       type: Object as PropType<SignalTile>
+    },
+    variables: {
+      required: true,
+      type: Array as PropType<Variable[]>
     }
   },
   emits: ['delete'],

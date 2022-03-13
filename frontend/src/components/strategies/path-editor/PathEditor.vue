@@ -17,6 +17,7 @@
           <signal-tile-comp
             v-if="step.type === 'SIGNAL_TILE'"
             :tile="step.data"
+            :variables="variables"
             @delete="deleteStep(step.id)"
           />
           <any-signal-tile-comp
@@ -74,6 +75,7 @@ import SignalTileComp from '@/components/strategies/path-editor/SignalTile.vue'
 import AnySignalTileComp from '@/components/strategies/path-editor/AnySignalTile.vue'
 import ChunkTile from '@/components/strategies/path-editor/ChunkTile.vue'
 import SelectChunk from '@/components/strategies/path-editor/SelectChunk.vue'
+import { Variable } from '@/types/Strategy'
 
 export default defineComponent({
   components: {
@@ -89,6 +91,10 @@ export default defineComponent({
     chunks: {
       required: true,
       type: Array as PropType<Chunk[]>
+    },
+    variables: {
+      required: true,
+      type: Array as PropType<Variable[]>
     }
   },
   setup (props) {

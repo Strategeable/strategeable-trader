@@ -36,37 +36,57 @@
       v-for="key in Object.keys(indicator.data || {}).filter(f => f !== 'source')"
       :key="key"
     >
-      <p>{{ key }}</p>
-      <input
-        v-if="getFieldValues(key, 'type') === 'number'"
-        type="number"
-        :max="getFieldValues(key, 'max')"
-        :min="getFieldValues(key, 'min')"
-        :placeholder="getFieldValues(key, 'default')"
-        v-model="indicator.data[key].value"
-      >
-      <input
-        v-if="getFieldValues(key, 'type') === 'text'"
-        :type="getFieldValues(key, 'type')"
-        v-model="indicator.data[key].value"
-      >
-      <input
-        v-if="getFieldValues(key, 'type') === 'checkbox'"
-        :type="getFieldValues(key, 'type')"
-        v-model="indicator.data[key].value"
-      >
-      <select
-        v-if="getFieldValues(key, 'type') === 'select'"
-        v-model="indicator.data[key].value"
-      >
-        <option
-          v-for="option in getFieldValues(key, 'options')"
-          :key="option"
-          :value="option"
+      <div class="top">
+        <p>
+          <span>{{ key }}</span>
+          <span
+            class="choose-var"
+            @click="() => indicator.data[key] = { variable: !indicator.data[key].variable, value: undefined }"
+          >
+            {{ indicator.data[key].variable ? 'Remove variable' : 'Choose variable' }}
+          </span>
+        </p>
+      </div>
+      <div v-if="!indicator.data[key].variable">
+        <input
+          v-if="getFieldValues(key, 'type') === 'number'"
+          type="number"
+          :max="getFieldValues(key, 'max')"
+          :min="getFieldValues(key, 'min')"
+          :placeholder="getFieldValues(key, 'default')"
+          v-model="indicator.data[key].value"
         >
-          {{ option }}
-        </option>
-      </select>
+        <input
+          v-if="getFieldValues(key, 'type') === 'text'"
+          :type="getFieldValues(key, 'type')"
+          v-model="indicator.data[key].value"
+        >
+        <input
+          v-if="getFieldValues(key, 'type') === 'checkbox'"
+          :type="getFieldValues(key, 'type')"
+          v-model="indicator.data[key].value"
+        >
+        <select
+          v-if="getFieldValues(key, 'type') === 'select'"
+          v-model="indicator.data[key].value"
+        >
+          <option
+            v-for="option in getFieldValues(key, 'options')"
+            :key="option"
+            :value="option"
+          >
+            {{ option }}
+          </option>
+        </select>
+      </div>
+      <div v-else>
+        <v-select
+          :options="variables"
+          label="key"
+          :reduce="x => x.key"
+          v-model="indicator.data[key].value"
+        />
+      </div>
     </div>
     <div
       class="input"
@@ -97,6 +117,7 @@ import { IndicatorSettings, TimeFrame, timeframes } from '@/types/Path'
 import { defineComponent, PropType, ref } from 'vue'
 
 import SelectSource from '@/components/strategies/path-editor/SelectSource.vue'
+import { Variable } from '@/types/Strategy'
 
 export default defineComponent({
   components: {
@@ -107,6 +128,10 @@ export default defineComponent({
     indicator: {
       required: true,
       type: Object as PropType<IndicatorSettings>
+    },
+    variables: {
+      required: true,
+      type: Array as PropType<Variable[]>
     }
   },
   setup (props) {
@@ -218,6 +243,19 @@ export default defineComponent({
     p {
       margin-bottom: 0.5rem;
       font-size: 14px;
+    }
+    .top p {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      span {
+        display: block;
+      }
+      .choose-var {
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 12px;
+      }
     }
     input {
       padding: 0.5rem;

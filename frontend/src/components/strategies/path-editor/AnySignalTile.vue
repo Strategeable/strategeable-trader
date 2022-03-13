@@ -12,6 +12,7 @@
         v-for="tile in tiles.signals"
         :key="tile.id"
         :tile="tile"
+        :variables="variables"
         @delete="() => deleteSignal(tile.id)"
       />
       <div class="buttons">
@@ -28,6 +29,7 @@ import { defineComponent, PropType } from 'vue'
 
 import SignalTileComp from '@/components/strategies/path-editor/SignalTile.vue'
 import { v4 } from 'uuid'
+import { Variable } from '@/types/Strategy'
 
 export default defineComponent({
   components: { SignalTileComp },
@@ -35,6 +37,10 @@ export default defineComponent({
     tiles: {
       required: true,
       type: Object as PropType<AnySignal>
+    },
+    variables: {
+      required: true,
+      type: Array as PropType<Variable[]>
     }
   },
   emits: ['delete'],

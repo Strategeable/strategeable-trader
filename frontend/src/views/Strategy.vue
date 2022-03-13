@@ -23,18 +23,20 @@
     </div>
     <div class="section">
       <h2>Variables</h2>
-      <div
-        class="variable"
-        v-for="variable in variables"
-        :key="variable.id"
-      >
-        <div class="input">
-          <p>Name</p>
-          <input type="text" v-model="variable.key">
-        </div>
-        <div class="input">
-          <p>Value</p>
-          <input type="number" v-model="variable.value">
+      <div class="variables">
+        <div
+          class="variable"
+          v-for="variable in variables"
+          :key="variable.id"
+        >
+          <div class="input">
+            <p>Name</p>
+            <input type="text" v-model="variable.key">
+          </div>
+          <div class="input">
+            <p>Value</p>
+            <input type="number" v-model="variable.value">
+          </div>
         </div>
       </div>
       <button @click="newVariable">New variable</button>
@@ -89,6 +91,7 @@
             v-if="openEditor[getType(type)] && paths.some(p => p.id === openEditor[getType(type)])"
             :chunks="chunks"
             :path="paths.find(p => p.id === openEditor[getType(type)])"
+            :variables="variables"
             :key="openEditor[getType(type)]"
           />
         </div>
@@ -139,7 +142,7 @@
       v-if="!!editingChunk"
       @click.self="closeChunkEditor"
     >
-      <path-editor :chunk="editingChunk" :chunks="[]"/>
+      <path-editor :chunk="editingChunk" :chunks="[]" :variables="[]"/>
     </div>
     <control-bar
       :canSave="canSave"
@@ -386,6 +389,7 @@ export default defineComponent({
     }
 
     function restoreStrategy (strat: Strategy) {
+      // todo
     }
 
     function newVariable () {
@@ -546,6 +550,25 @@ export default defineComponent({
       display: flex;
       flex-direction: column;
       margin-right: 1rem;
+    }
+  }
+}
+
+.variables {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.variable {
+  display: flex;
+  margin-bottom: 1rem;
+  margin-right: 2rem;
+  .input {
+    margin-right: 0.5rem;
+    flex-direction: column;
+    width: 125px;
+    input {
+      width: 100%;
     }
   }
 }
