@@ -2,35 +2,41 @@
   <table cellspacing="0" cellpadding="0">
     <thead>
       <tr>
-        <th
-          v-for="key in keys"
-          :key="key"
-        >{{ key }}</th>
+        <th>Name</th>
+        <th>Created at</th>
+        <th>Last edited at</th>
       </tr>
     </thead>
     <tbody>
       <tr
-        v-for="entry in data"
-        :key="entry[dataKey]"
-        @click="$emit('select', entry[dataKey])"
+        v-for="entry in sortedData"
+        :key="entry.id"
+        @click="$emit('select', entry.id)"
       >
-        <td
-          v-for="[key, value] in Object.entries(entry)"
-          :key="key"
-        >{{ value }}</td>
+        <td>{{ entry.name }}</td>
+        <td>{{ moment(entry.createdAt).format('DD-MM-YYYY HH:mm') }}</td>
+        <td>{{ moment(entry.lastEdited).format('DD-MM-YYYY HH:mm') }}</td>
       </tr>
     </tbody>
   </table>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
+import moment from 'moment'
+
+interface StrategyEntry {
+  id: string
+  name: string
+  lastEdited: Date
+  createdAt: Date
+}
 
 export default defineComponent({
   props: {
     data: {
       // eslint-disable-next-line
-      type: Array as PropType<any[]>,
+      type: Array as PropType<StrategyEntry[]>,
       required: true
     },
     dataKey: {
@@ -38,10 +44,12 @@ export default defineComponent({
       required: true
     }
   },
-  computed: {
-    keys (): string[] {
-      if (this.data.length === 0) return []
-      return Object.keys(this.data[0])
+  setup (props) {
+    const sortedData = computed(() => props.data.sort((a, b) => new Date(b.lastEdited).getTime() - new Date(a.lastEdited).getTime()))
+
+    return {
+      moment,
+      sortedData
     }
   }
 })
@@ -54,6 +62,7 @@ table {
   thead {
     tr {
       background-color: var(--table-header);
+      cursor: unset !important;
     }
     th {
       color: var(--text-secondary);
@@ -70,6 +79,7 @@ table {
   }
   tr {
     background-color: var(--table-row);
+    cursor: pointer;
   }
   tr:nth-child(even) {
     background-color: var(--table-row-alt);
