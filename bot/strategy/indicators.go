@@ -15,5 +15,6 @@ var (
 		"CANDLE_POSITION_VALUE": reflect.TypeOf(indicators.CandlePositionValueIndicator{}),
 		"BOLLINGER_BAND":        reflect.TypeOf(indicators.BollingerBandIndicator{}),
 		"POSITION_CHANGE":       reflect.TypeOf(indicators.PositionChangeIndicator{}),
+		"POSITION_HOLD_TIME":    reflect.TypeOf(indicators.PositionHoldTimeIndicator{}),
 	}
 )
