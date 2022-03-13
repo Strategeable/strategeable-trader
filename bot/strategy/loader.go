@@ -13,13 +13,53 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type rawIndicatorValue struct {
+	Variable bool
+	Value    interface{}
+}
+
+func (r *rawIndicatorValue) UnmarshalBSON(data []byte) error {
+	type tempStruct struct {
+		Variable bool
+		Value    interface{}
+	}
+
+	temp := &tempStruct{}
+	err := bson.Unmarshal(data, temp)
+	if err != nil {
+		return err
+	}
+
+	r.Variable = temp.Variable
+
+	value := reflect.ValueOf(temp.Value)
+
+	if value.Type().String() == "primitive.D" {
+		type tempStruct struct {
+			Variable bool
+			Value    map[string]interface{}
+		}
+		temp := &tempStruct{}
+		err = bson.Unmarshal(data, temp)
+		if err != nil {
+			return err
+		}
+
+		r.Value = temp.Value
+	} else {
+		r.Value = temp.Value
+	}
+
+	return nil
+}
+
 type rawIndicator struct {
 	TimeFrame    string
 	CandleBack   int
 	RealTime     bool
 	Offset       float64
 	IndicatorKey string
-	Data         map[string]interface{}
+	Data         map[string]rawIndicatorValue
 }
 
 type rawSignalTile struct {
@@ -285,7 +325,9 @@ func rawIndicatorToIndicator(raw rawIndicator) (types.Indicator, error) {
 
 	indicator := reflect.Indirect(reflect.New(refType))
 
-	for key, value := range raw.Data {
+	for key, rawValue := range raw.Data {
+		value := rawValue.Value
+
 		key := strings.Title(key)
 
 		field := indicator.FieldByName(key)

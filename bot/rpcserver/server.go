@@ -50,6 +50,7 @@ type Backtest struct {
 func (b *Backtest) Backtest(r *http.Request, backtestId *string, reply *int) error {
 	backtest, err := b.databaseHandler.GetBacktestById(*backtestId)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 	*reply = 1
