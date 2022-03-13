@@ -28,6 +28,8 @@ export default defineComponent({
   },
   setup (props) {
     function calculateBalances (startBalance: number, positions: Position[]): LineChartEntry[] {
+      if (!positions) return []
+
       let balance = startBalance
       const entries: LineChartEntry[] = []
       for (const position of positions) {
@@ -36,6 +38,8 @@ export default defineComponent({
         const difference = quoteExitSize - quoteEntrySize
 
         balance = balance + difference - position.entryValue.quoteFees - position.exitValue.quoteFees
+
+        if (new Date(position.closedAt).getTime() < 37701695) continue
 
         entries.push({
           x: new Date(position.closedAt),
