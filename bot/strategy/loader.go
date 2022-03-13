@@ -13,6 +13,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+type rawVariable struct {
+	Type  string
+	Key   string
+	Value interface{}
+}
+
 type rawIndicatorValue struct {
 	Variable bool
 	Value    interface{}
@@ -161,16 +167,22 @@ type rawPath struct {
 }
 
 type rawStrategy struct {
-	Name    string
-	Symbols []string
-	Chunks  []rawChunk
-	Paths   []rawPath
+	Name      string
+	Symbols   []string
+	Chunks    []rawChunk
+	Paths     []rawPath
+	Variables []rawVariable
 }
 
 func StrategyFromJson(strategy rawStrategy) (*Strategy, error) {
+	variableMapping := make(map[string]rawVariable)
+	for _, variable := range strategy.Variables {
+		variableMapping[variable.Key] = variable
+	}
+
 	chunkMapping := make(map[string][]Tile)
 	for _, chunk := range strategy.Chunks {
-		tiles, err := stepsToTiles(chunk.Steps, chunkMapping)
+		tiles, err := stepsToTiles(chunk.Steps, chunkMapping, variableMapping)
 		if err != nil {
 			return nil, err
 		}
@@ -181,7 +193,7 @@ func StrategyFromJson(strategy rawStrategy) (*Strategy, error) {
 	sellPaths := make([]*Path, 0)
 
 	for _, rawPath := range strategy.Paths {
-		tiles, err := stepsToTiles(rawPath.Steps, chunkMapping)
+		tiles, err := stepsToTiles(rawPath.Steps, chunkMapping, variableMapping)
 		if err != nil {
 			return nil, err
 		}
@@ -217,10 +229,10 @@ func StrategyFromJson(strategy rawStrategy) (*Strategy, error) {
 	}, nil
 }
 
-func stepsToTiles(steps []rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
+func stepsToTiles(steps []rawStep, chunkMapping map[string][]Tile, variableMapping map[string]rawVariable) ([]Tile, error) {
 	tiles := make([]Tile, 0)
 	for _, rawStep := range steps {
-		addedTiles, err := stepToTile(rawStep, chunkMapping)
+		addedTiles, err := stepToTile(rawStep, chunkMapping, variableMapping)
 		if err != nil {
 			return nil, err
 		}
@@ -229,7 +241,7 @@ func stepsToTiles(steps []rawStep, chunkMapping map[string][]Tile) ([]Tile, erro
 	return tiles, nil
 }
 
-func stepToTile(step rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
+func stepToTile(step rawStep, chunkMapping map[string][]Tile, variableMapping map[string]rawVariable) ([]Tile, error) {
 	switch step.Type {
 	case "SIGNAL_TILE":
 		var data rawSignalTile
@@ -243,7 +255,7 @@ func stepToTile(step rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
 			return nil, err
 		}
 
-		signalTile, err := rawSignalTileToSignalTile(data)
+		signalTile, err := rawSignalTileToSignalTile(data, variableMapping)
 		if err != nil {
 			return nil, err
 		}
@@ -259,7 +271,7 @@ func stepToTile(step rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
 
 		signalTiles := make([]*SignalTile, 0)
 		for _, rawSignalTile := range data.Signals {
-			signalTile, err := rawSignalTileToSignalTile(rawSignalTile)
+			signalTile, err := rawSignalTileToSignalTile(rawSignalTile, variableMapping)
 			if err != nil {
 				return make([]Tile, 0), nil
 			}
@@ -279,12 +291,12 @@ func stepToTile(step rawStep, chunkMapping map[string][]Tile) ([]Tile, error) {
 	return nil, fmt.Errorf("tile type not found: %s", step.Type)
 }
 
-func rawSignalTileToSignalTile(raw rawSignalTile) (*SignalTile, error) {
-	indicatorA, err := rawIndicatorToIndicator(raw.IndicatorA)
+func rawSignalTileToSignalTile(raw rawSignalTile, variableMapping map[string]rawVariable) (*SignalTile, error) {
+	indicatorA, err := rawIndicatorToIndicator(raw.IndicatorA, variableMapping)
 	if err != nil {
 		return nil, err
 	}
-	indicatorB, err := rawIndicatorToIndicator(raw.IndicatorB)
+	indicatorB, err := rawIndicatorToIndicator(raw.IndicatorB, variableMapping)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +328,7 @@ func rawSignalTileToSignalTile(raw rawSignalTile) (*SignalTile, error) {
 	}, nil
 }
 
-func rawIndicatorToIndicator(raw rawIndicator) (types.Indicator, error) {
+func rawIndicatorToIndicator(raw rawIndicator, variableMapping map[string]rawVariable) (types.Indicator, error) {
 	refType := INDICATOR_REGISTRY[raw.IndicatorKey]
 
 	if refType == nil {
@@ -327,6 +339,9 @@ func rawIndicatorToIndicator(raw rawIndicator) (types.Indicator, error) {
 
 	for key, rawValue := range raw.Data {
 		value := rawValue.Value
+		if rawValue.Variable {
+			value = variableMapping[rawValue.Value.(string)].Value
+		}
 
 		key := strings.Title(key)
 
@@ -354,7 +369,7 @@ func rawIndicatorToIndicator(raw rawIndicator) (types.Indicator, error) {
 				return nil, err
 			}
 
-			nestedIndicator, err := rawIndicatorToIndicator(nestedRawIndicator)
+			nestedIndicator, err := rawIndicatorToIndicator(nestedRawIndicator, variableMapping)
 			if err != nil {
 				return nil, err
 			}
