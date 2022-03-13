@@ -38,13 +38,18 @@ export enum StepType {
   CHUNK_ID = 'CHUNK_ID'
 }
 
+export interface Data {
+  variable: boolean
+  value: any
+}
+
 export interface IndicatorSettings {
   timeframe?: TimeFrame
   candlesBack: number
   realTime: boolean
   offset: number
   indicatorKey: string
-  data: Record<string, any>
+  data: Record<string, Data>
   symbol?: string
 }
 

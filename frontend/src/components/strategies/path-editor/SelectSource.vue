@@ -53,14 +53,14 @@ export default defineComponent({
     onMounted(() => {
       let value = props.source
       while (value) {
-        if (value.indicatorKey) {
+        if (value.value.indicatorKey) {
           sources.value.push({
             id: v4(),
-            indicatorKey: value.indicatorKey,
-            data: value.data
+            indicatorKey: value.value.indicatorKey,
+            data: value.value.data
           })
-          if (value.data.source) {
-            value = value.data.source
+          if (value.value.data.source) {
+            value = value.value.data.source
           } else {
             value = undefined
           }
@@ -99,7 +99,15 @@ export default defineComponent({
     }
 
     watch(sources, () => {
-      const tree: SourceTreeWithoutId = { indicatorKey: '', data: { source: {} } }
+      const tree: SourceTreeWithoutId = {
+        indicatorKey: '',
+        data: {
+          source: {
+            variable: false,
+            value: {}
+          }
+        }
+      }
 
       for (let i = 0; i < sources.value.length; i++) {
         const source = sources.value[i]
@@ -109,7 +117,7 @@ export default defineComponent({
         tracker.indicatorKey = source.indicatorKey
         tracker.data = source.data
         if (i !== sources.value.length - 1) {
-          tracker.data.source = {}
+          tracker.data.source = { variable: false, value: {} }
         }
 
         const keys = getIndicatorFieldKeys(source.indicatorKey || '')

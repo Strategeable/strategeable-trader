@@ -20,22 +20,22 @@
           :max="field.max"
           :min="field.min"
           :placeholder="field.default"
-          v-model="sourceValue.data[field.key]"
+          v-model="sourceValue.data[field.key].value"
         >
         <input
           v-if="field.type === 'text'"
           type="text"
           :placeholder="field.default"
-          v-model="sourceValue.data[field.key]"
+          v-model="sourceValue.data[field.key].value"
         >
         <input
           v-if="field.type === 'checkbox'"
           type="checkbox"
-          v-model="sourceValue.data[field.key]"
+          v-model="sourceValue.data[field.key].value"
         >
         <select
           v-if="field.type === 'select'"
-          v-model="sourceValue.data[field.key]"
+          v-model="sourceValue.data[field.key].value"
         >
           <option
             v-for="option in field.options"
@@ -52,11 +52,12 @@
 
 <script lang="ts">
 import indicators from '@/assets/data/indicators'
+import { Data } from '@/types/Path'
 import { computed, defineComponent, onMounted, PropType, ref, watch } from 'vue'
 
 interface SourceTree {
   indicatorKey: string | undefined
-  data: Record<string, any>
+  data: Record<string, Data>
 }
 
 export default defineComponent({
@@ -103,7 +104,21 @@ export default defineComponent({
 
     watch(selectedIndicatorKey, () => {
       sourceValue.value.indicatorKey = selectedIndicatorKey.value
-      if (!selectedIndicatorKey.value) sourceValue.value.data = {}
+      if (!selectedIndicatorKey.value) {
+        sourceValue.value.data = {}
+      } else {
+        const indicatorData: Record<string, Data> = {}
+        const indicator = indicators.find(i => i.key === selectedIndicatorKey.value)
+
+        for (const field of (indicator || { fields: [] }).fields) {
+          indicatorData[field.key] = {
+            variable: false,
+            value: field.default
+          }
+        }
+
+        sourceValue.value.data = indicatorData
+      }
     })
 
     return {

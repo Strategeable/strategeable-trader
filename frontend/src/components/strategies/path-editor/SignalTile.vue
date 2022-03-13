@@ -116,7 +116,10 @@ export default defineComponent({
       const data: Record<string, any> = {}
 
       for (const field of foundIndicator.fields) {
-        data[field.key] = field.default
+        data[field.key] = {
+          variable: false,
+          value: field.default
+        }
       }
 
       const settings: IndicatorSettings = {

@@ -43,21 +43,21 @@
         :max="getFieldValues(key, 'max')"
         :min="getFieldValues(key, 'min')"
         :placeholder="getFieldValues(key, 'default')"
-        v-model="indicator.data[key]"
+        v-model="indicator.data[key].value"
       >
       <input
         v-if="getFieldValues(key, 'type') === 'text'"
         :type="getFieldValues(key, 'type')"
-        v-model="indicator.data[key]"
+        v-model="indicator.data[key].value"
       >
       <input
         v-if="getFieldValues(key, 'type') === 'checkbox'"
         :type="getFieldValues(key, 'type')"
-        v-model="indicator.data[key]"
+        v-model="indicator.data[key].value"
       >
       <select
         v-if="getFieldValues(key, 'type') === 'select'"
-        v-model="indicator.data[key]"
+        v-model="indicator.data[key].value"
       >
         <option
           v-for="option in getFieldValues(key, 'options')"
@@ -135,7 +135,18 @@ export default defineComponent({
 
     function getIndicatorSource (): any {
       if (!props.indicator.data.source && hasSource()) {
-        props.indicator.data.source = { indicatorKey: 'CANDLE_POSITION_VALUE', data: { candlePosition: 'CLOSE' } }
+        props.indicator.data.source = {
+          variable: false,
+          value: {
+            indicatorKey: 'CANDLE_POSITION_VALUE',
+            data: {
+              candlePosition: {
+                variable: false,
+                value: 'CLOSE'
+              }
+            }
+          }
+        }
       }
       return props.indicator.data.source
     }
