@@ -89,6 +89,14 @@ const indicators: Indicator[] = [
     hasTimeframe: true,
     hasSource: false,
     fields: []
+  },
+  {
+    key: 'POSITION_HOLD_TIME',
+    name: 'Position Hold Time (s)',
+    shortName: 'Position hold (s)',
+    hasTimeframe: true,
+    hasSource: false,
+    fields: []
   }
 ]
 
