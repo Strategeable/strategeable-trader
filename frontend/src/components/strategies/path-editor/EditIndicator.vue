@@ -152,7 +152,10 @@ export default defineComponent({
     }
 
     function updateSource (source: any) {
-      props.indicator.data.source = source
+      props.indicator.data.source = {
+        value: source,
+        variable: false
+      }
     }
 
     return {

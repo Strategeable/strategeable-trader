@@ -1,6 +1,6 @@
 <template>
   <div class="strategies">
-    <button>Create strategy</button>
+    <button @click="create">Create strategy</button>
     <div class="table">
       <strategies-table
         :data="strategies"
@@ -14,16 +14,23 @@
 <script lang="ts">
 import StrategiesTable from '@/components/strategies/Table.vue'
 import { computed, defineComponent } from '@vue/runtime-core'
+import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 export default defineComponent({
   components: { StrategiesTable },
   setup () {
+    const router = useRouter()
     const store = useStore()
     const strategies = computed(() => store.getters.strategies)
 
+    function create () {
+      router.push('/strategies/new')
+    }
+
     return {
-      strategies
+      strategies,
+      create
     }
   }
 })

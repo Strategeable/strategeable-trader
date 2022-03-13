@@ -24,16 +24,17 @@ import { defineComponent, onMounted, ref, watch } from 'vue'
 
 import SourceComp from '@/components/strategies/path-editor/Source.vue'
 import { v4 } from 'uuid'
+import { Data } from '@/types/Path'
 
 interface SourceTree {
   id: string
   indicatorKey: string | undefined
-  data: Record<string, any>
+  data: Record<string, Data>
 }
 
 interface SourceTreeWithoutId {
   indicatorKey: string | undefined
-  data: Record<string, any>
+  data: Record<string, Data>
 }
 
 export default defineComponent({
@@ -83,7 +84,7 @@ export default defineComponent({
     function traverseTree (tree: SourceTreeWithoutId, index: number): SourceTreeWithoutId {
       let localTree: SourceTreeWithoutId = tree
       for (let i = 0; i < index; i++) {
-        localTree = localTree.data.source
+        localTree = localTree.data.source.value
       }
 
       return localTree
