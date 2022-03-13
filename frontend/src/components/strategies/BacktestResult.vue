@@ -58,7 +58,7 @@ export default defineComponent({
 
       for (const position of positions) {
         const pos = new BacktestPosition(position)
-        if (pos.getChangePercent() < 0) {
+        if (pos.getChangePercent() >= 0) {
           wins += 1
         } else {
           losses += 1

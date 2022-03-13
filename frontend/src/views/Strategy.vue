@@ -389,7 +389,7 @@ export default defineComponent({
     }
 
     function restoreStrategy (strat: Strategy) {
-      // todo
+      // TODO
     }
 
     function newVariable () {

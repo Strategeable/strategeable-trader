@@ -92,10 +92,12 @@ func (h *historicalMarketDataProvider) Init() error {
 					}
 				}()
 
-				candles, err = h.exchangeImpl.GetHistoricalCandles(symbol, types.M1, latestCandleTime, time.Now(), candleCh)
+				addedCandles, err := h.exchangeImpl.GetHistoricalCandles(symbol, types.M1, latestCandleTime, time.Now(), candleCh)
 				if err != nil {
 					return err
 				}
+
+				candles = append(candles, addedCandles...)
 			}
 
 			h.mainCandleCollection.InitializeTimeFrame(h.exchangeImpl.GetExchange(), symbol, types.M1, candles)
