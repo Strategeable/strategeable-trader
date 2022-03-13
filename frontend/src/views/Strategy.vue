@@ -91,7 +91,7 @@
             <p>From date</p>
             <input
               type="date"
-              :value="moment(backtestParameters.fromDate).format('YYYY-MM-DD')"
+              :value="moment(backtestParameters.fromDate.toString()).format('YYYY-MM-DD')"
               @change="e => backtestParameters.fromDate = new Date(e.target.value)"
             >
           </div>
@@ -99,7 +99,7 @@
             <p>To date</p>
             <input
               type="date"
-              :value="moment(backtestParameters.toDate).format('YYYY-MM-DD')"
+              :value="moment(backtestParameters.toDate.toString()).format('YYYY-MM-DD')"
               @change="e => backtestParameters.toDate = new Date(e.target.value)"
             >
           </div>
@@ -110,9 +110,10 @@
         <p>{{ runningBacktest }}</p>
       </div>
       <backtest-result-comp
-        v-for="backest in backtestResults"
-        :key="backest.id"
-        :backtest="backest"
+        v-for="backtest in backtestResults"
+        :key="backtest.id"
+        :backtest="backtest"
+        @restore="() => restoreStrategy(backtest.strategy)"
       />
     </div>
     <div
@@ -177,7 +178,7 @@ export default defineComponent({
       toDate: new Date('2022-03-10'),
       startBalance: 1000
     })
-    const backtestResults = computed(() => {
+    const backtestResults = computed<BacktestResult[]>(() => {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return []
       return (store.getters.backtests[id] || []).sort((a: BacktestResult, b: BacktestResult) => new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime())
@@ -363,6 +364,13 @@ export default defineComponent({
       }
     }
 
+    function restoreStrategy (strat: Strategy) {
+      // paths.value = strat.paths
+      // chunks.value = strat.chunks
+      // name.value = strat.name
+      // symbols.value = strat.symbols
+    }
+
     return {
       paths,
       openEditor,
@@ -387,6 +395,7 @@ export default defineComponent({
       exportStrategy,
       backtest,
       handleUploadStrategy,
+      restoreStrategy,
       moment
     }
   }

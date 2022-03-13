@@ -23,6 +23,7 @@ export interface Position {
 }
 
 export interface BacktestResult {
+  id: string
   strategy: Strategy
   startedOn: Date
   startBalance: number

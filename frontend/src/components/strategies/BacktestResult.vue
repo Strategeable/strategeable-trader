@@ -9,6 +9,7 @@
         class="result"
       >Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span></p>
       <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate).toFixed(2)) }})</p>
+      <button @click="$emit('restore')">Restore strategy</button>
       <p class="backtest-date">Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
     </div>
   </div>
@@ -31,6 +32,7 @@ interface LineChartEntry {
 
 Chart.register(...registerables)
 export default defineComponent({
+  emits: ['restore'],
   components: { LineChart },
   props: {
     backtest: {
