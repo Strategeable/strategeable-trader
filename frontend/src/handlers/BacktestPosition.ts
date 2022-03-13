@@ -14,7 +14,7 @@ export default class BacktestPosition {
   getQuoteDifference (): number {
     const quoteEntrySize = this.position.entryValue.rate * this.position.entryValue.baseSize
     const quoteExitSize = this.position.exitValue.rate * this.position.exitValue.baseSize
-    return quoteExitSize - quoteEntrySize - this.getFees()
+    return quoteExitSize - quoteEntrySize - this.position.exitValue.quoteFees
   }
 
   getFees (): number {

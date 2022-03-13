@@ -9,6 +9,7 @@
         class="result"
       >Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span></p>
       <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate).toFixed(2)) }})</p>
+      <p>End balance: {{ backtest.endBalance }}</p>
       <button @click="$emit('restore')">Restore strategy</button>
       <p class="backtest-date">Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
     </div>
@@ -73,11 +74,15 @@ export default defineComponent({
 
       let balance = startBalance
       const entries: LineChartEntry[] = []
-      for (const position of positions) {
+      entries.push({
+        x: new Date(props.backtest.fromDate),
+        y: balance
+      })
+      for (const position of positions.sort((a, b) => new Date(a.closedAt).getTime() - new Date(b.closedAt).getTime())) {
         const pos = new BacktestPosition(position)
-        balance = balance + pos.getQuoteDifference()
+        if (new Date(position.closedAt).getTime() <= 0) continue
 
-        if (new Date(position.closedAt).getTime() < 37701695) continue
+        balance = balance + pos.getQuoteDifference()
 
         entries.push({
           x: new Date(position.closedAt),

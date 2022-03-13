@@ -356,6 +356,9 @@ func rawIndicatorToIndicator(raw rawIndicator, variableMapping map[string]rawVar
 		if fieldType == "int" && valueType == "float64" {
 			value = int(value.(float64))
 		}
+		if fieldType == "int" && valueType == "int32" {
+			value = int(value.(int32))
+		}
 
 		if fieldType == "types.Indicator" {
 			var nestedRawIndicator rawIndicator
