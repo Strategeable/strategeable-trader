@@ -284,6 +284,14 @@ export default defineComponent({
           background-color: var(--background-darken);
           height: 100%;
         }
+        @media(max-width: 800px) {
+          grid-template-columns: 1fr;
+          .middle {
+            padding-top: 0;
+            display: flex;
+            height: 40px;
+          }
+        }
         .indicator {
           padding: 2rem 1rem;
         }

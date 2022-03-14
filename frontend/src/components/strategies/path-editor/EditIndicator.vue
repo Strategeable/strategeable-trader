@@ -226,6 +226,12 @@ export default defineComponent({
     padding-bottom: 0.2rem;
     border-bottom: 2px solid var(--primary);
     margin-bottom: 1rem;
+    @media(max-width: 400px) {
+      .tf {
+        min-width: 50px;
+        min-height: 25px;
+      }
+    }
     .tf {
       user-select: none;
       font-size: 14px;
