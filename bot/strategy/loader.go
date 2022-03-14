@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Stratomicl/Trader/helpers"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/helpers"
+	"github.com/Strategeable/Trader/types"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

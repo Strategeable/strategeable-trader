@@ -3,7 +3,7 @@ package strategy
 import (
 	"errors"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type Operand string

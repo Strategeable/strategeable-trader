@@ -1,7 +1,7 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type NumberIndicator struct {

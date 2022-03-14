@@ -1,8 +1,8 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/math"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/math"
+	"github.com/Strategeable/Trader/types"
 )
 
 type EmaIndicator struct {

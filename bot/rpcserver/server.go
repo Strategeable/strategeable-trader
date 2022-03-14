@@ -8,11 +8,11 @@ import (
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
 
-	"github.com/Stratomicl/Trader/database"
-	"github.com/Stratomicl/Trader/handlers"
-	"github.com/Stratomicl/Trader/impl"
-	strategy_types "github.com/Stratomicl/Trader/strategy"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/database"
+	"github.com/Strategeable/Trader/handlers"
+	"github.com/Strategeable/Trader/impl"
+	strategy_types "github.com/Strategeable/Trader/strategy"
+	"github.com/Strategeable/Trader/types"
 )
 
 type rpcServer struct {

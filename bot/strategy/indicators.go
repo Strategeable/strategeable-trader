@@ -3,7 +3,7 @@ package strategy
 import (
 	"reflect"
 
-	"github.com/Stratomicl/Trader/indicators"
+	"github.com/Strategeable/Trader/indicators"
 )
 
 var (

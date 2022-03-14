@@ -1,6 +1,6 @@
 package strategy
 
-import "github.com/Stratomicl/Trader/types"
+import "github.com/Strategeable/Trader/types"
 
 type AnySignalTile struct {
 	SignalTiles []*SignalTile

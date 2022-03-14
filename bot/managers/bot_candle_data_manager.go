@@ -1,6 +1,6 @@
 package managers
 
-import "github.com/Stratomicl/Trader/types"
+import "github.com/Strategeable/Trader/types"
 
 type BotCandleDataManager struct {
 	Exchange types.Exchange

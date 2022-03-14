@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 
 	"github.com/adshao/go-binance/v2"
 )

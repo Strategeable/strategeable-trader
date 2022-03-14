@@ -1,7 +1,7 @@
 package strategy
 
 import (
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type Tile interface {
