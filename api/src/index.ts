@@ -6,7 +6,7 @@ dotenv.config();
 
 import { handleGetBacktestsById, handleGetBacktestsByStrategyId, handleRunBacktest } from './handlers/BacktestHandler';
 import { handleCreateStrategy, handleGetStrategies, handleGetStrategyById, handleUpdateStrategy } from './handlers/StrategyHandler';
-import { handleLogin } from './handlers/AuthHandler';
+import { handleLogin, handleRegistration } from './handlers/AuthHandler';
 import auth from './middleware/auth';
 
 const app = express();
@@ -19,6 +19,7 @@ const port = process.env.PORT || 3000;
   app.use(cors());
 
   app.post('/login', handleLogin);
+  app.post('/register', handleRegistration);
 
   app.use(auth);
 

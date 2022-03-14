@@ -19,3 +19,12 @@ export async function getUserById(id: string): Promise<User | null> {
     return null;
   }
 }
+
+export async function createUser(username: string, password: string): Promise<User | undefined> {
+  try {
+    return await UserModel.create({ username, password })
+  } catch(err) {
+    console.error(err)
+    return undefined
+  }
+}
