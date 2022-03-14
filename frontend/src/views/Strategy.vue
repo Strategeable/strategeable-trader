@@ -196,8 +196,10 @@ export default defineComponent({
     const name = ref<string>('')
     const symbols = ref<string[]>([])
     const variables = ref<Variable[]>([])
+
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
+    const runningBacktest = ref<string>()
 
     const strategyId = ref<string | undefined>()
     const strategyCreatedAt = ref<Date>(new Date())
@@ -209,12 +211,15 @@ export default defineComponent({
       toDate: new Date('2022-03-10'),
       startBalance: 1000
     })
+
     const backtestResults = computed<BacktestResult[]>(() => {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return []
-      return (store.getters.backtests[id] || []).sort((a: BacktestResult, b: BacktestResult) => new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime())
+      return (store.getters.backtests[id] || [])
+        .sort((a: BacktestResult, b: BacktestResult) =>
+          new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime()
+        )
     })
-    const runningBacktest = ref<string>()
 
     const strategy = computed(() => {
       const strat: Strategy = {
@@ -235,6 +240,7 @@ export default defineComponent({
       canSave.value = true
     }, { deep: true })
 
+    // Value used to show the 'import strategy' from JSON if it returns true
     const emptyStrategy = computed(() => {
       if (paths.value.some(p => p.steps.length > 0)) return false
       if (chunks.value.length > 0) return false
@@ -268,6 +274,7 @@ export default defineComponent({
     onMounted(() => {
       loadBacktests()
       if (route.params.id === 'new') {
+        // Initiate an empty strategy with at least one buy and sell path (required)
         newPath('BUY')
         newPath('SELL')
       } else {
@@ -296,6 +303,8 @@ export default defineComponent({
       if (!path) return
       if (paths.value.filter(p => p.type === path.type).length === 1) return
 
+      // If the deleted path is currently the one that is selected,
+      // we have to remove it from there too
       for (const [key, val] of Object.entries(openEditor.value)) {
         if (val === id) {
           openEditor.value[key as EditorType] = undefined
@@ -351,6 +360,7 @@ export default defineComponent({
       canSave.value = false
     }
 
+    // Used for importing a strategy from JSON imported with input:file
     function handleUploadStrategy (e: any) {
       const reader = new FileReader()
       reader.onload = (data: any) => {
@@ -364,6 +374,7 @@ export default defineComponent({
           openFirstPaths()
         }
       }
+
       reader.readAsText(e.target.files[0])
     }
 
