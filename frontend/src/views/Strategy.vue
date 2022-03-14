@@ -435,6 +435,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.strategy {
+  padding-bottom: 80px;
+}
+
 .general-settings {
   display: flex;
   flex-wrap: wrap;
@@ -529,7 +533,7 @@ export default defineComponent({
   .list {
     .path {
       padding: 0.5rem;
-      background-color: var(--primary);
+      background-color: var(--background-lighten);
       color: var(--text-inverse);
       margin-bottom: 0.5rem;
       cursor: pointer;
@@ -539,9 +543,10 @@ export default defineComponent({
       user-select: none;
       svg {
         cursor: pointer;
+        color: var(--text);
       }
       &.active, &:hover {
-        background-color: var(--primary-lighten);
+        background-color: var(--primary-darken);
       }
     }
   }

@@ -106,7 +106,7 @@ export default defineComponent({
         {
           data: dataValues.value.chartValues as any,
           label: 'Balance',
-          borderColor: '#3781d6',
+          borderColor: '#7F79FF',
           pointBackgroundColor: 'transparent',
           pointBorderColor: 'transparent'
         }

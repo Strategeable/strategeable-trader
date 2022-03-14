@@ -21,11 +21,12 @@ export default {
   a {
     padding: 1.2rem 1rem;
     display: block;
-    color: var(--text-inverse);
+    color: var(--text-lighten);
+    font-weight: bold;
     text-decoration: none;
   }
   &.active, &:hover {
-    background-color: var(--primary-lighten);
+    background-color: var(--primary-darken);
   }
 }
 </style>

@@ -199,7 +199,7 @@ export default defineComponent({
     align-items: center;
     svg {
       cursor: pointer;
-      color: var(--text-tertiary);
+      color: var(--text-lighten);
       &:hover {
         color: var(--text-secondary);
       }
@@ -256,6 +256,7 @@ export default defineComponent({
           input {
             width: 100%;
             border: 1px dashed var(--primary-darken);
+            color: var(--text-lighten);
             background-color: transparent;
           }
         }
