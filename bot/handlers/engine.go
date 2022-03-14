@@ -30,9 +30,9 @@ func (e *Engine) Start() error {
 	}
 	fmt.Println("Initialized market data provider.")
 
-	for {
-		var done bool
+	defer e.MarketDataProvider.Close()
 
+	for {
 		select {
 		case <-e.stopCh:
 			return nil
@@ -42,18 +42,10 @@ func (e *Engine) Start() error {
 			if e.MarketDataProvider.RequiresAcks() {
 				e.MarketDataProvider.GetAckCh() <- trade.TradeId
 			}
-		case _, ok := <-e.MarketDataProvider.GetCloseCh():
-			if !ok {
-				done = true
-			}
-		}
-
-		if done {
-			break
+		case <-e.MarketDataProvider.GetCloseCh():
+			return nil
 		}
 	}
-
-	return nil
 }
 
 func (e *Engine) Stop() {
