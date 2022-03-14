@@ -32,7 +32,7 @@ export async function handleRegistration(req: Request, res: Response) {
 
   try {
     const existingUser = await getUserByUsername(username)
-    if(existingUser) return res.json({ error: 'Username already taken' })
+    if(existingUser) return res.status(409).json({ error: 'Username already taken' })
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);

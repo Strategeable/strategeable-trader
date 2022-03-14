@@ -1,7 +1,7 @@
 <template>
   <div class="auth">
     <div class="inner">
-      <img src="@/assets/img/logo-white.svg" alt="logo"/>
+      <img :src="theme === 'dark' ? require('@/assets/img/logo-white.svg') : require('@/assets/img/logo-purple.svg')" alt="logo"/>
       <login v-if="showLogin"/>
       <register v-else/>
       <p v-if="showLogin" class="or">Or <span @click="showLogin = false">make an account ></span></p>
@@ -11,18 +11,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 
 import Login from '@/components/auth/Login.vue'
 import Register from '@/components/auth/Register.vue'
+import { useStore } from 'vuex'
 
 export default defineComponent({
   components: { Login, Register },
   setup () {
+    const store = useStore()
+    const theme = computed(() => store.getters.theme)
     const showLogin = ref<boolean>(true)
 
     return {
-      showLogin
+      showLogin,
+      theme
     }
   }
 })
