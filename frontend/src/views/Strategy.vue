@@ -39,7 +39,10 @@
           </div>
         </div>
       </div>
-      <button @click="newVariable">New variable</button>
+      <button
+        @click="newVariable"
+        class="outline small"
+      >New variable</button>
     </div>
     <div class="section">
       <h2>Chunks</h2>
@@ -60,7 +63,10 @@
           />
         </div>
       </div>
-      <button @click="newChunk">+ New chunk</button>
+      <button
+        @click="newChunk"
+        class="outline small"
+      >+ New chunk</button>
     </div>
     <div class="paths section">
       <div class="buy-sell-paths"
@@ -69,7 +75,10 @@
         :class="type.toLowerCase()"
       >
         <h2>{{ type }} paths</h2>
-        <button @click="newPath(getType(type))">+ New {{ type.toLowerCase() }} path</button>
+        <button
+          @click="newPath(getType(type))"
+          class="outline small"
+        >+ New {{ type.toLowerCase() }} path</button>
         <div class="edit-space">
           <div class="list">
             <div class="path"

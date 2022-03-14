@@ -11,7 +11,7 @@
   --primary-lighten: #a6a1ff;
   --primary-light: #dbd9ff;
   --background: #1e1e2a;
-  --background-darken: #121218;
+  --background-darken: #191922;
   --background-lighten: #28283a;
   --text: #dedcff;
   --text-lighten: #ffffff;
@@ -40,15 +40,27 @@ button {
   border: 2px solid var(--primary-darken);
   color: var(--text-lighten);
   cursor: pointer;
+  transition: .2s;
   &:hover {
     background-color: var(--primary-darken);
-    transform: scale(1.01);
   }
   &:disabled {
     background-color: var(--background-darken);
     border-color: var(--text-secondary);
     color: var(--text-secondary);
     cursor: unset;
+  }
+  &.outline {
+    background-color: transparent;
+    border: 2px solid var(--primary);
+    color: var(--text);
+    &:hover {
+      background-color: var(--primary-darken);
+      color: var(--text-lighten);
+    }
+  }
+  &.small {
+    padding: 0.2rem 0.5rem;
   }
 }
 

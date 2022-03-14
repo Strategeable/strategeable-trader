@@ -41,16 +41,19 @@
       <div class="add">
         <button
           @click="addStep(getStepType('SIGNAL_TILE'))"
+          class="outline"
         >
           Add signal
         </button>
         <button
           @click="addStep(getStepType('ANY_SIGNAL_TILE'))"
+          class="outline"
         >
           Add ANY group
         </button>
         <button
           @click="addStep(getStepType('CHUNK_ID'))"
+          class="outline"
           v-if="chunks.length > 0"
         >
           Add chunk

@@ -1,6 +1,7 @@
 <template>
   <div class="navbar">
     <div class="wrapper">
+      <img src="@/assets/img/logo.svg" alt="logo"/>
       <div class="bar">
         <div class="inner">
           <div class="left">
@@ -46,13 +47,21 @@ export default {
   height: 140px;
 }
 .wrapper {
-  height: 80px;
+  height: 100px;
   position: relative;
   width: 100%;
   background-color: var(--primary-darken);
   display: flex;
   align-items: flex-end;
+  img {
+    width: 200px;
+    position: absolute;
+    top: 23px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
   .bar {
+    z-index: 10;
     width: 100%;
     max-width: var(--container-width);
     margin: 0 1rem;
