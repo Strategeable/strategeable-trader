@@ -1,6 +1,8 @@
 # Strategeable Trader
 ![logo](https://i.imgur.com/ebYNGRp.png)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.txt)
+
 *Advanced (crypto) trading bot that enables you to create complex trading strategies and automate them*
 
 Strategeable Trader is an open source effort to create an advanced, yet relatively easy-to-use, crypto trading bot. Simply build buy and sell paths, backtest the strategy against historical data and launch a bot on your favorite exchange.
@@ -41,6 +43,3 @@ Strategeable Trader is an open source effort to create an advanced, yet relative
 
 ## Contributing
 Pull requests are welcome. Please feel free to create issues for actual issues or potential additions to the project.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
