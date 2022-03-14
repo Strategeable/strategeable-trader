@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/Stratomicl/Trader/strategy"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/strategy"
+	"github.com/Strategeable/Trader/types"
 )
 
 // (trading) Engine serves as the main trading logic abstraction.

@@ -3,7 +3,7 @@ package strategy
 import (
 	"time"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type Strategy struct {

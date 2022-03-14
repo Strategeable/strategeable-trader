@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Stratomicl/Trader/database"
-	"github.com/Stratomicl/Trader/rpcserver"
+	"github.com/Strategeable/Trader/database"
+	"github.com/Strategeable/Trader/rpcserver"
 	"github.com/joho/godotenv"
 )
 

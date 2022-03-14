@@ -3,7 +3,7 @@ package helpers
 import (
 	"math"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type CandlePosition string

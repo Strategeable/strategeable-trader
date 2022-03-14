@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
