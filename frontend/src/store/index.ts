@@ -60,13 +60,14 @@ export default createStore({
 
       commit('SET_THEME', newTheme)
     },
-    async login ({ commit }, { username, password }) {
+    async login ({ commit, dispatch }, { username, password }) {
       try {
         const response = await axios.post('/login', { username, password })
         if (!response.data || !response.data.token) return
 
         const { token } = response.data
         localStorage.setItem('jwt', token)
+        dispatch('init')
         commit('SET_JWT', token)
       } catch (err) {
         console.error(err)
