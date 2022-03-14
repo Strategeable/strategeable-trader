@@ -195,6 +195,7 @@ export default defineComponent({
       color: var(--text-lighten);
       padding: 0.5rem;
       outline: none;
+      width: 100%;
     }
   }
   .content {

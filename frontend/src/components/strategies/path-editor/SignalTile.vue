@@ -256,7 +256,7 @@ export default defineComponent({
           input {
             width: 100%;
             border: 1px dashed var(--primary-darken);
-            color: var(--text-lighten);
+            color: var(--button-text);
             background-color: transparent;
           }
         }

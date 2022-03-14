@@ -41,7 +41,7 @@ export default defineComponent({
     margin-bottom: 1rem;
     width: 100%;
     border: none;
-    padding: 1rem 0;
+    padding: 1rem 0.5rem;
     border-bottom: 2px solid var(--border-color);
     outline: none;
   }
