@@ -3,7 +3,7 @@
 
 *Advanced (crypto) trading bot that enables you to create complex trading strategies and automate them*
 
-Strategeable Trader is an open source effort to create an advanced, yet relatively ease-to-use, crypto trading bot. Simply build buy and sell paths, backtest the strategy against historical data and launch a bot on your favorite exchange.
+Strategeable Trader is an open source effort to create an advanced, yet relatively easy-to-use, crypto trading bot. Simply build buy and sell paths, backtest the strategy against historical data and launch a bot on your favorite exchange.
 
 ![preview](https://i.imgur.com/8DXtjkY.png)
 
