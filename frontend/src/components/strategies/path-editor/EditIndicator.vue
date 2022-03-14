@@ -139,7 +139,6 @@ export default defineComponent({
     const options = ref<any[]>([])
 
     function selectTimeframe (tf: TimeFrame) {
-      // eslint-disable-next-line vue/no-mutating-props
       props.indicator.timeFrame = tf
     }
 

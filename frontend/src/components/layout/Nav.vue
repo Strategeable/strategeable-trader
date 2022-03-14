@@ -34,6 +34,8 @@
 import NavItem from '@/components/layout/NavItem.vue'
 import ColorTheme from '@/components/ColorTheme.vue'
 
+// TODO: this should preferably be automatically generated
+// using the router config
 export default {
   components: { NavItem, ColorTheme },
   computed: {

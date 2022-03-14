@@ -7,6 +7,7 @@ export default class BacktestPosition {
     this.position = position
   }
 
+  // TODO: change percent should include the fees
   getChangePercent (): number {
     return (this.position.exitValue.rate - this.position.entryValue.rate) / this.position.entryValue.rate * 100
   }

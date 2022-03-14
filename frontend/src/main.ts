@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import './assets/css/extra.scss'
-import { library } from '@fortawesome/fontawesome-svg-core'
+import { IconDefinition, library } from '@fortawesome/fontawesome-svg-core'
 import {
   faTimes, faAngleDown,
   faGreaterThan, faGreaterThanEqual,
@@ -18,21 +18,14 @@ import 'vue-select/dist/vue-select.css'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import vSelect from 'vue-select'
 
-library.add(faPencilAlt)
-library.add(faTimes)
-library.add(faAngleDown)
-library.add(faGreaterThan)
-library.add(faGreaterThanEqual)
-library.add(faLessThan)
-library.add(faLessThanEqual)
-library.add(faEquals)
-library.add(faNotEqual)
-library.add(faArrowUp)
-library.add(faArrowDown)
-library.add(faUndo)
-library.add(faRedo)
-library.add(faMoon)
-library.add(faSun)
+const icons: IconDefinition[] = [
+  faTimes, faAngleDown, faGreaterThan, faGreaterThanEqual, faLessThan, faLessThanEqual,
+  faEquals, faNotEqual, faPencilAlt, faArrowUp, faArrowDown, faUndo, faRedo, faMoon, faSun
+]
+
+for (const icon of icons) {
+  library.add(icon)
+}
 
 createApp(App)
   .use(store)
