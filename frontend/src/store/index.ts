@@ -72,6 +72,22 @@ export default createStore({
         console.error(err)
       }
     },
+    async registerAccount ({ commit }, { username, password }): Promise<string | undefined> {
+      try {
+        const response = await axios.post('/register', { username, password })
+        if (!response.data) return 'Something went wrong'
+        if (response.data.error) return response.data.error
+
+        const { token } = response.data
+        localStorage.setItem('jwt', token)
+        commit('SET_JWT', token)
+
+        return undefined
+      } catch (err) {
+        console.error(err)
+        return 'Something went wrong'
+      }
+    },
     init ({ dispatch }) {
       dispatch('loadStrategies')
     },
