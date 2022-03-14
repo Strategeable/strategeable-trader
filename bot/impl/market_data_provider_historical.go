@@ -26,6 +26,8 @@ type historicalMarketDataProvider struct {
 	tradeCh chan types.Trade
 	ackCh   chan string
 	closeCh chan string
+
+	stopped bool
 }
 
 func NewHistoricalMarketDataProvider(
@@ -53,6 +55,10 @@ func (h *historicalMarketDataProvider) Init() error {
 	candleMapping := make(map[string]map[int64]*types.Candle)
 
 	for _, symbol := range h.symbols {
+		if h.stopped {
+			return nil
+		}
+
 		cache := h.mainCandleCollection.GetCache(h.exchangeImpl.GetExchange(), symbol, types.M1)
 
 		if cache == nil {
@@ -132,7 +138,7 @@ func (h *historicalMarketDataProvider) Init() error {
 
 	go func() {
 		currentTime := h.from
-		for currentTime.Before(h.until) || currentTime.Equal(h.until) {
+		for !h.stopped && (currentTime.Before(h.until) || currentTime.Equal(h.until)) {
 			for _, symbol := range h.symbols {
 				candle := candleMapping[symbol.String()][currentTime.Unix()]
 				if candle == nil {
@@ -157,6 +163,10 @@ func (h *historicalMarketDataProvider) Init() error {
 		close(h.closeCh)
 	}()
 	return nil
+}
+
+func (h *historicalMarketDataProvider) Close() {
+	h.stopped = true
 }
 
 func (h *historicalMarketDataProvider) GetTradeCh() chan types.Trade {

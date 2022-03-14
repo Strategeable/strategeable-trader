@@ -2,6 +2,7 @@ package types
 
 type MarketDataProvider interface {
 	Init() error
+	Close()
 	GetCandleCollection() *CandleCollection
 	GetTradeCh() chan Trade
 	RequiresAcks() bool
