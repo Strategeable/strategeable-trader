@@ -24,6 +24,8 @@
   --table-header: #2b2b41;
   --table-row: #1e1e2a;
   --table-row-alt: #262636;
+
+  --disabled: grey;
   
   --container-width: 1600px;
 
@@ -52,6 +54,8 @@
   --table-header: #eeeeff;
   --table-row: var(--background);
   --table-row-alt: #ffffff;
+
+  --disabled: grey;
   
   --container-width: 1600px;
 
@@ -79,8 +83,8 @@ button {
   }
   &:disabled {
     background-color: var(--background-darken);
-    border-color: var(--text-secondary);
-    color: var(--text-secondary);
+    border-color: var(--disabled);
+    color: var(--disabled);
     cursor: unset;
   }
   &.outline {

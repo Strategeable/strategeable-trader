@@ -1,8 +1,11 @@
 <template>
   <div class="auth">
     <div class="inner">
+      <img src="@/assets/img/logo-white.svg" alt="logo"/>
       <login v-if="showLogin"/>
       <register v-else/>
+      <p v-if="showLogin" class="or">Or <span @click="showLogin = false">make an account ></span></p>
+      <p v-else class="or">Or <span @click="showLogin = true">log in ></span></p>
     </div>
   </div>
 </template>
@@ -39,12 +42,26 @@ export default defineComponent({
     width: 100%;
     max-width: 500px;
     margin: 0 1rem;
-    padding: 1rem;
+    padding: 2rem 1rem;
     background-color: var(--background-lighten);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    img {
+      width: 250px;
+      margin-bottom: 2rem;
+    }
+    .or {
+      margin-top: 1.5rem;
+      span {
+        color: var(--primary);
+        cursor: pointer;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 }
 </style>
