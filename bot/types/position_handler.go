@@ -26,6 +26,7 @@ type PositionHandler interface {
 	OpenPosition(symbol Symbol, rate float64, quoteSize float64, time time.Time) (*Position, error)
 	ClosePosition(symbol Symbol, rate float64, time time.Time) error
 	GetPosition(symbol Symbol) *Position
+	GetClosedPosition(symbol Symbol) *Position
 	SubscribeEvents(chan PositionHandlerEvent)
 }
 
@@ -53,7 +54,26 @@ func (b *BasePositionHandler) GetPosition(symbol Symbol) *Position {
 	b.PositionsLock.RLock()
 	defer b.PositionsLock.RUnlock()
 
-	return b.Positions[symbol.String()]
+	position := b.Positions[symbol.String()]
+
+	if position != nil && position.IsClosed() {
+		return nil
+	}
+
+	return position
+}
+
+func (b *BasePositionHandler) GetClosedPosition(symbol Symbol) *Position {
+	b.PositionsLock.RLock()
+	defer b.PositionsLock.RUnlock()
+
+	position := b.Positions[symbol.String()]
+
+	if position != nil && !position.IsClosed() {
+		return nil
+	}
+
+	return position
 }
 
 func (b *BasePositionHandler) GetTotalBalance() float64 {
