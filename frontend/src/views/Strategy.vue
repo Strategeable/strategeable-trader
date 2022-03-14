@@ -437,10 +437,25 @@ export default defineComponent({
 <style lang="scss" scoped>
 .general-settings {
   display: flex;
+  flex-wrap: wrap;
   > div {
     margin-right: 1rem;
+    margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
+  }
+  .input {
+    max-width: 100%;
+    input {
+      max-width: 100% !important;
+      @media(max-width: 400px) {
+        width: 100%;
+      }
+    }
+    .v-select {
+      max-width: 100%;
+      width: unset;
+    }
   }
 }
 
@@ -498,6 +513,9 @@ export default defineComponent({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  @media(max-width: 1080px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .edit-space {
@@ -505,6 +523,9 @@ export default defineComponent({
   grid-template-columns: 200px 1fr;
   gap: 1rem;
   margin-top: 1rem;
+  @media(max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
   .list {
     .path {
       padding: 0.5rem;
@@ -539,17 +560,30 @@ export default defineComponent({
 .run-backtest {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   background-color: var(--background-darken);
   padding: 1rem;
   border: 1px solid var(--border-color);
   margin-bottom: 2rem;
+  padding-bottom: 0;
+  button {
+    margin-bottom: 1rem;
+  }
   .backtest {
     display: flex;
+    flex-wrap: wrap;
     .input {
       display: flex;
       flex-direction: column;
       margin-right: 1rem;
+      margin-bottom: 1rem;
+      input {
+        max-width: 100% !important;
+        @media(max-width: 400px) {
+          width: 100%;
+        }
+      }
     }
   }
 }

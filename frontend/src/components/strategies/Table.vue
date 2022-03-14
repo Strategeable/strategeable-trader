@@ -1,24 +1,26 @@
 <template>
-  <table cellspacing="0" cellpadding="0">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Created at</th>
-        <th>Last edited at</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="entry in sortedData"
-        :key="entry.id"
-        @click="$emit('select', entry.id)"
-      >
-        <td>{{ entry.name }}</td>
-        <td>{{ moment(entry.createdAt).format('DD-MM-YYYY HH:mm') }}</td>
-        <td>{{ moment(entry.lastEdited).format('DD-MM-YYYY HH:mm') }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="wrapper">
+    <table cellspacing="0" cellpadding="0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Created at</th>
+          <th>Last edited at</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="entry in sortedData"
+          :key="entry.id"
+          @click="$emit('select', entry.id)"
+        >
+          <td>{{ entry.name }}</td>
+          <td>{{ moment(entry.createdAt).format('DD-MM-YYYY HH:mm') }}</td>
+          <td>{{ moment(entry.lastEdited).format('DD-MM-YYYY HH:mm') }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script lang="ts">
@@ -59,6 +61,8 @@ export default defineComponent({
 table {
   border: 1px solid var(--border-color);
   width: 100%;
+  max-width: 100%;
+    min-width: 500px;
   thead {
     tr {
       background-color: var(--table-header);
@@ -84,5 +88,10 @@ table {
   tr:nth-child(even) {
     background-color: var(--table-row-alt);
   }
+}
+
+.wrapper {
+  max-width: 100%;
+  overflow-x: auto;
 }
 </style>

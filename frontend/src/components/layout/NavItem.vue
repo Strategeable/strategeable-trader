@@ -1,5 +1,5 @@
 <template>
-  <div class="nav-item">
+  <div class="nav-item" :class="{ active }">
     <router-link :to="to">
       {{ name }}
     </router-link>
@@ -10,7 +10,8 @@
 export default {
   props: {
     name: String,
-    to: String
+    to: String,
+    active: Boolean
   }
 }
 </script>
