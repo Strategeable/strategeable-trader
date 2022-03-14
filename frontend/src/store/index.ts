@@ -49,7 +49,9 @@ export default createStore({
   },
   actions: {
     changeColorTheme ({ commit, state }, theme) {
+      // Toggle the color theme between dark & light
       let newTheme = state.theme === 'dark' ? 'light' : 'dark'
+      // If theme is given as an argument, always set that theme
       if (theme) newTheme = theme
 
       localStorage.setItem('theme', newTheme)
@@ -132,6 +134,9 @@ export default createStore({
     async runBacktest ({ commit }, backtestParams) {
       try {
         const response = await axios.post('/backtest', backtestParams)
+
+        // Start polling for the backtest result
+        // TODO: this preferably shouldn't keep polling the API, websockets could potentially help
         while (true) {
           await new Promise(resolve => setTimeout(resolve, 2000))
           try {
