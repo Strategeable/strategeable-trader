@@ -46,6 +46,27 @@ const indicators: Indicator[] = [
     ]
   },
   {
+    key: 'EMA',
+    name: 'Exponential Moving Average',
+    shortName: 'EMA',
+    hasTimeframe: true,
+    hasSource: true,
+    fields: [
+      {
+        key: 'period',
+        name: 'Period',
+        required: true,
+        type: 'number',
+        advanced: false,
+        options: [],
+        default: '21',
+        placeholder: '21',
+        max: 1000,
+        min: 2
+      }
+    ]
+  },
+  {
     key: 'CANDLE_POSITION_VALUE',
     name: 'Candle Position Value',
     shortName: 'Candle Value',

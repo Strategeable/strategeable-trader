@@ -66,7 +66,7 @@ export default defineComponent({
         }
       }
 
-      return { winRate: wins / losses, wins, losses }
+      return { winRate: wins / (losses + wins), wins, losses }
     }
 
     function calculateBalances (startBalance: number, positions: Position[]): LineChartEntry[] {
