@@ -26,7 +26,7 @@ Strategeable Trader is an open source effort to create an advanced, yet relative
 * Golang is installed on device
 * Yarn globally installed
 ### Development environment
-1. `git clone git@github.com:Strategeable/strategeable-trader.git`
+1. `git clone <your-fork>` 
 2. Install each part of the project
     * `cd ./frontend && yarn install`
     * `cd ./api && yarn install`
