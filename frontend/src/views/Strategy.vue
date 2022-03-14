@@ -543,6 +543,7 @@ export default defineComponent({
     .path {
       padding: 0.5rem;
       background-color: var(--background-lighten);
+      border: 2px solid var(--background-darken);
       color: var(--text-inverse);
       margin-bottom: 0.5rem;
       cursor: pointer;
@@ -555,7 +556,7 @@ export default defineComponent({
         color: var(--text);
       }
       &.active, &:hover {
-        background-color: var(--primary-darken);
+        border-color: var(--primary);
       }
     }
   }
