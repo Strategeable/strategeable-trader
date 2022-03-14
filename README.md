@@ -5,6 +5,8 @@
 
 Strategeable Trader is an open source effort to create an advanced, yet relatively ease-to-use, crypto trading bot. Simply build buy and sell paths, backtest the strategy against historical data and launch a bot on your favorite exchange.
 
+![preview](https://i.imgur.com/8DXtjkY.png)
+
 **Current features**
 * Build/design strategies
   * Chunks (use a block of conditions in multiple paths)
@@ -19,4 +21,26 @@ Strategeable Trader is an open source effort to create an advanced, yet relative
 * Start an actual bot
   * Discord/Telegram integration?
 
-## Installation
+## Installation & usage
+### Prerequisites
+* Golang is installed on device
+* Yarn globally installed
+### Development environment
+1. `git clone git@github.com:Strategeable/strategeable-trader.git`
+2. Install each part of the project
+    * `cd ./frontend && yarn install`
+    * `cd ./api && yarn install`
+3. Setup environment variables using the `.env.example` files
+    * frontend: `.env.local`
+    * api: `.env`
+    * bot: `.env`
+4. Run each component
+    * frontend: `yarn serve`
+    * api: `yarn dev`
+    * bot: `go run main.go`
+
+## Contributing
+Pull requests are welcome. Please feel free to create issues for actual issues or potential additions to the project.
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
