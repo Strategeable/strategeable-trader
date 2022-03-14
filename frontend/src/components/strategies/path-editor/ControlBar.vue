@@ -1,13 +1,13 @@
 <template>
   <div class="control-bar">
     <div class="group">
-    <button @click="$emit('exportStrategy')">Export strategy</button>
-      <button :disabled="!canUndo" @click="$emit('undo')">
+      <button @click="$emit('exportStrategy')">Export strategy</button>
+      <!-- <button :disabled="!canUndo" @click="$emit('undo')">
         <fa-icon icon="undo"/>
       </button>
       <button :disabled="!canRedo" @click="$emit('redo')">
         <fa-icon icon="redo"/>
-      </button>
+      </button> -->
     </div>
     <button :disabled="!canSave" @click="$emit('save')">
       Save

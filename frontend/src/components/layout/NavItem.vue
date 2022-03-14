@@ -1,5 +1,5 @@
 <template>
-  <div class="nav-item">
+  <div class="nav-item" :class="{ active }">
     <router-link :to="to">
       {{ name }}
     </router-link>
@@ -10,7 +10,8 @@
 export default {
   props: {
     name: String,
-    to: String
+    to: String,
+    active: Boolean
   }
 }
 </script>
@@ -20,11 +21,12 @@ export default {
   a {
     padding: 1.2rem 1rem;
     display: block;
-    color: var(--text-inverse);
+    color: var(--text-lighten);
+    font-weight: bold;
     text-decoration: none;
   }
   &.active, &:hover {
-    background-color: var(--primary-lighten);
+    background-color: var(--primary-darken);
   }
 }
 </style>

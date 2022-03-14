@@ -199,7 +199,7 @@ export default defineComponent({
     align-items: center;
     svg {
       cursor: pointer;
-      color: var(--text-tertiary);
+      color: var(--text-lighten);
       &:hover {
         color: var(--text-secondary);
       }
@@ -256,6 +256,7 @@ export default defineComponent({
           input {
             width: 100%;
             border: 1px dashed var(--primary-darken);
+            color: var(--text-lighten);
             background-color: transparent;
           }
         }
@@ -283,6 +284,14 @@ export default defineComponent({
         .middle {
           background-color: var(--background-darken);
           height: 100%;
+        }
+        @media(max-width: 800px) {
+          grid-template-columns: 1fr;
+          .middle {
+            padding-top: 0;
+            display: flex;
+            height: 40px;
+          }
         }
         .indicator {
           padding: 2rem 1rem;

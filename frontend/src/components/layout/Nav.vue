@@ -1,20 +1,24 @@
 <template>
   <div class="navbar">
     <div class="wrapper">
+      <img src="@/assets/img/logo.svg" alt="logo"/>
       <div class="bar">
         <div class="inner">
           <div class="left">
             <nav-item
+              :active="activeRoute === 'Bots'"
               name="Bots"
               to="/bots"
             />
             <nav-item
+              :active="activeRoute === 'Strategies' || activeRoute === 'Strategy'"
               name="Strategies"
               to="/strategies"
             />
           </div>
           <div class="right">
             <nav-item
+              :active="activeRoute === 'Settings'"
               name="Settings"
               to="/settings"
             />
@@ -29,7 +33,12 @@
 import NavItem from '@/components/layout/NavItem.vue'
 
 export default {
-  components: { NavItem }
+  components: { NavItem },
+  computed: {
+    activeRoute () {
+      return (this as any).$route.name
+    }
+  }
 }
 </script>
 
@@ -38,13 +47,21 @@ export default {
   height: 140px;
 }
 .wrapper {
-  height: 80px;
+  height: 100px;
   position: relative;
   width: 100%;
   background-color: var(--primary-darken);
   display: flex;
   align-items: flex-end;
+  img {
+    width: 200px;
+    position: absolute;
+    top: 23px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
   .bar {
+    z-index: 10;
     width: 100%;
     max-width: var(--container-width);
     margin: 0 1rem;
@@ -61,6 +78,13 @@ export default {
     .left, .right {
       display: flex;
     }
+  }
+  @media(max-width: 600px) {
+    .inner {
+      flex-direction: column;
+      justify-content: unset !important;
+    }
+    height: unset;
   }
 }
 </style>

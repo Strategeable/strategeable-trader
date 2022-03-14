@@ -41,16 +41,19 @@
       <div class="add">
         <button
           @click="addStep(getStepType('SIGNAL_TILE'))"
+          class="outline"
         >
           Add signal
         </button>
         <button
           @click="addStep(getStepType('ANY_SIGNAL_TILE'))"
+          class="outline"
         >
           Add ANY group
         </button>
         <button
           @click="addStep(getStepType('CHUNK_ID'))"
+          class="outline"
           v-if="chunks.length > 0"
         >
           Add chunk
@@ -180,21 +183,14 @@ export default defineComponent({
 .path-editor {
   width: 100%;
   max-width: 800px;
-  &:hover {
-    .header {
-      input {
-        border: 1px dashed var(--primary-darken);
-      }
-    }
-  }
   .header {
     padding: 1rem;
-    background-color: var(--primary);
+    background-color: var(--background-lighten);
     color: var(--text-inverse);
     input {
-      background-color: var(--primary);
-      border: 1px dashed var(--primary-darken);
-      color: var(--text-inverse);
+      background-color: var(--background-lighten);
+      border: 1px solid var(--primary-darken);
+      color: var(--text-lighten);
       padding: 0.5rem;
       outline: none;
       &::placeholder {

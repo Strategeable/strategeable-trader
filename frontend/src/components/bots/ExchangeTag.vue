@@ -41,7 +41,8 @@ export default defineComponent({
     justify-content: center;
     padding: 0 0.5rem;
     p {
-      color: var(--text-secondary);
+      color: var(--text-tertiary);
+      font-size: 13px;
     }
   }
 }

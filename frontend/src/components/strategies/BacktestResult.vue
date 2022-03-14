@@ -106,7 +106,7 @@ export default defineComponent({
         {
           data: dataValues.value.chartValues as any,
           label: 'Balance',
-          borderColor: '#3781d6',
+          borderColor: '#7F79FF',
           pointBackgroundColor: 'transparent',
           pointBorderColor: 'transparent'
         }
@@ -146,11 +146,14 @@ export default defineComponent({
 <style lang="scss" scoped>
 .backtest-result {
   display: grid;
-  grid-template-columns: minmax(900px, 2fr) 1fr;
+  grid-template-columns: 700px 1fr;
   gap: 2rem;
   padding: 2rem 0;
   margin: 1rem 0;
   border-top: 1px solid var(--border-color);
+  @media(max-width: 1150px) {
+    grid-template-columns: 1fr;
+  }
   p {
     margin-bottom: 0.5rem;
   }

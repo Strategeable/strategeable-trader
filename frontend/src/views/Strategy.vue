@@ -39,7 +39,10 @@
           </div>
         </div>
       </div>
-      <button @click="newVariable">New variable</button>
+      <button
+        @click="newVariable"
+        class="outline small"
+      >New variable</button>
     </div>
     <div class="section">
       <h2>Chunks</h2>
@@ -60,7 +63,10 @@
           />
         </div>
       </div>
-      <button @click="newChunk">+ New chunk</button>
+      <button
+        @click="newChunk"
+        class="outline small"
+      >+ New chunk</button>
     </div>
     <div class="paths section">
       <div class="buy-sell-paths"
@@ -69,7 +75,10 @@
         :class="type.toLowerCase()"
       >
         <h2>{{ type }} paths</h2>
-        <button @click="newPath(getType(type))">+ New {{ type.toLowerCase() }} path</button>
+        <button
+          @click="newPath(getType(type))"
+          class="outline small"
+        >+ New {{ type.toLowerCase() }} path</button>
         <div class="edit-space">
           <div class="list">
             <div class="path"
@@ -435,12 +444,31 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.strategy {
+  padding-bottom: 80px;
+}
+
 .general-settings {
   display: flex;
+  flex-wrap: wrap;
   > div {
     margin-right: 1rem;
+    margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
+  }
+  .input {
+    max-width: 100%;
+    input {
+      max-width: 100% !important;
+      @media(max-width: 400px) {
+        width: 100%;
+      }
+    }
+    .v-select {
+      max-width: 100%;
+      width: unset;
+    }
   }
 }
 
@@ -498,6 +526,9 @@ export default defineComponent({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  @media(max-width: 1080px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .edit-space {
@@ -505,10 +536,13 @@ export default defineComponent({
   grid-template-columns: 200px 1fr;
   gap: 1rem;
   margin-top: 1rem;
+  @media(max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
   .list {
     .path {
       padding: 0.5rem;
-      background-color: var(--primary);
+      background-color: var(--background-lighten);
       color: var(--text-inverse);
       margin-bottom: 0.5rem;
       cursor: pointer;
@@ -518,9 +552,10 @@ export default defineComponent({
       user-select: none;
       svg {
         cursor: pointer;
+        color: var(--text);
       }
       &.active, &:hover {
-        background-color: var(--primary-lighten);
+        background-color: var(--primary-darken);
       }
     }
   }
@@ -539,17 +574,30 @@ export default defineComponent({
 .run-backtest {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   background-color: var(--background-darken);
   padding: 1rem;
   border: 1px solid var(--border-color);
   margin-bottom: 2rem;
+  padding-bottom: 0;
+  button {
+    margin-bottom: 1rem;
+  }
   .backtest {
     display: flex;
+    flex-wrap: wrap;
     .input {
       display: flex;
       flex-direction: column;
       margin-right: 1rem;
+      margin-bottom: 1rem;
+      input {
+        max-width: 100% !important;
+        @media(max-width: 400px) {
+          width: 100%;
+        }
+      }
     }
   }
 }

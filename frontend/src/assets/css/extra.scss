@@ -6,27 +6,28 @@
 }
 
 :root {
-  --primary: #3781D6;
-  --primary-darken: #1762B8;
-  --primary-lighten: #4999F3;
-  --primary-light: #b6d8ff;
-  --background: #FCFCFC;
-  --background-darken: #dddddd;
-  --background-lighten: #ffffff;
-  --text: #000000;
-  --text-inverse: #ffffff;
-  --text-secondary: #787878;
-  --text-tertiary: #C2C2C2;
-  --border-color: #C7C7C7;
-  --tag-color: #E3E3E3;
+  --primary: #7F79FF;
+  --primary-darken: #534cda;
+  --primary-lighten: #a6a1ff;
+  --primary-light: #dbd9ff;
+  --background: #1e1e2a;
+  --background-darken: #191922;
+  --background-lighten: #28283a;
+  --text: #dedcff;
+  --text-lighten: #ffffff;
+  --text-inverse: #0e0d1d;
+  --text-secondary: #bebbf6;
+  --text-tertiary: #a29eee;
+  --border-color: #323250;
+  --tag-color: #44445f;
 
-  --table-header: #ffffff;
-  --table-row: #f5f5f5;
-  --table-row-alt: #FFFFFF;
+  --table-header: #2b2b41;
+  --table-row: #1e1e2a;
+  --table-row-alt: #262636;
   
   --container-width: 1600px;
 
-  --signal-tile: #F8F8F8;
+  --signal-tile: #545097;
 }
 
 body {
@@ -37,11 +38,11 @@ button {
   padding: 0.5rem 1rem;
   background-color: var(--primary);
   border: 2px solid var(--primary-darken);
-  color: var(--text-inverse);
+  color: var(--text-lighten);
   cursor: pointer;
+  transition: .2s;
   &:hover {
-    background-color: var(--primary-lighten);
-    transform: scale(1.01);
+    background-color: var(--primary-darken);
   }
   &:disabled {
     background-color: var(--background-darken);
@@ -49,6 +50,31 @@ button {
     color: var(--text-secondary);
     cursor: unset;
   }
+  &.outline {
+    background-color: transparent;
+    border: 2px solid var(--primary);
+    color: var(--text);
+    &:hover {
+      background-color: var(--primary-darken);
+      color: var(--text-lighten);
+    }
+  }
+  &.small {
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+p, div {
+  color: var(--text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-lighten);
+}
+
+input, select {
+  background-color: var(--background-darken);
+  color: var(--text);
 }
 
 .section {
@@ -56,5 +82,20 @@ button {
   width: 100%;
   h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
+  }
+}
+
+.v-select {
+  background-color: var(--background-darken);
+  border: 1px solid var(--border-color);
+  .vs__selected {
+    background-color: var(--background-lighten);
+    color: var(--text);
+    button svg {
+      fill: var(--text-tertiary);
+    }
+  }
+  .vs__dropdown-menu {
+    background-color: var(--background);
   }
 }
