@@ -34,9 +34,9 @@ func (e *Engine) Start() error {
 		return err
 	}
 
-	for {
-		var done bool
+	defer e.MarketDataProvider.Close()
 
+	for {
 		select {
 		case <-e.stopCh:
 			// Break out of the engine loop
@@ -51,18 +51,10 @@ func (e *Engine) Start() error {
 			if e.marketDataProvider.RequiresAcks() {
 				e.marketDataProvider.GetAckCh() <- trade.TradeId
 			}
-		case _, ok := <-e.marketDataProvider.GetCloseCh():
-			if !ok {
-				done = true
-			}
-		}
-
-		if done {
-			break
+		case <-e.marketDataProvider.GetCloseCh():
+			return nil
 		}
 	}
-
-	return nil
 }
 
 // Shut down the engine, stop watching for trades.
