@@ -3,8 +3,8 @@ package handlers
 import (
 	"fmt"
 
-	"github.com/Stratomicl/Trader/strategy"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/strategy"
+	"github.com/Strategeable/Trader/types"
 )
 
 type Engine struct {

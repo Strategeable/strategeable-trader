@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Stratomicl/Trader/database"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/database"
+	"github.com/Strategeable/Trader/types"
 )
 
 type historicalMarketDataProvider struct {

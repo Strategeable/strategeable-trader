@@ -1,4 +1,4 @@
-module github.com/Stratomicl/Trader
+module github.com/Strategeable/Trader
 
 go 1.16
 

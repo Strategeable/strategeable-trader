@@ -1,8 +1,8 @@
 package indicators
 
 import (
-	"github.com/Stratomicl/Trader/helpers"
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/helpers"
+	"github.com/Strategeable/Trader/types"
 )
 
 type CandlePositionValueIndicator struct {

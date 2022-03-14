@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/Stratomicl/Trader/types"
+	"github.com/Strategeable/Trader/types"
 )
 
 type simulatedPositionHandler struct {
