@@ -7,12 +7,14 @@ export default createStore({
   state: {
     token: undefined,
     strategies: [] as Strategy[],
-    backtestsByStrategyId: {} as Record<string, BacktestResult[]>
+    backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
+    theme: 'dark'
   },
   getters: {
     loggedIn: state => !!state.token,
     strategies: state => state.strategies,
-    backtests: state => state.backtestsByStrategyId
+    backtests: state => state.backtestsByStrategyId,
+    theme: state => state.theme
   },
   mutations: {
     SET_JWT (state, token) {
@@ -40,9 +42,24 @@ export default createStore({
     },
     SET_BACKTESTS (state, { strategyId, backtests }) {
       state.backtestsByStrategyId[strategyId] = backtests
+    },
+    SET_THEME (state, theme) {
+      state.theme = theme
     }
   },
   actions: {
+    changeColorTheme ({ commit, state }, theme) {
+      let newTheme = state.theme === 'dark' ? 'light' : 'dark'
+      if (theme) newTheme = theme
+
+      localStorage.setItem('theme', newTheme)
+
+      const html: any = document.querySelector('html')
+      html.classList.remove(state.theme)
+      html.classList.add(newTheme)
+
+      commit('SET_THEME', newTheme)
+    },
     async login ({ commit }, { username, password }) {
       try {
         const response = await axios.post('/login', { username, password })

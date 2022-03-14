@@ -21,7 +21,7 @@ export default {
   a {
     padding: 1.2rem 1rem;
     display: block;
-    color: var(--text-lighten);
+    color: var(--button-text);
     font-weight: bold;
     text-decoration: none;
   }

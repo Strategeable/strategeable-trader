@@ -28,6 +28,39 @@
   --container-width: 1600px;
 
   --signal-tile: #545097;
+
+  // Vue select vars
+  --vs-dropdown-option--active-bg: var(--primary) !important;
+  --vs-dropdown-bg: var(--background) !important;
+  --vs-selected-bg: var(--background-lighten) !important;
+  --vs-selected-color: var(--text) !important;
+}
+
+:root.light {
+  --background: #f9f9ff;
+  --background-darken: #eeeeff;
+  --background-lighten: #ffffff;
+  --text: #13131a;
+  --text-lighten: #43435f;
+  --text-inverse: #edebff;
+  --text-secondary: #222233;
+  --text-tertiary: #353557;
+  --button-text: #f6f6ff;
+  --border-color: rgb(193, 193, 250);
+  --tag-color: #d8d8f6;
+
+  --table-header: #eeeeff;
+  --table-row: var(--background);
+  --table-row-alt: #ffffff;
+  
+  --container-width: 1600px;
+
+  --signal-tile: #ffffff;
+
+  // Vue select vars
+  --vs-dropdown-option--active-bg: var(--primary);
+  --vs-dropdown-bg: var(--background);
+  --vs-selected-bg: var(--background-lighten);
 }
 
 body {
@@ -38,7 +71,7 @@ button {
   padding: 0.5rem 1rem;
   background-color: var(--primary);
   border: 2px solid var(--primary-darken);
-  color: var(--text-lighten);
+  color: var(--button-text);
   cursor: pointer;
   transition: .2s;
   &:hover {
@@ -56,7 +89,7 @@ button {
     color: var(--text);
     &:hover {
       background-color: var(--primary-darken);
-      color: var(--text-lighten);
+      color: var(--button-text);
     }
   }
   &.small {
@@ -75,6 +108,9 @@ h1, h2, h3, h4, h5, h6 {
 input, select {
   background-color: var(--background-darken);
   color: var(--text);
+  &::placeholder {
+    color: var(--text-tertiary);
+  }
 }
 
 .section {
@@ -82,20 +118,5 @@ input, select {
   width: 100%;
   h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
-  }
-}
-
-.v-select {
-  background-color: var(--background-darken);
-  border: 1px solid var(--border-color);
-  .vs__selected {
-    background-color: var(--background-lighten);
-    color: var(--text);
-    button svg {
-      fill: var(--text-tertiary);
-    }
-  }
-  .vs__dropdown-menu {
-    background-color: var(--background);
   }
 }

@@ -22,6 +22,7 @@
               name="Settings"
               to="/settings"
             />
+            <color-theme/>
           </div>
         </div>
       </div>
@@ -31,9 +32,10 @@
 
 <script lang="ts">
 import NavItem from '@/components/layout/NavItem.vue'
+import ColorTheme from '@/components/ColorTheme.vue'
 
 export default {
-  components: { NavItem },
+  components: { NavItem, ColorTheme },
   computed: {
     activeRoute () {
       return (this as any).$route.name

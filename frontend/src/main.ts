@@ -11,7 +11,8 @@ import {
   faEquals, faNotEqual,
   faPencilAlt, faArrowUp,
   faArrowDown, faUndo,
-  faRedo
+  faRedo, faMoon,
+  faSun
 } from '@fortawesome/free-solid-svg-icons'
 import 'vue-select/dist/vue-select.css'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -30,6 +31,8 @@ library.add(faArrowUp)
 library.add(faArrowDown)
 library.add(faUndo)
 library.add(faRedo)
+library.add(faMoon)
+library.add(faSun)
 
 createApp(App)
   .use(store)

@@ -187,15 +187,14 @@ export default defineComponent({
     padding: 1rem;
     background-color: var(--background-lighten);
     color: var(--text-inverse);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
     input {
       background-color: var(--background-lighten);
       border: 1px solid var(--primary-darken);
       color: var(--text-lighten);
       padding: 0.5rem;
       outline: none;
-      &::placeholder {
-        color: var(--primary-light);
-      }
     }
   }
   .content {

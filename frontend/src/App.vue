@@ -23,6 +23,7 @@ export default {
     const isLoggedIn = computed(() => store.getters.loggedIn)
 
     onMounted(() => {
+      store.dispatch('changeColorTheme', localStorage.getItem('theme'))
       const token = localStorage.getItem('jwt')
       if (!token) return
 
