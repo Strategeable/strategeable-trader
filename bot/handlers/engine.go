@@ -1,48 +1,57 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/Stratomicl/Trader/strategy"
 	"github.com/Stratomicl/Trader/types"
 )
 
+// (trading) Engine serves as the main trading logic abstraction.
+// The logic within Engine can be be used for any situation,
+// like simulated mode, live trading mode and backtesting.
 type Engine struct {
-	MarketDataProvider types.MarketDataProvider
-	PositionHandler    types.PositionHandler
-	SignalHandler      *SignalHandler
-	stopCh             chan struct{}
+	marketDataProvider types.MarketDataProvider
+	signalHandler      *SignalHandler
+
+	// Used to shut down the engine once it has been started
+	stopCh chan struct{}
 }
 
+// Create a new (trading) Engine based on all of its different components.
 func NewEngine(strategy *strategy.Strategy, marketDataProvider types.MarketDataProvider, positionHandler types.PositionHandler) *Engine {
 	return &Engine{
-		MarketDataProvider: marketDataProvider,
-		SignalHandler:      newSignalHandler(marketDataProvider, positionHandler, strategy),
+		marketDataProvider: marketDataProvider,
+		signalHandler:      newSignalHandler(marketDataProvider, positionHandler, strategy),
 		stopCh:             make(chan struct{}),
 	}
 }
 
+// Initializes the market data and starts responding to
+// new incoming trades.
 func (e *Engine) Start() error {
-	fmt.Println("Initializing market data provider.")
-	err := e.MarketDataProvider.Init()
+	// Prepare required market data
+	err := e.marketDataProvider.Init()
 	if err != nil {
 		return err
 	}
-	fmt.Println("Initialized market data provider.")
 
 	for {
 		var done bool
 
 		select {
 		case <-e.stopCh:
+			// Break out of the engine loop
 			return nil
-		case trade := <-e.MarketDataProvider.GetTradeCh():
-			e.SignalHandler.handleTrigger(trade)
+		case trade := <-e.marketDataProvider.GetTradeCh():
+			// Notify signal handler about the new trade
+			e.signalHandler.handleTrigger(trade)
 
-			if e.MarketDataProvider.RequiresAcks() {
-				e.MarketDataProvider.GetAckCh() <- trade.TradeId
+			// When for example running backtests, we want to check all
+			// individual trades one by one and not simultaneously.
+			// Acking here tells the MarketDataProvider that we handled this trade.
+			if e.marketDataProvider.RequiresAcks() {
+				e.marketDataProvider.GetAckCh() <- trade.TradeId
 			}
-		case _, ok := <-e.MarketDataProvider.GetCloseCh():
+		case _, ok := <-e.marketDataProvider.GetCloseCh():
 			if !ok {
 				done = true
 			}
@@ -56,6 +65,7 @@ func (e *Engine) Start() error {
 	return nil
 }
 
+// Shut down the engine, stop watching for trades.
 func (e *Engine) Stop() {
 	e.stopCh <- struct{}{}
 }
