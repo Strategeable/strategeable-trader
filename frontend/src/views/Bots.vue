@@ -3,17 +3,20 @@
     <div class="section">
       <h2>Active</h2>
       <div class="active-bots">
-        <bot-summary/>
-        <bot-summary/>
-        <bot-summary/>
+        <bot-summary
+          v-for="bot in activeBots"
+          :key="bot.id"
+        />
       </div>
+      <button>Launch new bot</button>
     </div>
-    <div class="section">
+    <div class="section" v-if="finishedBots.length > 0">
       <h2>Finished</h2>
       <div class="finished-bots">
-        <bot-summary/>
-        <bot-summary/>
-        <bot-summary/>
+        <bot-summary
+          v-for="bot in finishedBots"
+          :key="bot.id"
+        />
       </div>
     </div>
   </div>
@@ -21,10 +24,23 @@
 
 <script lang="ts">
 import BotSummary from '@/components/bots/BotSummary.vue'
-import { defineComponent } from '@vue/runtime-core'
+import Bot from '@/types/Bot'
+import { computed, defineComponent } from '@vue/runtime-core'
+import { useStore } from 'vuex'
 
 export default defineComponent({
-  components: { BotSummary }
+  components: { BotSummary },
+  setup () {
+    const store = useStore()
+    const bots = computed<Bot[]>(() => store.getters.bots)
+    const activeBots = computed<Bot[]>(() => bots.value.filter((b: Bot) => b.status !== 'ended'))
+    const finishedBots = computed<Bot[]>(() => bots.value.filter((b: Bot) => b.status === 'ended'))
+
+    return {
+      activeBots,
+      finishedBots
+    }
+  }
 })
 </script>
 

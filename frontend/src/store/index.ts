@@ -2,17 +2,20 @@ import { createStore } from 'vuex'
 import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
+import Bot from '@/types/Bot'
 
 export default createStore({
   state: {
     token: undefined,
     strategies: [] as Strategy[],
+    bots: [] as Bot[],
     backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
     theme: 'dark'
   },
   getters: {
     loggedIn: state => !!state.token,
     strategies: state => state.strategies,
+    bots: state => state.bots,
     backtests: state => state.backtestsByStrategyId,
     theme: state => state.theme
   },
