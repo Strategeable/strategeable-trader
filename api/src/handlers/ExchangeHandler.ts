@@ -29,3 +29,13 @@ export async function handleCreateExchangeConnection(req: ServerRequest, res: Re
     return res.sendStatus(500);
   }
 }
+
+export async function handleGetExchangeConnections(req: ServerRequest, res: Response) {
+  try {
+    const connections = await getExchangeConnections(req.user._id);
+    return res.json(connections);
+  } catch(err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}
