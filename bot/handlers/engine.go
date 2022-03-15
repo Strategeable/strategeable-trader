@@ -34,7 +34,7 @@ func (e *Engine) Start() error {
 		return err
 	}
 
-	defer e.MarketDataProvider.Close()
+	defer e.marketDataProvider.Close()
 
 	for {
 		select {
