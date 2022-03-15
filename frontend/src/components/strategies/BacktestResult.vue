@@ -1,21 +1,36 @@
 <template>
-  <div class="backtest-result">
+  <div class="backtest-result" :class="{ open }">
     <div class="banner">
-      <span class="change">{{ backtestData.change }}%</span> {{ backtest.strategy.name }}
+      <div class="left">
+        <span class="change" :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span> {{ backtest.strategy.name }}
+      </div>
+      <div class="right">
+        <p>Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
+        <fa-icon :icon="open ? 'caret-up' : 'caret-down'" />
+      </div>
     </div>
     <div class="wrapper">
-      <div class="chart">
-        <line-chart v-bind="lineChartProps"/>
-      </div>
-      <div class="data">
-        <h3>Strategy name: {{ backtest.strategy.name }}</h3>
-        <p
-          class="result"
-        >Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span></p>
-        <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate).toFixed(2)) }})</p>
-        <p>End balance: {{ backtest.endBalance }}</p>
-        <button @click="$emit('restore')">Restore strategy</button>
-        <p class="backtest-date">Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
+      <div class="inner">
+        <div class="chart">
+          <line-chart v-bind="lineChartProps"/>
+        </div>
+        <div class="data">
+          <div>
+            <p>{{ moment(backtest.fromDate).format('DD-MM-YYYY HH:mm') }} until {{ moment(backtest.toDate).format('DD-MM-YYYY HH:mm') }}</p>
+            <p
+              class="result"
+            >
+              Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span>
+            </p>
+            <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate || 0).toFixed(2)) }})</p>
+            <p>Max drawdown {{ calculateMaxDrawdown(backtestData.balances.map(x => x.y), true) }}%</p>
+            <p>Max change {{ calculateMaxChange(backtestData.balances.map(x => x.y), backtest.startBalance, true) }}%</p>
+          </div>
+          <div class="bottom">
+            <button class="outline" @click="$emit('restore')">Restore strategy</button>
+            <button class="outline" @click="$emit('export')">Export strategy</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -39,11 +54,15 @@ interface LineChartEntry {
 
 Chart.register(...registerables)
 export default defineComponent({
-  emits: ['restore'],
+  emits: ['restore', 'export'],
   components: { LineChart },
   props: {
     backtest: {
       type: Object as PropType<BacktestResult>,
+      required: true
+    },
+    open: {
+      type: Boolean,
       required: true
     }
   },
@@ -53,18 +72,19 @@ export default defineComponent({
     const chartColors = computed(() => {
       return {
         xYAxis: theme.value === 'light' ? 'black' : 'white',
-        lines: theme.value === 'light' ? '#eeeeff' : '#28283a'
+        lines: theme.value === 'light' ? '#eeeeff' : '#1e1e2a'
       }
     })
 
-    const backtestData = computed(() => {
-      return {
-        change: Number(((props.backtest.endBalance - props.backtest.startBalance) / props.backtest.startBalance * 100).toFixed(2)),
-        fromDate: new Date(props.backtest.fromDate),
-        toDate: new Date(props.backtest.toDate),
-        winsLosses: calculateWinRate(props.backtest.positions)
-      }
-    })
+    const quoteSymbol = props.backtest.strategy.symbols[0].split('/')[1]
+
+    const backtestData = {
+      change: Number(((props.backtest.endBalance - props.backtest.startBalance) / props.backtest.startBalance * 100).toFixed(2)),
+      fromDate: new Date(props.backtest.fromDate),
+      toDate: new Date(props.backtest.toDate),
+      winsLosses: calculateWinRate(props.backtest.positions),
+      balances: calculateBalances(props.backtest.startBalance, props.backtest.positions)
+    }
 
     function calculateWinRate (positions: Position[]): { winRate: number, wins: number, losses: number } {
       if (!positions) return { winRate: 0, wins: 0, losses: 0 }
@@ -111,18 +131,39 @@ export default defineComponent({
       return entries
     }
 
-    const dataValues = computed(() => {
-      const chartValues = calculateBalances(props.backtest.startBalance, props.backtest.positions)
+    function calculateMaxDrawdown (balances: number[], round?: boolean): number {
+      if (balances.length <= 1) return 0
 
-      return {
-        chartValues
+      let maxDrawdown = 0
+      let currentMax = balances[0]
+      let currentPrice: number
+      let currentDrawdown: number
+
+      for (let i = 1; i < balances.length; i++) {
+        currentPrice = balances[i]
+        currentDrawdown = (currentPrice - currentMax) / currentMax
+        maxDrawdown = currentDrawdown < maxDrawdown ? currentDrawdown : maxDrawdown
+        currentMax = currentPrice > currentMax ? currentPrice : currentMax
       }
-    })
+
+      const result = maxDrawdown * 100
+      if (round) return Number(result.toFixed(2))
+      return result
+    }
+
+    function calculateMaxChange (balances: number[], startBalance: number, round?: boolean): number {
+      if (balances.length <= 1) return 0
+      const highestBalance = balances.reduce((acc, curr) => curr > acc ? curr : acc, 0)
+
+      const change = (highestBalance - startBalance) / startBalance * 100
+      if (round) return Number(change.toFixed(2))
+      return change
+    }
 
     const chartData = computed<ChartData<'line'>>(() => ({
       datasets: [
         {
-          data: dataValues.value.chartValues as any,
+          data: backtestData.balances as any,
           label: 'Balance',
           borderColor: '#7F79FF',
           backgroundColor: '#7F79FF',
@@ -171,7 +212,10 @@ export default defineComponent({
       lineChartProps,
       lineChartRef,
       backtestData,
-      moment
+      moment,
+      quoteSymbol,
+      calculateMaxDrawdown,
+      calculateMaxChange
     }
   }
 })
@@ -179,15 +223,50 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .backtest-result {
+  margin-bottom: 0.5rem;
   .banner {
-    padding: 2rem;
+    padding: 1rem;
     border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: .2s ease-in-out;
+    .change {
+      color: var(--positive);
+      &.negative {
+        color: var(--negative);
+      }
+    }
+    .left, .right {
+      display: flex;
+      align-items: center;
+      p {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin: 0;
+        margin-right: 1rem;
+      }
+    }
+    span {
+      width: 90px;
+      display: block;
+      font-weight: bold;
+    }
+    &:hover {
+      background-color: var(--background-lighten);
+    }
   }
   .wrapper {
-    padding: 2rem;
-    display: grid;
-    grid-template-columns: 700px 1fr;
-    gap: 2rem;
+    max-height: 0;
+    overflow-y: hidden;
+    transition: .4s ease-in-out;
+    .inner {
+      padding: 2rem 0;
+      display: grid;
+      grid-template-columns: 700px 1fr;
+      gap: 2rem;
+    }
     @media(max-width: 1150px) {
       grid-template-columns: 1fr;
     }
@@ -197,21 +276,39 @@ export default defineComponent({
   }
   .result {
     span {
-      color: green;
+      color: var(--positive);
       font-weight: bold;
       font-size: 20px;
       margin-left: 1rem;
       &.negative {
-        color: red;
+        color: var(--negative);
       }
     }
   }
-  .backtest-date {
-    margin-top: 1rem;
-    color: var(--text-tertiary);
+  &.open {
+    .wrapper {
+      max-height: 800px;
+    }
+    .banner {
+      background-color: var(--background-lighten);
+    }
   }
 }
 .chart {
+  padding: 1rem;
   width: 100%;
+  background-color: var(--background-lighten);
+  border: 1px solid var(--border-color);
+}
+.data {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  .bottom {
+    button {
+      margin-right: 1rem;
+    }
+  }
 }
 </style>

@@ -31,6 +31,9 @@
 
   --signal-tile: #545097;
 
+  --positive: rgb(47, 158, 47);
+  --negative: rgb(177, 35, 35);
+
   // Vue select vars
   --vs-dropdown-option--active-bg: var(--primary) !important;
   --vs-dropdown-bg: var(--background) !important;
@@ -60,6 +63,9 @@
   --container-width: 1600px;
 
   --signal-tile: #ffffff;
+
+  --positive: rgb(28, 189, 28);
+  --negative: rgb(192, 23, 23);
 
   // Vue select vars
   --vs-dropdown-option--active-bg: var(--primary);

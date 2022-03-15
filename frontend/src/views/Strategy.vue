@@ -143,6 +143,8 @@
         v-for="backtest in backtestResults"
         :key="backtest.id"
         :backtest="backtest"
+        :open="selectedBacktestId === backtest.id"
+        @click="() => selectedBacktestId = backtest.id"
         @restore="() => restoreStrategy(backtest.strategy)"
       />
     </div>
@@ -200,6 +202,7 @@ export default defineComponent({
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
     const runningBacktest = ref<string>()
+    const selectedBacktestId = ref<string>()
 
     const strategyId = ref<string | undefined>()
     const strategyCreatedAt = ref<Date>(new Date())
@@ -252,7 +255,12 @@ export default defineComponent({
     async function loadBacktests () {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return
-      store.dispatch('loadBacktests', id)
+
+      await store.dispatch('loadBacktests', id)
+
+      if (backtestResults.value.length > 0) {
+        selectedBacktestId.value = backtestResults.value[0].id
+      }
     }
 
     async function loadStrategy (id: string) {
@@ -399,8 +407,9 @@ export default defineComponent({
         backtestParameters.value.strategyId = stratId
         runningBacktest.value = 'Backtesting...'
 
-        await store.dispatch('runBacktest', backtestParameters.value)
+        const backtestObj = await store.dispatch('runBacktest', backtestParameters.value)
 
+        selectedBacktestId.value = backtestObj.id
         runningBacktest.value = undefined
       } catch (err) {
         console.error(err)
@@ -434,6 +443,7 @@ export default defineComponent({
       canSave,
       runningBacktest,
       variables,
+      selectedBacktestId,
       newPath,
       newChunk,
       deletePath,
