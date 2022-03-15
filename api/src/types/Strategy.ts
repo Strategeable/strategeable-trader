@@ -98,6 +98,7 @@ export interface Variable {
 export default interface Strategy {
   _id?: ObjectId
   creator: ObjectId
+  exchange: string
   createdAt: Date
   lastEdited: Date
   name: string

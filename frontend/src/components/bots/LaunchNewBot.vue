@@ -4,7 +4,7 @@
     <div class="input">
       <p>Type</p>
       <v-select
-        :options="['TEST', 'LIVE']"
+        :options="['TEST']"
         v-model="type"
       />
     </div>
@@ -33,7 +33,10 @@
         type="number"
       >
     </div>
-    <button>Launch bot</button>
+    <button
+      @click="launch"
+      :disabled="!valid"
+    >Launch bot</button>
   </default-popup>
 </template>
 
@@ -46,15 +49,40 @@ import DefaultPopup from '@/components/popups/DefaultPopup.vue'
 export default defineComponent({
   emits: ['close'],
   components: { DefaultPopup },
-  setup () {
+  setup (props, context) {
     const store = useStore()
     const strategies = computed(() => store.getters.strategies)
     const exchangeConnections = computed(() => store.getters.exchangeConnections)
+
+    const errorRef = ref<string>()
 
     const type = ref<string>('TEST')
     const strategy = ref<string>()
     const startBalance = ref<number>()
     const exchangeConnection = ref<string>()
+    const valid = computed(() => {
+      if (type.value !== 'TEST' && type.value !== 'LIVE') return false
+      if (!strategy.value) return false
+      if (!startBalance.value) return false
+      return true
+    })
+
+    async function launch () {
+      const params = {
+        type: type.value,
+        strategyId: strategy.value,
+        startBalance: startBalance.value,
+        exchangeConnection: exchangeConnection.value
+      }
+
+      const result = await store.dispatch('launchBot', params)
+
+      if (result.error) {
+        errorRef.value = result.error
+      } else {
+        context.emit('close')
+      }
+    }
 
     return {
       type,
@@ -62,7 +90,9 @@ export default defineComponent({
       strategy,
       startBalance,
       exchangeConnections,
-      exchangeConnection
+      exchangeConnection,
+      valid,
+      launch
     }
   }
 })

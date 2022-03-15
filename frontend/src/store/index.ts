@@ -60,11 +60,18 @@ export default createStore({
     },
     DELETE_EXCHANGE_CONNECTION (state, id) {
       state.exchangeConnections = state.exchangeConnections.filter(e => e.id !== id)
+    },
+    ADD_BOT (state, bot) {
+      state.bots.push(bot)
+    },
+    SET_BOTS (state, bots) {
+      state.bots = bots
     }
   },
   actions: {
     init ({ dispatch }) {
       dispatch('loadStrategies')
+      dispatch('loadBots')
       dispatch('loadExchangeConnections')
     },
     changeColorTheme ({ commit, state }, theme) {
@@ -116,6 +123,16 @@ export default createStore({
         if (!response.data) return
 
         commit('SET_STRATEGIES', response.data)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    async loadBots ({ commit }) {
+      try {
+        const response = await axios.get('/bot')
+        if (!response.data) return
+
+        commit('SET_BOTS', response.data)
       } catch (err) {
         console.error(err)
       }
@@ -204,20 +221,30 @@ export default createStore({
         return { data: response.data }
       } catch (err: any) {
         if (err.response.status === 409) return { error: 'Name already exists' }
-        return { error: err.response.message }
+        return { error: 'Something went wrong' }
       }
     },
     async deleteExchangeConnection ({ commit }, id) {
       try {
         const response = await axios.delete(`/settings/exchange-connection/${id}`)
-
         if (response.status !== 200) return { error: 'Something went wrong' }
 
         commit('DELETE_EXCHANGE_CONNECTION', id)
         return { data: response.data }
       } catch (err: any) {
         if (err.response.status === 409) return { error: 'Name already exists' }
-        return { error: err.response }
+        return { error: 'Something went wrong' }
+      }
+    },
+    async launchBot ({ commit }, params) {
+      try {
+        const response = await axios.post('/bot', params)
+        if (response.status !== 200) return { error: 'Something went wrong' }
+
+        commit('ADD_BOT', response.data)
+        return { data: response.data }
+      } catch (err: any) {
+        return { error: 'Something went wrong' }
       }
     }
   },

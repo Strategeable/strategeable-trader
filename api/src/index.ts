@@ -9,6 +9,7 @@ import { handleCreateStrategy, handleGetStrategies, handleGetStrategyById, handl
 import { handleLogin, handleRegistration } from './handlers/AuthHandler';
 import { handleCreateExchangeConnection, handleDeleteExchangeConnection, handleGetExchangeConnections } from './handlers/ExchangeHandler';
 import auth from './middleware/auth';
+import { handleCreateBot, handleGetBots } from './handlers/BotHandler';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,6 +37,9 @@ const port = process.env.PORT || 3000;
   app.get('/settings/exchange-connection', handleGetExchangeConnections);
   app.post('/settings/exchange-connection', handleCreateExchangeConnection);
   app.delete('/settings/exchange-connection/:id', handleDeleteExchangeConnection);
+
+  app.get('/bot', handleGetBots);
+  app.post('/bot', handleCreateBot);
 
   app.listen(port, () => console.log(`Server running on port ${port}`));
 })();

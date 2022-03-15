@@ -6,6 +6,7 @@
         <bot-summary
           v-for="bot in activeBots"
           :key="bot.id"
+          :bot="bot"
         />
       </div>
       <button @click="toggleLaunch">Launch new bot</button>
@@ -16,6 +17,7 @@
         <bot-summary
           v-for="bot in finishedBots"
           :key="bot.id"
+          :bot="bot"
         />
       </div>
     </div>
@@ -63,5 +65,11 @@ export default defineComponent({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem 1rem;
+}
+
+.bots {
+  button {
+    margin-top: 1.5rem;
+  }
 }
 </style>

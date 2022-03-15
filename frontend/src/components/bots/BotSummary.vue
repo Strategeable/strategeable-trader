@@ -2,20 +2,33 @@
   <div class="bot-summary">
     <div class="left">
       <exchange-tag
-        :exchange="'BINANCE'"
-        name="Binance main"
+        v-if="bot.type === 'LIVE'"
+        :exchange="bot.exchange"
+        :name="'name (todo)'"
       />
-      <p class="strategy">Trend Hero</p>
+      <exchange-tag
+        v-else
+        :exchange="bot.strategy.exchange.toUpperCase()"
+        name="TEST"
+      />
+      <p class="strategy">{{ bot.strategy.name }}</p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import ExchangeTag from '@/components/bots/ExchangeTag.vue'
-import { defineComponent } from '@vue/runtime-core'
+import Bot from '@/types/Bot'
+import { defineComponent, PropType } from '@vue/runtime-core'
 
 export default defineComponent({
-  components: { ExchangeTag }
+  components: { ExchangeTag },
+  props: {
+    bot: {
+      type: Object as PropType<Bot>,
+      required: true
+    }
+  }
 })
 </script>
 

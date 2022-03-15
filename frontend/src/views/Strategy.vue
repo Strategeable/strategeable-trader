@@ -235,7 +235,8 @@ export default defineComponent({
         symbols: symbols.value,
         chunks: chunks.value,
         paths: paths.value,
-        variables: variables.value
+        variables: variables.value,
+        exchange: 'binance'
       }
       return strat
     })

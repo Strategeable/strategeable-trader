@@ -10,6 +10,11 @@ const schema: Schema<Strategy> = new Schema({
     type: Date,
     required: true
   },
+  exchange: {
+    type: String,
+    enum: ['binance'],
+    required: true
+  },
   lastEdited: {
     type: Date,
     required: true
