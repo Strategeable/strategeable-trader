@@ -8,6 +8,7 @@
           v-for="conn in exchangeConnections"
           :key="conn.id"
           :exchangeConnection="conn"
+          @delete="() => deleteConnection(conn.id)"
         />
       </div>
       <button @click="() => openCreateConnection = true">Create connection</button>
@@ -92,6 +93,10 @@ export default defineComponent({
       }
     }
 
+    function deleteConnection (id: string) {
+      store.dispatch('deleteExchangeConnection', id)
+    }
+
     return {
       exchangeConnections,
       openCreateConnection,
@@ -99,7 +104,8 @@ export default defineComponent({
       exchanges,
       validCreateConnection,
       createConnectionError,
-      createExchangeConnection
+      createExchangeConnection,
+      deleteConnection
     }
   }
 })

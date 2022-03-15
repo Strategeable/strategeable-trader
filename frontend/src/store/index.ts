@@ -54,6 +54,9 @@ export default createStore({
     },
     SET_EXCHANGE_CONNECTIONS (state, connections) {
       state.exchangeConnections = connections
+    },
+    DELETE_EXCHANGE_CONNECTION (state, id) {
+      state.exchangeConnections = state.exchangeConnections.filter(e => e.id !== id)
     }
   },
   actions: {
@@ -194,6 +197,19 @@ export default createStore({
         if (response.status !== 200) return { error: 'Something went wrong' }
 
         commit('ADD_EXCHANGE_CONNECTION', response.data)
+        return { data: response.data }
+      } catch (err: any) {
+        if (err.response.status === 409) return { error: 'Name already exists' }
+        return { error: err.response.message }
+      }
+    },
+    async deleteExchangeConnection ({ commit }, id) {
+      try {
+        const response = await axios.delete(`/settings/exchange-connection/${id}`)
+
+        if (response.status !== 200) return { error: 'Something went wrong' }
+
+        commit('DELETE_EXCHANGE_CONNECTION', id)
         return { data: response.data }
       } catch (err: any) {
         if (err.response.status === 409) return { error: 'Name already exists' }

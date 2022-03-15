@@ -102,6 +102,9 @@ button {
       color: var(--button-text);
     }
   }
+  &.rounded {
+    border-radius: 30px;
+  }
   &.small {
     padding: 0.2rem 0.5rem;
   }

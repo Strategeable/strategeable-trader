@@ -20,3 +20,13 @@ export async function getExchangeConnections(userId: ObjectId): Promise<Exchange
     return undefined;
   }
 }
+
+export async function deleteExchangeConnection(id: ObjectId): Promise<boolean> {
+  try {
+    await ExchangeConnectionModel.deleteOne({ _id: id });
+    return true;
+  } catch(err) {
+    console.error(err);
+    return false;
+  }
+}
