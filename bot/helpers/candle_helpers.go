@@ -16,6 +16,8 @@ const (
 	VOLUME CandlePosition = "VOLUME"
 )
 
+// Converts candles to a float slice based on the
+// desired position, like candle open, candle close...
 func CandlesToValues(candles []*types.Candle, candlePosition CandlePosition) []float64 {
 	result := make([]float64, 0)
 
@@ -37,6 +39,7 @@ func CandlesToValues(candles []*types.Candle, candlePosition CandlePosition) []f
 	return result
 }
 
+// Returns a slice of new candle objects in Heikin Ashi values
 func CandlesCopyToHeikinAshi(candles []*types.Candle) []*types.Candle {
 	result := make([]*types.Candle, 0)
 

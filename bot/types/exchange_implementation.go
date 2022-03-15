@@ -10,10 +10,6 @@ type Trade struct {
 	Quantity float64
 }
 
-type SubscriptionManager interface {
-	Close()
-}
-
 type ExchangeImplementation interface {
 	// Initialization
 	Init() error
