@@ -120,6 +120,8 @@ h1, h2, h3, h4, h5, h6 {
 input, select {
   background-color: var(--background-darken);
   color: var(--text);
+  border: none;
+  padding: 0.5rem;
   &::placeholder {
     color: var(--text-tertiary);
   }
@@ -130,5 +132,18 @@ input, select {
   width: 100%;
   h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
+  }
+}
+
+.input {
+  margin-bottom: 1rem;
+  p {
+    margin-bottom: 0.5rem;
+  }
+  input {
+    outline: none;
+    &:focus {
+      outline: var(--primary) solid 1px;
+    }
   }
 }

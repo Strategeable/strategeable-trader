@@ -33,8 +33,8 @@ const port = process.env.PORT || 3000;
   app.post('/strategy', handleCreateStrategy);
   app.put('/strategy', handleUpdateStrategy);
 
-  app.get('/settings/exchange-connection', handleCreateExchangeConnection);
-  app.post('/settings/exchange-connection', handleGetExchangeConnections);
+  app.get('/settings/exchange-connection', handleGetExchangeConnections);
+  app.post('/settings/exchange-connection', handleCreateExchangeConnection);
 
   app.listen(port, () => console.log(`Server running on port ${port}`));
 })();

@@ -14,6 +14,10 @@ const schema: Schema<ExchangeConnection> = new Schema({
   createdOn: {
     type: Date,
     required: true
+  },
+  apiKey: {
+    type: String,
+    required: true
   }
 });
 

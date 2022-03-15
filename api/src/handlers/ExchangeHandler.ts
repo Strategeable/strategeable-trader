@@ -23,6 +23,8 @@ export async function handleCreateExchangeConnection(req: ServerRequest, res: Re
       userId: req.user._id
     });
 
+    delete connection.apiKey
+
     return res.json(connection);
   } catch(err) {
     console.error(err);
@@ -33,6 +35,7 @@ export async function handleCreateExchangeConnection(req: ServerRequest, res: Re
 export async function handleGetExchangeConnections(req: ServerRequest, res: Response) {
   try {
     const connections = await getExchangeConnections(req.user._id);
+    connections.forEach(c => delete c.apiKey);
     return res.json(connections);
   } catch(err) {
     console.error(err);
