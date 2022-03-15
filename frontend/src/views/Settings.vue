@@ -37,11 +37,18 @@
             v-model="exchangeConnection.apiKey"
           >
         </div>
+        <div class="input">
+          <p>API secret</p>
+          <input
+            type="text"
+            v-model="exchangeConnection.apiSecret"
+          >
+        </div>
         <button
           :disabled="!validCreateConnection"
           @click="createExchangeConnection"
         >Create</button>
-        <p class="error">{{ createConnectionError }}</p>
+        <p class="error" v-if="createConnectionError">{{ createConnectionError }}</p>
       </div>
     </default-popup>
   </div>
@@ -67,11 +74,13 @@ export default defineComponent({
       exchange: 'binance',
       name: '',
       createdOn: '',
-      apiKey: ''
+      apiKey: '',
+      apiSecret: ''
     })
     const validCreateConnection = computed(() => {
       if (exchangeConnection.value.name === '') return false
       if (exchangeConnection.value.apiKey === '') return false
+      if (exchangeConnection.value.apiSecret === '') return false
       if (!exchangeConnection.value.exchange) return false
       return true
     })
@@ -87,6 +96,7 @@ export default defineComponent({
         exchangeConnection.value = {
           exchange: 'binance',
           apiKey: '',
+          apiSecret: '',
           name: '',
           createdOn: ''
         }

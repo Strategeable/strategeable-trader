@@ -191,7 +191,8 @@ export default createStore({
         const response = await axios.post('/settings/exchange-connection', {
           exchange: exchangeConnection.exchange,
           name: exchangeConnection.name,
-          apiKey: exchangeConnection.apiKey
+          apiKey: exchangeConnection.apiKey,
+          apiSecret: exchangeConnection.apiSecret
         })
 
         if (response.status !== 200) return { error: 'Something went wrong' }
