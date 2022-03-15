@@ -7,6 +7,7 @@ dotenv.config();
 import { handleGetBacktestsById, handleGetBacktestsByStrategyId, handleRunBacktest } from './handlers/BacktestHandler';
 import { handleCreateStrategy, handleGetStrategies, handleGetStrategyById, handleUpdateStrategy } from './handlers/StrategyHandler';
 import { handleLogin, handleRegistration } from './handlers/AuthHandler';
+import { handleCreateExchangeConnection, handleDeleteExchangeConnection, handleGetExchangeConnections } from './handlers/ExchangeHandler';
 import auth from './middleware/auth';
 
 const app = express();
@@ -31,6 +32,10 @@ const port = process.env.PORT || 3000;
   app.get('/strategy/:id', handleGetStrategyById);
   app.post('/strategy', handleCreateStrategy);
   app.put('/strategy', handleUpdateStrategy);
+
+  app.get('/settings/exchange-connection', handleGetExchangeConnections);
+  app.post('/settings/exchange-connection', handleCreateExchangeConnection);
+  app.delete('/settings/exchange-connection/:id', handleDeleteExchangeConnection);
 
   app.listen(port, () => console.log(`Server running on port ${port}`));
 })();
