@@ -136,7 +136,7 @@
         </div>
         <button @click="backtest">Backtest</button>
       </div>
-      <div v-if="runningBacktest">
+      <div v-if="runningBacktest" class="running-backtest">
         <p>{{ runningBacktest }}</p>
       </div>
       <backtest-result-comp
@@ -642,5 +642,11 @@ export default defineComponent({
       width: 100%;
     }
   }
+}
+
+.running-backtest {
+  padding: 2rem;
+  background-color: var(--background-darken);
+  margin-bottom: 1rem;
 }
 </style>
