@@ -1,17 +1,22 @@
 <template>
   <div class="backtest-result">
-    <div class="chart">
-      <line-chart v-bind="lineChartProps"/>
+    <div class="banner">
+      <span class="change">{{ backtestData.change }}%</span> {{ backtest.strategy.name }}
     </div>
-    <div class="data">
-      <h3>Strategy name: {{ backtest.strategy.name }}</h3>
-      <p
-        class="result"
-      >Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span></p>
-      <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate).toFixed(2)) }})</p>
-      <p>End balance: {{ backtest.endBalance }}</p>
-      <button @click="$emit('restore')">Restore strategy</button>
-      <p class="backtest-date">Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
+    <div class="wrapper">
+      <div class="chart">
+        <line-chart v-bind="lineChartProps"/>
+      </div>
+      <div class="data">
+        <h3>Strategy name: {{ backtest.strategy.name }}</h3>
+        <p
+          class="result"
+        >Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span></p>
+        <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate).toFixed(2)) }})</p>
+        <p>End balance: {{ backtest.endBalance }}</p>
+        <button @click="$emit('restore')">Restore strategy</button>
+        <p class="backtest-date">Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -25,6 +30,7 @@ import 'chartjs-adapter-moment'
 import moment from 'moment'
 
 import BacktestPosition from '@/handlers/BacktestPosition'
+import { useStore } from 'vuex'
 
 interface LineChartEntry {
   y: number
@@ -42,6 +48,15 @@ export default defineComponent({
     }
   },
   setup (props) {
+    const store = useStore()
+    const theme = computed(() => store.getters.theme)
+    const chartColors = computed(() => {
+      return {
+        xYAxis: theme.value === 'light' ? 'black' : 'white',
+        lines: theme.value === 'light' ? '#eeeeff' : '#28283a'
+      }
+    })
+
     const backtestData = computed(() => {
       return {
         change: Number(((props.backtest.endBalance - props.backtest.startBalance) / props.backtest.startBalance * 100).toFixed(2)),
@@ -107,30 +122,46 @@ export default defineComponent({
           data: dataValues.value.chartValues as any,
           label: 'Balance',
           borderColor: '#7F79FF',
+          backgroundColor: '#7F79FF',
           pointBackgroundColor: 'transparent',
-          pointBorderColor: 'transparent'
+          pointBorderColor: 'transparent',
+          animation: false
         }
       ]
     }))
 
-    const { lineChartProps, lineChartRef } = useLineChart({
-      chartData,
-      options: {
-        elements: {
-          point: {
-            radius: 8
+    const options = computed(() => ({
+      elements: {
+        point: {
+          radius: 8
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            borderColor: chartColors.value.xYAxis,
+            tickColor: chartColors.value.xYAxis,
+            color: chartColors.value.lines
+          },
+          type: 'time',
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 15
           }
         },
-        scales: {
-          x: {
-            type: 'time',
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 15
-            }
+        y: {
+          grid: {
+            borderColor: chartColors.value.xYAxis,
+            tickColor: chartColors.value.xYAxis,
+            color: chartColors.value.lines
           }
         }
       }
+    }))
+
+    const { lineChartProps, lineChartRef } = useLineChart({
+      chartData,
+      options
     })
 
     return {
@@ -145,14 +176,18 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .backtest-result {
-  display: grid;
-  grid-template-columns: 700px 1fr;
-  gap: 2rem;
-  padding: 2rem 0;
-  margin: 1rem 0;
-  border-top: 1px solid var(--border-color);
-  @media(max-width: 1150px) {
-    grid-template-columns: 1fr;
+  .banner {
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+  }
+  .wrapper {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 700px 1fr;
+    gap: 2rem;
+    @media(max-width: 1150px) {
+      grid-template-columns: 1fr;
+    }
   }
   p {
     margin-bottom: 0.5rem;
