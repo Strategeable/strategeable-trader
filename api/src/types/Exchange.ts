@@ -9,4 +9,5 @@ export interface ExchangeConnection {
   name: string
   createdOn: Date
   apiKey: string
+  apiSecret: string
 }

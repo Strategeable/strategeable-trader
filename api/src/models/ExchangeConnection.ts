@@ -18,6 +18,10 @@ const schema: Schema<ExchangeConnection> = new Schema({
   apiKey: {
     type: String,
     required: true
+  },
+  apiSecret: {
+    type: String,
+    required: true
   }
 });
 

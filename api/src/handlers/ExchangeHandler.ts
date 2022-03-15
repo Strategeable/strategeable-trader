@@ -8,19 +8,20 @@ import { ObjectId } from "mongodb";
 
 export async function handleCreateExchangeConnection(req: ServerRequest, res: Response) {
   try {
-    const { exchange, name, apiKey } = req.body;
-    if (!exchange || !name || !apiKey) return res.sendStatus(400);
+    const { exchange, name, apiKey, apiSecret } = req.body;
+    if (!exchange || !name || !apiKey || !apiSecret) return res.sendStatus(400);
 
     const connections = await getExchangeConnections(req.user._id);
     if (connections.find(c => c.exchange === exchange && c.name === name)) return res.sendStatus(409);
 
-    const encryptedApiKey = crypto.AES.encrypt(apiKey, process.env.ENCRYPTION_KEY).toString()
+    const encryptedSecretKey = crypto.AES.encrypt(apiSecret, process.env.ENCRYPTION_KEY).toString()
 
     const connection = await createExchangeConnection({
       createdOn: new Date(),
       exchange,
       name,
-      apiKey: encryptedApiKey,
+      apiKey: apiKey,
+      apiSecret: encryptedSecretKey,
       userId: req.user._id
     });
 
