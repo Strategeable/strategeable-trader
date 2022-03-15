@@ -3,6 +3,7 @@ import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
+import { ExchangeConnection } from '@/types/Exchange'
 
 export default createStore({
   state: {
@@ -10,14 +11,16 @@ export default createStore({
     strategies: [] as Strategy[],
     bots: [] as Bot[],
     backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
-    theme: 'dark'
+    theme: 'dark',
+    exchangeConnections: [] as ExchangeConnection[]
   },
   getters: {
     loggedIn: state => !!state.token,
     strategies: state => state.strategies,
     bots: state => state.bots,
     backtests: state => state.backtestsByStrategyId,
-    theme: state => state.theme
+    theme: state => state.theme,
+    exchangeConnections: state => state.exchangeConnections
   },
   mutations: {
     SET_JWT (state, token) {
@@ -48,9 +51,22 @@ export default createStore({
     },
     SET_THEME (state, theme) {
       state.theme = theme
+    },
+    ADD_EXCHANGE_CONNECTION (state, conn) {
+      state.exchangeConnections.push(conn)
+    },
+    SET_EXCHANGE_CONNECTIONS (state, connections) {
+      state.exchangeConnections = connections
+    },
+    DELETE_EXCHANGE_CONNECTION (state, id) {
+      state.exchangeConnections = state.exchangeConnections.filter(e => e.id !== id)
     }
   },
   actions: {
+    init ({ dispatch }) {
+      dispatch('loadStrategies')
+      dispatch('loadExchangeConnections')
+    },
     changeColorTheme ({ commit, state }, theme) {
       // Toggle the color theme between dark & light
       let newTheme = state.theme === 'dark' ? 'light' : 'dark'
@@ -93,9 +109,6 @@ export default createStore({
         console.error(err)
         return 'Something went wrong'
       }
-    },
-    init ({ dispatch }) {
-      dispatch('loadStrategies')
     },
     async loadStrategies ({ commit }) {
       try {
@@ -166,6 +179,45 @@ export default createStore({
         commit('SET_BACKTESTS', { strategyId, backtests: response.data })
       } catch (err) {
         console.error(err)
+      }
+    },
+    async loadExchangeConnections ({ commit }) {
+      try {
+        const response = await axios.get('/settings/exchange-connection')
+        commit('SET_EXCHANGE_CONNECTIONS', response.data)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    async addExchangeConnection ({ commit }, exchangeConnection: ExchangeConnection) {
+      try {
+        const response = await axios.post('/settings/exchange-connection', {
+          exchange: exchangeConnection.exchange,
+          name: exchangeConnection.name,
+          apiKey: exchangeConnection.apiKey,
+          apiSecret: exchangeConnection.apiSecret
+        })
+
+        if (response.status !== 200) return { error: 'Something went wrong' }
+
+        commit('ADD_EXCHANGE_CONNECTION', response.data)
+        return { data: response.data }
+      } catch (err: any) {
+        if (err.response.status === 409) return { error: 'Name already exists' }
+        return { error: err.response.message }
+      }
+    },
+    async deleteExchangeConnection ({ commit }, id) {
+      try {
+        const response = await axios.delete(`/settings/exchange-connection/${id}`)
+
+        if (response.status !== 200) return { error: 'Something went wrong' }
+
+        commit('DELETE_EXCHANGE_CONNECTION', id)
+        return { data: response.data }
+      } catch (err: any) {
+        if (err.response.status === 409) return { error: 'Name already exists' }
+        return { error: err.response }
       }
     }
   },

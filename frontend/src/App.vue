@@ -47,5 +47,6 @@ export default {
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 0 1rem;
+  padding-top: 2rem;
 }
 </style>
