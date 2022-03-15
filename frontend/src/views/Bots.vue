@@ -8,7 +8,7 @@
           :key="bot.id"
         />
       </div>
-      <button>Launch new bot</button>
+      <button @click="toggleLaunch">Launch new bot</button>
     </div>
     <div class="section" v-if="finishedBots.length > 0">
       <h2>Finished</h2>
@@ -19,26 +19,40 @@
         />
       </div>
     </div>
+    <launch-new-bot
+      v-if="launchBot"
+      @close="toggleLaunch"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import BotSummary from '@/components/bots/BotSummary.vue'
-import Bot from '@/types/Bot'
-import { computed, defineComponent } from '@vue/runtime-core'
+import { computed, defineComponent, ref } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 
+import BotSummary from '@/components/bots/BotSummary.vue'
+import LaunchNewBot from '@/components/bots/LaunchNewBot.vue'
+import Bot from '@/types/Bot'
+
 export default defineComponent({
-  components: { BotSummary },
+  components: { BotSummary, LaunchNewBot },
   setup () {
     const store = useStore()
     const bots = computed<Bot[]>(() => store.getters.bots)
     const activeBots = computed<Bot[]>(() => bots.value.filter((b: Bot) => b.status !== 'ended'))
     const finishedBots = computed<Bot[]>(() => bots.value.filter((b: Bot) => b.status === 'ended'))
 
+    const launchBot = ref<boolean>(false)
+
+    function toggleLaunch () {
+      launchBot.value = !launchBot.value
+    }
+
     return {
       activeBots,
-      finishedBots
+      finishedBots,
+      launchBot,
+      toggleLaunch
     }
   }
 })
