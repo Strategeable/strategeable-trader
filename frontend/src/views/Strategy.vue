@@ -146,6 +146,7 @@
         :open="selectedBacktestId === backtest.id"
         @click="() => selectedBacktestId = backtest.id"
         @restore="() => restoreStrategy(backtest.strategy)"
+        @export="() => exportStrategy(backtest.strategy)"
       />
     </div>
     <div
@@ -386,11 +387,11 @@ export default defineComponent({
       reader.readAsText(e.target.files[0])
     }
 
-    function exportStrategy () {
+    function exportStrategy (strat?: Strategy) {
       const fileName = `${name.value} - Strategy`
       const exportType = exportFromJSON.types.json
 
-      exportFromJSON({ data: strategy.value, fileName, exportType })
+      exportFromJSON({ data: strat || strategy.value, fileName, exportType })
     }
 
     async function backtest () {
