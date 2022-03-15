@@ -93,6 +93,9 @@ export default defineComponent({
         x: new Date(props.backtest.fromDate),
         y: balance
       })
+
+      // Cumulatively build up the historical balance of this backtest
+      // by adding results of the positions saved for it in the database
       for (const position of positions.sort((a, b) => new Date(a.closedAt).getTime() - new Date(b.closedAt).getTime())) {
         const pos = new BacktestPosition(position)
         if (new Date(position.closedAt).getTime() <= 0) continue

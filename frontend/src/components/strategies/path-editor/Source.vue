@@ -98,6 +98,8 @@ export default defineComponent({
       ready.value = true
     })
 
+    // TODO: this causes a lot of recursive updates,
+    // which is not intended. Needs work.
     watch(sourceValue, () => {
       context.emit('update', sourceValue.value)
     }, { deep: true })
@@ -110,6 +112,9 @@ export default defineComponent({
         const indicatorData: Record<string, Data> = {}
         const indicator = indicators.find(i => i.key === selectedIndicatorKey.value)
 
+        // Set the fields that the indicator has on it
+        // so that they can be modified/configured by the inputs
+        // in the template
         for (const field of (indicator || { fields: [] }).fields) {
           indicatorData[field.key] = {
             variable: false,
