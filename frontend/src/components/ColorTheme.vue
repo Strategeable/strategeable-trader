@@ -27,7 +27,10 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 div {
-  padding: 1rem;
+  padding: 0 1rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   svg {
   color: var(--button-text);

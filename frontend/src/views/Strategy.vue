@@ -136,14 +136,17 @@
         </div>
         <button @click="backtest">Backtest</button>
       </div>
-      <div v-if="runningBacktest">
+      <div v-if="runningBacktest" class="running-backtest">
         <p>{{ runningBacktest }}</p>
       </div>
       <backtest-result-comp
         v-for="backtest in backtestResults"
         :key="backtest.id"
         :backtest="backtest"
+        :open="selectedBacktestId === backtest.id"
+        @click="() => selectedBacktestId = backtest.id"
         @restore="() => restoreStrategy(backtest.strategy)"
+        @export="() => exportStrategy(backtest.strategy)"
       />
     </div>
     <div
@@ -200,6 +203,7 @@ export default defineComponent({
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
     const runningBacktest = ref<string>()
+    const selectedBacktestId = ref<string>()
 
     const strategyId = ref<string | undefined>()
     const strategyCreatedAt = ref<Date>(new Date())
@@ -252,7 +256,12 @@ export default defineComponent({
     async function loadBacktests () {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return
-      store.dispatch('loadBacktests', id)
+
+      await store.dispatch('loadBacktests', id)
+
+      if (backtestResults.value.length > 0) {
+        selectedBacktestId.value = backtestResults.value[0].id
+      }
     }
 
     async function loadStrategy (id: string) {
@@ -378,11 +387,11 @@ export default defineComponent({
       reader.readAsText(e.target.files[0])
     }
 
-    function exportStrategy () {
+    function exportStrategy (strat?: Strategy) {
       const fileName = `${name.value} - Strategy`
       const exportType = exportFromJSON.types.json
 
-      exportFromJSON({ data: strategy.value, fileName, exportType })
+      exportFromJSON({ data: strat || strategy.value, fileName, exportType })
     }
 
     async function backtest () {
@@ -399,8 +408,9 @@ export default defineComponent({
         backtestParameters.value.strategyId = stratId
         runningBacktest.value = 'Backtesting...'
 
-        await store.dispatch('runBacktest', backtestParameters.value)
+        const backtestObj = await store.dispatch('runBacktest', backtestParameters.value)
 
+        selectedBacktestId.value = backtestObj.id
         runningBacktest.value = undefined
       } catch (err) {
         console.error(err)
@@ -434,6 +444,7 @@ export default defineComponent({
       canSave,
       runningBacktest,
       variables,
+      selectedBacktestId,
       newPath,
       newChunk,
       deletePath,
@@ -631,5 +642,11 @@ export default defineComponent({
       width: 100%;
     }
   }
+}
+
+.running-backtest {
+  padding: 2rem;
+  background-color: var(--background-darken);
+  margin-bottom: 1rem;
 }
 </style>

@@ -12,7 +12,8 @@ import {
   faPencilAlt, faArrowUp,
   faArrowDown, faUndo,
   faRedo, faMoon,
-  faSun
+  faSun, faCaretDown,
+  faCaretUp
 } from '@fortawesome/free-solid-svg-icons'
 import 'vue-select/dist/vue-select.css'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -20,7 +21,8 @@ import vSelect from 'vue-select'
 
 const icons: IconDefinition[] = [
   faTimes, faAngleDown, faGreaterThan, faGreaterThanEqual, faLessThan, faLessThanEqual,
-  faEquals, faNotEqual, faPencilAlt, faArrowUp, faArrowDown, faUndo, faRedo, faMoon, faSun
+  faEquals, faNotEqual, faPencilAlt, faArrowUp, faArrowDown, faUndo, faRedo, faMoon, faSun,
+  faCaretDown, faCaretUp
 ]
 
 for (const icon of icons) {
