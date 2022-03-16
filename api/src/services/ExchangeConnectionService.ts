@@ -21,6 +21,15 @@ export async function getExchangeConnections(userId: ObjectId): Promise<Exchange
   }
 }
 
+export async function getExchangeConnectionById(id: ObjectId): Promise<ExchangeConnection> {
+  try {
+    return ExchangeConnectionModel.findOne({ _id: id });
+  } catch(err) {
+    console.error(err);
+    return undefined;
+  }
+}
+
 export async function deleteExchangeConnection(id: ObjectId): Promise<boolean> {
   try {
     await ExchangeConnectionModel.deleteOne({ _id: id });

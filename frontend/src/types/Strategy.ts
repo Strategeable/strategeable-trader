@@ -10,6 +10,8 @@ export interface Variable {
 export interface Strategy {
   id?: string
   version: string
+  exchange: string
+  quoteCurrency: string
   createdAt: Date
   lastEdited: Date
   name: string
