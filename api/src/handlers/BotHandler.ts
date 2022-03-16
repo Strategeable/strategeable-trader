@@ -6,6 +6,7 @@ import BotModel from '../models/Bot';
 import { ObjectId } from "mongodb";
 import { getStrategyById } from "../services/StrategyService";
 import { getBotsByUserId } from "../services/BotService";
+import { getExchangeConnectionById } from "../services/ExchangeConnectionService";
 
 export async function handleCreateBot(req: ServerRequest, res: Response) {
   try {
@@ -14,6 +15,7 @@ export async function handleCreateBot(req: ServerRequest, res: Response) {
 
     const strategy = await getStrategyById(new ObjectId(strategyId));
     if(!strategy) return res.sendStatus(400);
+    if(!strategy.creator.equals(req.user._id)) return res.sendStatus(403);
 
     const bot = new BotModel({
       type,
@@ -26,7 +28,12 @@ export async function handleCreateBot(req: ServerRequest, res: Response) {
       quoteCurrency: strategy.quoteCurrency
     });
 
-    if(exchangeConnection) bot.exchangeConnectionId = new ObjectId(exchangeConnection);
+    if(exchangeConnection) {
+      const conn = await getExchangeConnectionById(new ObjectId(exchangeConnection));
+      if(!conn.userId.equals(req.user._id)) return res.sendStatus(403);
+
+      bot.exchangeConnectionId = new ObjectId(exchangeConnection);
+    }
 
     await bot.save();
 
