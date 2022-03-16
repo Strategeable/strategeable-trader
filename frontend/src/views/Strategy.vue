@@ -285,6 +285,7 @@ export default defineComponent({
         strategyCreatedAt.value = strat.createdAt
         strategyLastEdited.value = strat.lastEdited
         variables.value = strat.variables
+        quoteCurrency.value = strat.quoteCurrency
 
         openFirstPaths()
       }
