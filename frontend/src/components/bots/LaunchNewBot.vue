@@ -27,7 +27,7 @@
       />
     </div>
     <div class="input">
-      <p>Start balance</p>
+      <p>Start balance <span v-if="strategy">({{ strategyQuoteCurrency }})</span></p>
       <input
         v-model="startBalance"
         type="number"
@@ -45,6 +45,7 @@ import { computed, defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 
 import DefaultPopup from '@/components/popups/DefaultPopup.vue'
+import { Strategy } from '@/types/Strategy'
 
 export default defineComponent({
   emits: ['close'],
@@ -65,6 +66,13 @@ export default defineComponent({
       if (!strategy.value) return false
       if (!startBalance.value) return false
       return true
+    })
+
+    const strategyQuoteCurrency = computed(() => {
+      if (!strategy.value) return undefined
+      const strat = strategies.value.find((s: Strategy) => s.id === strategy.value)
+      if (!strat) return undefined
+      return strat.quoteCurrency
     })
 
     async function launch () {
@@ -92,6 +100,7 @@ export default defineComponent({
       exchangeConnections,
       exchangeConnection,
       valid,
+      strategyQuoteCurrency,
       launch
     }
   }

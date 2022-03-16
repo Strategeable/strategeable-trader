@@ -19,9 +19,11 @@ export async function handleCreateBot(req: ServerRequest, res: Response) {
       type,
       strategy,
       startBalance: Number(startBalance),
+      currentBalance: Number(startBalance),
       startDate: new Date(),
       status: 'offline',
-      userId: req.user._id
+      userId: req.user._id,
+      quoteCurrency: strategy.quoteCurrency
     });
 
     if(exchangeConnection) bot.exchangeConnectionId = new ObjectId(exchangeConnection);

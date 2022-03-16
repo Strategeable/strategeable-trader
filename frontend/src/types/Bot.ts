@@ -6,6 +6,9 @@ export default interface Bot {
   type: 'TEST' | 'LIVE'
   strategy: Strategy
   startBalance: number
+  currentBalance: number
   startDate: Date
+  endDate?: Date
   status: 'online' | 'offline' | 'ended'
+  quoteCurrency: string
 }

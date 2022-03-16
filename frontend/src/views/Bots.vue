@@ -2,9 +2,9 @@
   <div class="bots">
     <div class="section">
       <h2>Active</h2>
-      <div class="active-bots">
+      <div class="active-bots" v-if="activeBots.length > 0">
         <bot-summary
-          v-for="bot in activeBots"
+          v-for="bot in activeBots.sort((a, b) => a.status === 'online' ? -1 : 1)"
           :key="bot.id"
           :bot="bot"
         />
@@ -65,11 +65,9 @@ export default defineComponent({
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem 1rem;
-}
-
-.bots {
-  button {
-    margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  @media(max-width: 850px) {
+    grid-template-columns: 1fr;
   }
 }
 </style>

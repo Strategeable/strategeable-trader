@@ -9,9 +9,16 @@ const schema: Schema<Bot> = new Schema({
     type: Number,
     required: true
   },
+  currentBalance: {
+    type: Number,
+    required: true
+  },
   startDate: {
     type: Date,
     required: true
+  },
+  endDate: {
+    type: Date
   },
   status: {
     type: String,
@@ -29,6 +36,10 @@ const schema: Schema<Bot> = new Schema({
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+  quoteCurrency: {
+    type: String,
     required: true
   }
 });

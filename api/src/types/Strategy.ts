@@ -102,6 +102,7 @@ export default interface Strategy {
   createdAt: Date
   lastEdited: Date
   name: string
+  quoteCurrency: string
   symbols: string[]
   chunks: Chunk[]
   paths: Path[]

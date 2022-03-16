@@ -19,6 +19,10 @@ const schema: Schema<Strategy> = new Schema({
     type: Date,
     required: true
   },
+  quoteCurrency: {
+    type: String,
+    required: true
+  },
   name: {
     type: mongoose.Schema.Types.String,
     required: true

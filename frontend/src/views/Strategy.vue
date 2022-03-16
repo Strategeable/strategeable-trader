@@ -13,6 +13,13 @@
         >
       </div>
       <div class="input">
+        <p>Quote currency</p>
+        <v-select
+          :options="['USDT', 'BTC', 'ETH']"
+          v-model="quoteCurrency"
+        />
+      </div>
+      <div class="input">
         <p>Symbols</p>
         <v-select
           multiple
@@ -199,6 +206,7 @@ export default defineComponent({
     const name = ref<string>('')
     const symbols = ref<string[]>([])
     const variables = ref<Variable[]>([])
+    const quoteCurrency = ref<string>()
 
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
@@ -236,7 +244,8 @@ export default defineComponent({
         chunks: chunks.value,
         paths: paths.value,
         variables: variables.value,
-        exchange: 'binance'
+        exchange: 'binance',
+        quoteCurrency: quoteCurrency.value || ''
       }
       return strat
     })
@@ -446,6 +455,7 @@ export default defineComponent({
       runningBacktest,
       variables,
       selectedBacktestId,
+      quoteCurrency,
       newPath,
       newChunk,
       deletePath,
