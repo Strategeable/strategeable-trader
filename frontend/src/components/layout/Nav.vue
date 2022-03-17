@@ -6,7 +6,7 @@
         <div class="inner">
           <div class="left">
             <nav-item
-              :active="activeRoute === 'Bots'"
+              :active="activeRoute === 'Bots' || activeRoute === 'Bot'"
               name="Bots"
               to="/bots"
             />

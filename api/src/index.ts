@@ -10,6 +10,7 @@ import { handleLogin, handleRegistration } from './handlers/AuthHandler';
 import { handleCreateExchangeConnection, handleDeleteExchangeConnection, handleGetExchangeConnections } from './handlers/ExchangeHandler';
 import auth from './middleware/auth';
 import { handleCreateBot, handleGetBots } from './handlers/BotHandler';
+import { handleGetOpenPositions, handleGetPositions } from './handlers/PositionHandler';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,6 +41,9 @@ const port = process.env.PORT || 3000;
 
   app.get('/bot', handleGetBots);
   app.post('/bot', handleCreateBot);
+
+  app.get('/position', handleGetPositions);
+  app.get('/position/open', handleGetOpenPositions);
 
   app.listen(port, () => console.log(`Server running on port ${port}`));
 })();

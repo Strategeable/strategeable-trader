@@ -1,5 +1,9 @@
 <template>
-  <div class="bot-summary" :class="bot.status">
+  <div
+    class="bot-summary"
+    :class="bot.status"
+    @click="() => notClickable ? undefined : $router.push(`/bots/${bot.id}`)"
+  >
     <div class="left">
       <exchange-tag
         v-if="bot.type === 'LIVE' && exchangeConnection"
@@ -39,6 +43,9 @@ export default defineComponent({
     bot: {
       type: Object as PropType<Bot>,
       required: true
+    },
+    notClickable: {
+      type: Boolean
     }
   },
   setup (props) {

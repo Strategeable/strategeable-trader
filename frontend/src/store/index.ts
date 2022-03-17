@@ -4,12 +4,14 @@ import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
 import { ExchangeConnection } from '@/types/Exchange'
+import Position from '@/types/Position'
 
 export default createStore({
   state: {
     token: undefined,
     strategies: [] as Strategy[],
     bots: [] as Bot[],
+    positions: {} as Record<string, Position[]>,
     backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
     theme: 'dark',
     exchangeConnections: [] as ExchangeConnection[]
@@ -18,6 +20,7 @@ export default createStore({
     loggedIn: state => !!state.token,
     strategies: state => state.strategies,
     bots: state => state.bots,
+    positions: state => state.positions,
     backtests: state => state.backtestsByStrategyId,
     theme: state => state.theme,
     exchangeConnections: state => state.exchangeConnections
@@ -66,13 +69,20 @@ export default createStore({
     },
     SET_BOTS (state, bots) {
       state.bots = bots
+    },
+    ADD_POSITIONS (state, positions: Position[]) {
+      for (const position of positions) {
+        if (!state.positions[position.botId]) state.positions[position.botId] = []
+        state.positions[position.botId].push(position)
+      }
     }
   },
   actions: {
-    init ({ dispatch }) {
+    async init ({ dispatch }) {
       dispatch('loadStrategies')
-      dispatch('loadBots')
       dispatch('loadExchangeConnections')
+      await dispatch('loadBots')
+      dispatch('loadPositions', false)
     },
     changeColorTheme ({ commit, state }, theme) {
       // Toggle the color theme between dark & light
@@ -242,6 +252,22 @@ export default createStore({
         if (response.status !== 200) return { error: 'Something went wrong' }
 
         commit('ADD_BOT', response.data)
+        return { data: response.data }
+      } catch (err: any) {
+        return { error: 'Something went wrong' }
+      }
+    },
+    async loadPositions ({ commit }, open) {
+      try {
+        let response: any
+        if (!open) {
+          response = await axios.get('/position')
+        } else {
+          response = await axios.get('/position/open')
+        }
+        if (response.status !== 200) return { error: 'Something went wrong' }
+
+        commit('ADD_POSITIONS', response.data)
         return { data: response.data }
       } catch (err: any) {
         return { error: 'Something went wrong' }
