@@ -16,7 +16,21 @@ export default class BacktestHandler implements RequestHandler {
   route(router: Router): void {
     router.get('/strategy/:id', this.handleGetBacktestsByStrategyId.bind(this));
     router.get('/:backtestId', this.handleGetBacktestsById.bind(this));
+    router.post('/:backtestId/stop', this.handleStopBacktest.bind(this));
     router.post('/', this.handleRunBacktest.bind(this));
+  }
+
+  async handleStopBacktest(req: ServerRequest, res: Response) {
+    const { backtestId } = req.params;
+  
+    const backtest = await getBacktestsById(new ObjectId(backtestId));
+    if(!backtest) return res.sendStatus(404);
+    if(backtest.finished) return res.status(412).send('already finished');
+
+    this.amqpConnection.stopBacktest(backtestId);
+    await deleteBacktestById([ backtest._id ]);
+  
+    return res.sendStatus(204);
   }
 
   async handleGetBacktestsById(req: ServerRequest, res: Response) {
@@ -24,7 +38,7 @@ export default class BacktestHandler implements RequestHandler {
   
     const backtest = await getBacktestsById(new ObjectId(backtestId));
     if(!backtest) {
-      return res.sendStatus(500);
+      return res.sendStatus(404);
     }
   
     return res.json(backtest);

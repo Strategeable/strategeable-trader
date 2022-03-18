@@ -13,6 +13,7 @@ export enum MutationTypes {
   SET_STRATEGIES = 'SET_STRATEGIES',
   SET_STRATEGY = 'SET_STRATEGY',
   ADD_BACKTEST_RESULT = 'ADD_BACKTEST_RESULT',
+  DELETE_BACKTEST_RESULT = 'DELETE_BACKTEST_RESULT',
   ADD_BACKTEST_RESULTS = 'ADD_BACKTEST_RESULTS',
   SET_THEME = 'SET_THEME',
   ADD_EXCHANGE_CONNECTION = 'ADD_EXCHANGE_CONNECTION',
@@ -28,6 +29,7 @@ export type Mutations<S = State> = {
   [MutationTypes.SET_JWT](state: S, payload: string): void
   [MutationTypes.SET_STRATEGIES](state: S, payload: Strategy[]): void
   [MutationTypes.SET_STRATEGY](state: S, payload: Strategy): void
+  [MutationTypes.DELETE_BACKTEST_RESULT](state: S, payload: string): void
   [MutationTypes.ADD_BACKTEST_RESULT](state: S, payload: BacktestResult): void
   [MutationTypes.ADD_BACKTEST_RESULTS](state: S, payload: BacktestResult[]): void
   [MutationTypes.SET_THEME](state: S, payload: Theme): void

@@ -31,4 +31,11 @@ export default class AmqpConnection {
         })));
     }
 
+    stopBacktest(id: string) {
+        this.channel.publish('backtest_x', `backtests.${id}.control`, Buffer.from(JSON.stringify({
+            action: 'STOP',
+            backtestId: id
+        })));
+    }
+
 }

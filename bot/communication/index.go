@@ -19,10 +19,55 @@ func SetupAmqp(databaseHandler *database.DatabaseHandler) {
 		panic(err)
 	}
 
-	go startBacktestConsumer(connection, databaseHandler)
+	backtestHandler := handlers.NewBacktestHandler(databaseHandler)
+
+	go startBacktestConsumer(connection, databaseHandler, backtestHandler)
+	go startBacktestControlConsumer(connection, backtestHandler)
 }
 
-func startBacktestConsumer(connection *amqp.Connection, databaseHandler *database.DatabaseHandler) {
+func startBacktestControlConsumer(connection *amqp.Connection, backtestHandler *handlers.BacktestHandler) {
+	channel, err := connection.Channel()
+	if err != nil {
+		panic(err)
+	}
+
+	// Ensure required exchanges exist
+	err = channel.ExchangeDeclare("backtest_x", "topic", false, false, false, false, amqp.Table{})
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a queue to listen from
+	queue, err := channel.QueueDeclare("", false, true, true, false, amqp.Table{})
+	if err != nil {
+		panic(err)
+	}
+
+	err = channel.QueueBind(queue.Name, "backtests.*.control", "backtest_x", false, amqp.Table{})
+	if err != nil {
+		panic(err)
+	}
+
+	controlCh, err := channel.Consume(queue.Name, "", false, false, false, false, amqp.Table{})
+	if err != nil {
+		panic(err)
+	}
+
+	for delivery := range controlCh {
+		backtestControl := &types.BacktestControl{}
+		err := json.Unmarshal(delivery.Body, backtestControl)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		if backtestControl.Action == "STOP" {
+			backtestHandler.StopBacktest(backtestControl.BacktestId)
+		}
+	}
+}
+
+func startBacktestConsumer(connection *amqp.Connection, databaseHandler *database.DatabaseHandler, backtestHandler *handlers.BacktestHandler) {
 	channel, err := connection.Channel()
 	if err != nil {
 		panic(err)
@@ -47,8 +92,6 @@ func startBacktestConsumer(connection *amqp.Connection, databaseHandler *databas
 	if err != nil {
 		panic(err)
 	}
-
-	backtestHandler := handlers.NewBacktestHandler(databaseHandler)
 
 	for delivery := range backtestCh {
 		backtestId := &types.QueuedBacktest{}

@@ -74,6 +74,9 @@ const mutations: MutationTree<State> & Mutations = {
       }
     }
   },
+  [MutationTypes.DELETE_BACKTEST_RESULT] (state, id) {
+    state.backtests = state.backtests.filter(b => b.id !== id)
+  },
   [MutationTypes.ADD_BACKTEST_RESULT] (state, result) {
     const exists = state.backtests.some(b => b.id === result.id)
     if (exists) return
@@ -213,6 +216,15 @@ const actions: ActionTree<State, State> & Actions = {
     } catch (err) {
       console.error(err)
       return undefined
+    }
+  },
+  async [ActionTypes.STOP_BACKTEST] ({ commit }, id) {
+    try {
+      const response = await axios.post(`/backtest/${id}/stop`)
+      commit(MutationTypes.DELETE_BACKTEST_RESULT, id)
+      return response.data
+    } catch (err) {
+      return err
     }
   },
   async [ActionTypes.LOAD_BACKTESTS] ({ commit }, strategyId) {
