@@ -2,7 +2,7 @@ import { Response, Router } from "express";
 import { ObjectId } from "mongodb";
 
 import ServerRequest from "../types/ServerRequest";
-import { createBacktest, getBacktestsById, getBacktestsByStrategyId } from "../services/BacktestService";
+import { createBacktest, deleteBacktestById, getBacktestIdsByStrategyId, getBacktestsById, getBacktestsByStrategyId } from "../services/BacktestService";
 import { getStrategyById } from "../services/StrategyService";
 import { singleton } from "tsyringe";
 import RequestHandler from "../common/RequestHandler";
@@ -58,6 +58,12 @@ export default class BacktestHandler implements RequestHandler {
     });
   
     if(!backtest) return res.sendStatus(500);
+
+    const backtestIdsToDelete = await getBacktestIdsByStrategyId(strategy._id, 5);
+
+    if(backtestIdsToDelete.length > 0) {
+      await deleteBacktestById(backtestIdsToDelete.map(b => b._id));
+    }
   
     this.amqpConnection.queueBacktest(backtest._id.toString());
     
