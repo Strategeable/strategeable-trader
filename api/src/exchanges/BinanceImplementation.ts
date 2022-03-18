@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Client, { Binance } from 'binance-api-node'
 
-import { ExchangeBalance, Rate } from "../types/Exchange";
+import { Exchange, ExchangeBalance, Rate } from "../types/Exchange";
 import ExchangeImplementation from "./base/ExchangeImplementation";
 
 export default class BinanceImplementation implements ExchangeImplementation {
@@ -19,7 +19,7 @@ export default class BinanceImplementation implements ExchangeImplementation {
     try {
       const account = await this.client.accountInfo();
       return account.balances
-        .map(b => ({ asset: b.asset, amount: Number(b.free) + Number(b.locked) }))
+        .map(b => ({ exchange: 'binance' as Exchange, asset: b.asset, amount: Number(b.free) + Number(b.locked) }))
         .filter(b => b.amount > 0);
     } catch(err) {
       console.error(err)

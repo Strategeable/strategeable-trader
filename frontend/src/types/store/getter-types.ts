@@ -12,6 +12,6 @@ export type Getters = {
   backtests(state: State): Record<string, BacktestResult[]>
   theme(state: State): Theme
   exchangeConnections(state: State): ExchangeConnection[]
-  balances(state: State): Record<Exchange, ExchangeBalance[]>
+  balances(state: State): ExchangeBalance[]
   rates(state: State): Record<string, number>
 }

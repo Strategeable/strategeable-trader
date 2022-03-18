@@ -17,7 +17,7 @@ export interface State {
   backtestsByStrategyId: Record<string, BacktestResult[]>
   theme: 'light' | 'dark'
   exchangeConnections: ExchangeConnection[]
-  balances: Record<Exchange, ExchangeBalance[]>
+  balances: ExchangeBalance[]
   rates: Record<string, number>
 }
 
@@ -289,10 +289,7 @@ const store = createStore<State>({
     backtestsByStrategyId: {},
     theme: 'dark',
     exchangeConnections: [],
-    balances: {
-      binance: [],
-      kucoin: []
-    },
+    balances: [],
     rates: {}
   },
   getters,

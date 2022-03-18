@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
 import Bot from '@/types/Bot'
 import BotSummary from '@/components/bots/BotSummary.vue'

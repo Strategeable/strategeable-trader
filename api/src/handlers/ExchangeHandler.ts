@@ -62,14 +62,13 @@ export async function handleDeleteExchangeConnection(req: ServerRequest, res: Re
 export async function handleGetExchangeBalances(req: ServerRequest, res: Response) {
   try {
     const exchangeConnections = await getExchangeConnections(req.user._id);
-    const balances: Record<string, ExchangeBalance[]> = {}
+    let balances: ExchangeBalance[] = []
 
     for(const conn of exchangeConnections) {
       const secretKey = crypto.AES.decrypt(conn.apiSecret, process.env.ENCRYPTION_KEY).toString(crypto.enc.Utf8);
       const impl = getExchangeImplementation(conn.exchange, conn.apiKey, secretKey);
 
-      if(!balances[conn.exchange]) balances[conn.exchange] = [];
-      balances[conn.exchange] = [...balances[conn.exchange], ...await impl.getBalances()];
+      balances = [...balances, ...await impl.getBalances()];
     }
 
     return res.json(balances)

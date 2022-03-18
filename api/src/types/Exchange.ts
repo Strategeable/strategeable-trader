@@ -13,6 +13,7 @@ export interface ExchangeConnection {
 }
 
 export interface ExchangeBalance {
+  exchange: Exchange
   asset: string
   amount: number
 }

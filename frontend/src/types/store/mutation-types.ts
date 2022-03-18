@@ -33,6 +33,6 @@ export type Mutations<S = State> = {
   [MutationTypes.DELETE_EXCHANGE_CONNECTION](state: S, payload: string): void
   [MutationTypes.ADD_BOT](state: S, payload: Bot): void
   [MutationTypes.SET_BOTS](state: S, payload: Bot[]): void
-  [MutationTypes.SET_BALANCES](state: S, payload: Record<Exchange, ExchangeBalance[]>): void
+  [MutationTypes.SET_BALANCES](state: S, payload: ExchangeBalance[]): void
   [MutationTypes.SET_RATE](state: S, payload: { exchange: Exchange, symbol: string, rate: number }): void
 }
