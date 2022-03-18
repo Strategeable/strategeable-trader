@@ -31,6 +31,30 @@ func (d *DatabaseHandler) GetBacktestById(id string) (*strategy.Backtest, error)
 	return backtest, err
 }
 
+func (d *DatabaseHandler) UpdateBacktestStatus(id string, status string) error {
+	collection := d.database.Collection("backtests")
+
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	updateResult, err := collection.UpdateByID(context.Background(), objectId, bson.M{
+		"$set": bson.M{
+			"status": status,
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	if updateResult.MatchedCount < 1 {
+		return errors.New("backtest not found")
+	}
+
+	return nil
+}
+
 func (d *DatabaseHandler) SaveBacktest(backtest *strategy.Backtest) error {
 	collection := d.database.Collection("backtests")
 

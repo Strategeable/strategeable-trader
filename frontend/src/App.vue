@@ -37,6 +37,14 @@ export default {
     return {
       isLoggedIn
     }
+  },
+  sockets: {
+    connect () {
+      const vm: any = this as any
+      if (!vm.$store.getters.loggedIn) return
+
+      vm.$socket.emit('authorization', localStorage.getItem('jwt'))
+    }
   }
 }
 </script>

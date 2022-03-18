@@ -23,6 +23,7 @@ type BacktestPosition struct {
 
 type Backtest struct {
 	Id           primitive.ObjectID `bson:"_id"`
+	Status       string             `bson:"status"`
 	StrategyId   primitive.ObjectID `bson:"strategyId"`
 	Strategy     rawStrategy        `bson:"strategy"`
 	FromDate     primitive.DateTime `bson:"fromDate"`

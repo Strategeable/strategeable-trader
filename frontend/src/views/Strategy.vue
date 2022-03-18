@@ -270,7 +270,12 @@ export default defineComponent({
       await store.dispatch('loadBacktests', id)
 
       if (backtestResults.value.length > 0) {
-        selectedBacktestId.value = backtestResults.value[0].id
+        const backtest = backtestResults.value[0]
+        selectedBacktestId.value = backtest.id
+
+        if (!backtest.finished) {
+          store.getters.socket.emit('subscribeBacktest', backtest.id)
+        }
       }
     }
 
@@ -421,7 +426,10 @@ export default defineComponent({
 
         const backtestObj = await store.dispatch('runBacktest', backtestParameters.value)
 
-        selectedBacktestId.value = backtestObj.id
+        const backtestId = backtestObj.backtestId
+        store.getters.socket.emit('subscribeBacktest', backtestId)
+
+        selectedBacktestId.value = backtestId
         runningBacktest.value = undefined
       } catch (err) {
         console.error(err)

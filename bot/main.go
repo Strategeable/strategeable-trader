@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/Strategeable/Trader/communication"
 	"github.com/Strategeable/Trader/database"
-	"github.com/Strategeable/Trader/rpcserver"
 	"github.com/joho/godotenv"
 )
 
@@ -18,8 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	server := rpcserver.NewRpcServer(databaseHandler)
-	server.Start()
+	communication.SetupAmqp(databaseHandler)
 
 	keepaliveCh := make(chan string)
 	<-keepaliveCh

@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import { createStore, StoreOptions } from 'vuex'
 import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
@@ -12,7 +12,8 @@ export default createStore({
     bots: [] as Bot[],
     backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
     theme: 'dark',
-    exchangeConnections: [] as ExchangeConnection[]
+    exchangeConnections: [] as ExchangeConnection[],
+    socket: undefined
   },
   getters: {
     loggedIn: state => !!state.token,
@@ -20,9 +21,16 @@ export default createStore({
     bots: state => state.bots,
     backtests: state => state.backtestsByStrategyId,
     theme: state => state.theme,
-    exchangeConnections: state => state.exchangeConnections
+    exchangeConnections: state => state.exchangeConnections,
+    socket: state => state.socket
   },
   mutations: {
+    io_backtestEvent (state, data) {
+      console.log(data)
+    },
+    SET_SOCKET (state, socket) {
+      state.socket = socket
+    },
     SET_JWT (state, token) {
       state.token = token
     },
@@ -88,13 +96,16 @@ export default createStore({
 
       commit('SET_THEME', newTheme)
     },
-    async login ({ commit, dispatch }, { username, password }) {
+    async login ({ commit, dispatch, getters }, { username, password }) {
       try {
-        const response = await axios.post('/login', { username, password })
+        const response = await axios.post('/auth/login', { username, password })
         if (!response.data || !response.data.token) return
 
         const { token } = response.data
         localStorage.setItem('jwt', token)
+
+        getters.socket.emit('authorization', token)
+
         dispatch('init')
         commit('SET_JWT', token)
       } catch (err) {
@@ -103,7 +114,7 @@ export default createStore({
     },
     async registerAccount ({ commit }, { username, password }): Promise<string | undefined> {
       try {
-        const response = await axios.post('/register', { username, password })
+        const response = await axios.post('/auth/register', { username, password })
         if (!response.data) return 'Something went wrong'
         if (response.data.error) return response.data.error
 
@@ -167,23 +178,24 @@ export default createStore({
     async runBacktest ({ commit }, backtestParams) {
       try {
         const response = await axios.post('/backtest', backtestParams)
+        return response.data
 
         // Start polling for the backtest result
         // TODO: this preferably shouldn't keep polling the API, websockets could potentially help
-        while (true) {
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          try {
-            const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
-            if (backtestResponse.status === 200) {
-              if (backtestResponse.data.finished) {
-                commit('ADD_BACKTEST_RESULT', backtestResponse.data)
-                return backtestResponse.data
-              }
-            }
-          } catch (err) {
-            continue
-          }
-        }
+        // while (true) {
+        //   await new Promise(resolve => setTimeout(resolve, 2000))
+        //   try {
+        //     const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
+        //     if (backtestResponse.status === 200) {
+        //       if (backtestResponse.data.finished) {
+        //         commit('ADD_BACKTEST_RESULT', backtestResponse.data)
+        //         return backtestResponse.data
+        //       }
+        //     }
+        //   } catch (err) {
+        //     continue
+        //   }
+        // }
       } catch (err) {
         console.error(err)
         return undefined

@@ -6,6 +6,7 @@ package types
 type MarketDataProvider interface {
 	// Prepare initial candle caches
 	Init() error
+	IsInitialized() bool
 	// Stop watching new trades and clear cache
 	Close()
 	GetCandleCollection() *CandleCollection
