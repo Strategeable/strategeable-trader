@@ -98,7 +98,6 @@ export default defineComponent({
         let usdValue = 0
         if (toUsdRate) usdValue = total * (toUsdRate.quote.USDT || toUsdRate.quote.USDC || toUsdRate.quote.DAI || toUsdRate.quote.BUSD || 0)
 
-        console.log(toUsdRate, exchange, total, usdValue)
         value[exchange] = {
           asset: denominateIn.value,
           value: Number(total.toFixed(store.getters.getAssetRounding(denominateIn.value))),
