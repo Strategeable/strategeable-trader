@@ -49,10 +49,7 @@ type BasePositionHandler struct {
 
 func (b *BasePositionHandler) EmitEvent(event PositionHandlerEvent) {
 	for _, ch := range b.eventSubscriptions {
-		select {
-		case ch <- event:
-		default:
-		}
+		ch <- event
 	}
 }
 
