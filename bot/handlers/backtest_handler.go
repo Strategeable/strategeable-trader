@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Strategeable/Trader/database"
@@ -14,12 +15,24 @@ import (
 type BacktestHandler struct {
 	databaseHandler      *database.DatabaseHandler
 	mainCandleCollection *types.CandleCollection
+	runningBacktests     map[string]chan interface{}
+	mu                   sync.Mutex
 }
 
 func NewBacktestHandler(databaseHandler *database.DatabaseHandler) *BacktestHandler {
 	return &BacktestHandler{
 		databaseHandler:      databaseHandler,
 		mainCandleCollection: types.NewCandleCollection(-1),
+		runningBacktests:     make(map[string]chan interface{}),
+	}
+}
+
+func (b *BacktestHandler) StopBacktest(id string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	if b.runningBacktests[id] != nil {
+		b.runningBacktests[id] <- ""
 	}
 }
 
@@ -33,10 +46,23 @@ func (b *BacktestHandler) RunBacktest(id string) (chan types.BacktestEvent, erro
 		return nil, errors.New("already finished")
 	}
 
+	stopCh := make(chan interface{})
+
+	b.mu.Lock()
+	b.runningBacktests[id] = stopCh
+	b.mu.Unlock()
+
 	backtestEventCh := make(chan types.BacktestEvent)
 
 	go func() {
-		defer close(backtestEventCh)
+		defer func() {
+			close(backtestEventCh)
+			close(stopCh)
+
+			b.mu.Lock()
+			delete(b.runningBacktests, id)
+			b.mu.Unlock()
+		}()
 
 		strategy, err := strategy_types.StrategyFromJson(backtest.Strategy)
 		if err != nil {
@@ -65,6 +91,13 @@ func (b *BacktestHandler) RunBacktest(id string) (chan types.BacktestEvent, erro
 		positionHandler.SubscribeEvents(eventCh)
 
 		engine := NewEngine(strategy, marketDataProvider, positionHandler)
+
+		go func() {
+			<-stopCh
+
+			marketDataProvider.Close()
+			engine.Stop()
+		}()
 
 		go func() {
 			defer close(eventCh)
@@ -131,6 +164,14 @@ func (b *BacktestHandler) handleBacktestProgress(backtest *strategy_types.Backte
 		}
 	}
 
+	backtest, err := b.databaseHandler.GetBacktestById(backtest.Id.Hex())
+	if err != nil {
+		return
+	}
+	if backtest == nil {
+		return
+	}
+
 	mappedPositions := make([]strategy_types.BacktestPosition, 0)
 	for _, position := range positions {
 		mappedPositions = append(mappedPositions, positionToBacktestPosition(position))
@@ -140,7 +181,7 @@ func (b *BacktestHandler) handleBacktestProgress(backtest *strategy_types.Backte
 	backtest.EndBalance = positionHandler.GetTotalBalance()
 	backtest.Positions = mappedPositions
 
-	err := b.databaseHandler.SaveBacktest(backtest)
+	err = b.databaseHandler.SaveBacktest(backtest)
 	if err != nil {
 		fmt.Println(err)
 	}

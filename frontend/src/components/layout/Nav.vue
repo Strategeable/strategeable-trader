@@ -6,7 +6,12 @@
         <div class="inner">
           <div class="left">
             <nav-item
-              :active="activeRoute === 'Bots' || activeRoute === 'Bot'"
+              :active="activeRoute === 'Dashboard'"
+              name="Dashboard"
+              to="/"
+            />
+            <nav-item
+              :active="activeRoute === 'Bots'"
               name="Bots"
               to="/bots"
             />
@@ -39,7 +44,7 @@ import ColorTheme from '@/components/ColorTheme.vue'
 export default {
   components: { NavItem, ColorTheme },
   computed: {
-    activeRoute () {
+    activeRoute (): string {
       return (this as any).$route.name
     }
   }

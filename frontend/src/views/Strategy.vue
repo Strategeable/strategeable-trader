@@ -152,6 +152,7 @@
         :key="backtest.id"
         :backtest="backtest"
         :open="selectedBacktestId === backtest.id"
+        @stop="() => stopBacktest(backtest.id)"
         @click="() => selectedBacktestId = backtest.id"
         @restore="() => restoreStrategy(backtest.strategy)"
         @export="() => exportStrategy(backtest.strategy)"
@@ -415,6 +416,17 @@ export default defineComponent({
       exportFromJSON({ data: strat || strategy.value, fileName, exportType })
     }
 
+    async function stopBacktest (id: string) {
+      try {
+        await store.dispatch(
+          ActionTypes.STOP_BACKTEST,
+          id
+        )
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
     async function backtest () {
       try {
         if (canSave.value) {
@@ -491,6 +503,7 @@ export default defineComponent({
       save,
       exportStrategy,
       backtest,
+      stopBacktest,
       handleUploadStrategy,
       restoreStrategy,
       newVariable,

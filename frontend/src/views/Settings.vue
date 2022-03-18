@@ -44,6 +44,13 @@
             v-model="exchangeConnection.apiSecret"
           >
         </div>
+        <div class="input" v-if="['kucoin'].includes(exchangeConnection.exchange)">
+          <p>Passphrase</p>
+          <input
+            type="text"
+            v-model="exchangeConnection.passPhrase"
+          >
+        </div>
         <button
           :disabled="!validCreateConnection"
           @click="createExchangeConnection"
@@ -99,7 +106,8 @@ export default defineComponent({
           apiKey: '',
           apiSecret: '',
           name: '',
-          createdOn: ''
+          createdOn: '',
+          passPhrase: undefined
         }
       }
     }

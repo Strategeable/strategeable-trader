@@ -2,7 +2,7 @@ import { State } from '@/store'
 import { ActionContext } from 'vuex'
 import { BacktestRequestParameters, BacktestResult } from '../Backtest'
 import Bot, { LaunchParameters } from '../Bot'
-import { ExchangeConnection } from '../Exchange'
+import { Exchange, ExchangeBalance, ExchangeConnection, Rate } from '../Exchange'
 import { Theme } from '../general'
 import Position from '../Position'
 import { Strategy } from '../Strategy'
@@ -18,12 +18,15 @@ export enum ActionTypes {
   LOAD_STRATEGY = 'LOAD_STRATEGY',
   SAVE_STRATEGY = 'SAVE_STRATEGY',
   RUN_BACKTEST = 'RUN_BACKTEST',
+  STOP_BACKTEST = 'STOP_BACKTEST',
   LOAD_BACKTESTS = 'LOAD_BACKTESTS',
   LOAD_EXCHANGE_CONNECTIONS = 'LOAD_EXCHANGE_CONNECTIONS',
   ADD_EXCHANGE_CONNECTION = 'ADD_EXCHANGE_CONNECTION',
   DELETE_EXCHANGE_CONNECTION = 'DELETE_EXCHANGE_CONNECTION',
   LAUNCH_BOT = 'LAUNCH_BOT',
-  LOAD_POSITIONS = 'LOAD_POSITIONS'
+  LOAD_POSITIONS = 'LOAD_POSITIONS',
+  LOAD_BALANCES = 'LOAD_BALANCES',
+  LOAD_RATES = 'LOAD_RATES'
 }
 
 type AugmentedActionContext = {
@@ -52,6 +55,10 @@ export interface Actions {
     { commit }: AugmentedActionContext,
     backtestParams: BacktestRequestParameters
   ): Promise<BacktestResult | undefined>
+  [ActionTypes.STOP_BACKTEST](
+    { commit }: AugmentedActionContext,
+    backtestId: string
+  ): Promise<BacktestResult | undefined>
   [ActionTypes.LOAD_BACKTESTS]({ commit }: AugmentedActionContext, id: string): Promise<BacktestResult[]>
   [ActionTypes.LOAD_EXCHANGE_CONNECTIONS]({ commit }: AugmentedActionContext): Promise<ExchangeConnection[]>
   [ActionTypes.ADD_EXCHANGE_CONNECTION](
@@ -70,4 +77,9 @@ export interface Actions {
     { commit }: AugmentedActionContext,
     open: boolean
   ): Promise<{ error?: string, data?: Position[] }>
+  [ActionTypes.LOAD_BALANCES]({ commit }: AugmentedActionContext): Promise<ExchangeBalance[]>
+  [ActionTypes.LOAD_RATES](
+    { commit }: AugmentedActionContext,
+    { exchange, coins }: { exchange: Exchange, coins: string[] }
+  ): Promise<Rate[]>
 }

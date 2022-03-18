@@ -3,8 +3,8 @@ import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
-import { ExchangeConnection } from '@/types/Exchange'
 
+import { ExchangeBalance, ExchangeConnection, Rate } from '@/types/Exchange'
 import { Mutations, MutationTypes } from '@/types/store/mutation-types'
 import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
@@ -18,9 +18,13 @@ export interface State {
   bots: Bot[]
   backtests: BacktestResult[]
   theme: 'light' | 'dark'
-  exchangeConnections: ExchangeConnection[],
-  positions: Record<string, Position[]>,
+  exchangeConnections: ExchangeConnection[]
+  positions: Record<string, Position[]>
+  balances: ExchangeBalance[]
+  rates: Rate[]
   socket: Socket | undefined
+  denominateIn: 'BTC' | 'ETH' | 'USD',
+  assetRounding: Record<string, number>
 }
 
 const getters: GetterTree<State, State> & Getters = {
@@ -32,31 +36,34 @@ const getters: GetterTree<State, State> & Getters = {
   theme: state => state.theme,
   exchangeConnections: state => state.exchangeConnections,
   positions: state => state.positions,
-  socket: state => state.socket
+  socket: state => state.socket,
+  rates: state => state.rates,
+  balances: state => state.balances,
+  denominateIn: state => state.denominateIn,
+  getAssetRounding: state => asset => state.assetRounding[asset] || 4
 }
 
 const mutations: MutationTree<State> & Mutations = {
-  [MutationTypes.IO_BACKTEST_EVENT] (state, payload) {
-    const backtestId = payload.id
-
+  [MutationTypes.IO_BACKTEST_EVENT] (state, event) {
+    const backtestId = event.id
     const backtest = state.backtests.find(b => b.id === backtestId)
     if (!backtest) return
 
-    const event = payload.event
+    event.events.forEach((event: any) => {
+      if (event.status === 'FINISHED') {
+        backtest.finished = true
+      }
 
-    if (event.status === 'FINISHED') {
-      backtest.finished = true
-    }
+      backtest.status = event.status
 
-    backtest.status = event.status
+      if (!event.eventData) return
 
-    if (!event.eventData) return
-
-    if (event.eventData.type === 'POSITION_CLOSED') {
-      backtest.positions.push(event.eventData.data)
-    } else if (event.eventData.type === 'TOTAL_BALANCE_CHANGED') {
-      backtest.endBalance = event.eventData.data
-    }
+      if (event.eventData.type === 'POSITION_CLOSED') {
+        backtest.positions.push(event.eventData.data)
+      } else if (event.eventData.type === 'TOTAL_BALANCE_CHANGED') {
+        backtest.endBalance = event.eventData.data
+      }
+    })
   },
   [MutationTypes.SET_SOCKET] (state, socket) {
     state.socket = socket
@@ -78,6 +85,9 @@ const mutations: MutationTree<State> & Mutations = {
         state.strategies.push(strategy)
       }
     }
+  },
+  [MutationTypes.DELETE_BACKTEST_RESULT] (state, id) {
+    state.backtests = state.backtests.filter(b => b.id !== id)
   },
   [MutationTypes.ADD_BACKTEST_RESULT] (state, result) {
     const exists = state.backtests.some(b => b.id === result.id)
@@ -110,6 +120,27 @@ const mutations: MutationTree<State> & Mutations = {
   [MutationTypes.SET_BOTS] (state, bots) {
     state.bots = bots
   },
+  [MutationTypes.SET_BALANCES] (state, balances) {
+    state.balances = balances
+  },
+  [MutationTypes.SET_RATES] (state, rates) {
+    state.rates = rates
+  },
+  [MutationTypes.SET_RATE] (state, { exchange, asset, quoteAsset, rate }) {
+    const rateObj = state.rates.find(r => r.exchange === exchange && r.asset === asset)
+    if (rateObj) {
+      rateObj.quote[quoteAsset] = rate
+    } else {
+      const quoteObj: Record<string, number> = {}
+      quoteObj[quoteAsset] = rate
+
+      state.rates.push({
+        asset,
+        exchange,
+        quote: quoteObj
+      })
+    }
+  },
   [MutationTypes.ADD_POSITIONS] (state, positions) {
     for (const position of positions) {
       if (!state.positions[position.botId]) state.positions[position.botId] = []
@@ -119,10 +150,23 @@ const mutations: MutationTree<State> & Mutations = {
 }
 
 const actions: ActionTree<State, State> & Actions = {
-  [ActionTypes.INIT] ({ dispatch }) {
+  async [ActionTypes.INIT] ({ dispatch }) {
     dispatch(ActionTypes.LOAD_STRATEGIES)
     dispatch(ActionTypes.LOAD_BOTS)
     dispatch(ActionTypes.LOAD_EXCHANGE_CONNECTIONS)
+    const balances: ExchangeBalance[] = await dispatch(ActionTypes.LOAD_BALANCES)
+    const mapping: Record<string, string[]> = {}
+    balances.forEach(b => {
+      if (mapping[b.exchange]) {
+        mapping[b.exchange] = [...mapping[b.exchange], b.asset]
+      } else {
+        mapping[b.exchange] = [b.asset]
+      }
+    })
+
+    for (const [exchange, coins] of Object.entries(mapping)) {
+      dispatch(ActionTypes.LOAD_RATES, { exchange, coins: [...coins, 'BTC', 'ETH'] })
+    }
   },
   [ActionTypes.CHANGE_COLOR_THEME] ({ commit, state }, theme) {
     // Toggle the color theme between dark & light
@@ -226,6 +270,15 @@ const actions: ActionTree<State, State> & Actions = {
       return undefined
     }
   },
+  async [ActionTypes.STOP_BACKTEST] ({ commit }, id) {
+    try {
+      const response = await axios.post(`/backtest/${id}/stop`)
+      commit(MutationTypes.DELETE_BACKTEST_RESULT, id)
+      return response.data
+    } catch (err) {
+      return err
+    }
+  },
   async [ActionTypes.LOAD_BACKTESTS] ({ commit }, strategyId) {
     if (!strategyId) return
     try {
@@ -254,7 +307,8 @@ const actions: ActionTree<State, State> & Actions = {
         exchange: exchangeConnection.exchange,
         name: exchangeConnection.name,
         apiKey: exchangeConnection.apiKey,
-        apiSecret: exchangeConnection.apiSecret
+        apiSecret: exchangeConnection.apiSecret,
+        passPhrase: exchangeConnection.passPhrase
       })
 
       if (response.status !== 200) return { error: 'Something went wrong' }
@@ -304,6 +358,28 @@ const actions: ActionTree<State, State> & Actions = {
     } catch (err: any) {
       return { error: 'Something went wrong' }
     }
+  },
+  async [ActionTypes.LOAD_BALANCES] ({ commit }) {
+    try {
+      const response = await axios.get('/settings/balances')
+      commit(MutationTypes.SET_BALANCES, response.data)
+      return response.data
+    } catch (err) {
+      console.error(err)
+      return []
+    }
+  },
+  async [ActionTypes.LOAD_RATES] ({ commit }, { exchange, coins }) {
+    try {
+      const response = await axios.get(`/rates?exchange=${exchange}&coins=${coins.join(',')}`)
+      if (response.status !== 200) return []
+
+      commit(MutationTypes.SET_RATES, response.data)
+      return response.data
+    } catch (err) {
+      console.error(err)
+      return []
+    }
   }
 }
 
@@ -316,7 +392,16 @@ const store = createStore<State>({
     theme: 'dark',
     exchangeConnections: [],
     positions: {},
-    socket: undefined
+    socket: undefined,
+    balances: [],
+    rates: [],
+    denominateIn: 'BTC',
+    assetRounding: {
+      BTC: 6,
+      USD: 2,
+      USDT: 2,
+      ETH: 4
+    }
   },
   getters,
   mutations,
