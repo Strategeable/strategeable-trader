@@ -31,8 +31,10 @@ export default class Websocket {
             channel.consume(queue.queue, message => {
                 this.io.in(message.fields.routingKey).emit('BACKTEST_EVENT', {
                     id: message.fields.routingKey.split('.')[1],
-                    event: JSON.parse(message.content.toString())
+                    events: JSON.parse(message.content.toString())
                 });
+
+                channel.ack(message);
             });
         });
     }

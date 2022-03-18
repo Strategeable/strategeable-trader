@@ -41,27 +41,26 @@ const getters: GetterTree<State, State> & Getters = {
 }
 
 const mutations: MutationTree<State> & Mutations = {
-  [MutationTypes.IO_BACKTEST_EVENT] (state, payload) {
-    const backtestId = payload.id
-
+  [MutationTypes.IO_BACKTEST_EVENT] (state, event) {
+    const backtestId = event.id
     const backtest = state.backtests.find(b => b.id === backtestId)
     if (!backtest) return
 
-    const event = payload.event
+    event.events.forEach((event: any) => {
+      if (event.status === 'FINISHED') {
+        backtest.finished = true
+      }
 
-    if (event.status === 'FINISHED') {
-      backtest.finished = true
-    }
+      backtest.status = event.status
 
-    backtest.status = event.status
+      if (!event.eventData) return
 
-    if (!event.eventData) return
-
-    if (event.eventData.type === 'POSITION_CLOSED') {
-      backtest.positions.push(event.eventData.data)
-    } else if (event.eventData.type === 'TOTAL_BALANCE_CHANGED') {
-      backtest.endBalance = event.eventData.data
-    }
+      if (event.eventData.type === 'POSITION_CLOSED') {
+        backtest.positions.push(event.eventData.data)
+      } else if (event.eventData.type === 'TOTAL_BALANCE_CHANGED') {
+        backtest.endBalance = event.eventData.data
+      }
+    })
   },
   [MutationTypes.SET_SOCKET] (state, socket) {
     state.socket = socket

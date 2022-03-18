@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/Strategeable/Trader/database"
 	"github.com/Strategeable/Trader/handlers"
@@ -69,26 +71,48 @@ func startBacktestConsumer(connection *amqp.Connection, databaseHandler *databas
 
 		status := ""
 
-		for event := range ch {
-			body, err := json.Marshal(event)
-			if err != nil {
-				fmt.Println(err)
-				continue
+		done := false
+		events := make([]types.BacktestEvent, 0)
+		var mu sync.Mutex
+
+		go func() {
+			for !done || len(events) > 0 {
+				mu.Lock()
+				if len(events) > 0 {
+					body, err := json.Marshal(events)
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+
+					channel.Publish("backtest_x", backtestKey, false, false, amqp.Publishing{
+						ContentType: "application/json",
+						Body:        body,
+					})
+
+					events = make([]types.BacktestEvent, 0)
+				}
+				mu.Unlock()
+
+				time.Sleep(3 * time.Second)
 			}
+		}()
 
-			channel.Publish("backtest_x", backtestKey, false, false, amqp.Publishing{
-				ContentType: "application/json",
-				Body:        body,
-			})
-
+		for event := range ch {
 			if event.Status != status {
 				fmt.Printf("Backtest %s - Status: %s.\n", backtestId.Id, event.Status)
 				status = event.Status
 				databaseHandler.UpdateBacktestStatus(backtestId.Id, event.Status)
 			}
+
+			mu.Lock()
+			events = append(events, event)
+			mu.Unlock()
 		}
 
 		fmt.Printf("Finished backtest %s.\n", backtestId.Id)
+
+		done = true
 
 		channel.Ack(delivery.DeliveryTag, false)
 	}
