@@ -30,5 +30,17 @@ export interface ExchangeConnection {
 export interface ExchangeBalance {
   exchange: Exchange
   asset: string
-  amount: string
+  amount: number
+}
+
+export interface Rate {
+  exchange: string
+  asset: string
+  quote: Record<string, number>
+}
+
+export interface ExchangeValue {
+  asset: string
+  value: number
+  usdValue: number
 }

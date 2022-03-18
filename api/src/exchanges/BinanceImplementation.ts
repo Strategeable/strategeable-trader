@@ -8,7 +8,7 @@ export default class BinanceImplementation implements ExchangeImplementation {
 
   private client: Binance
 
-  constructor(apiKey: string, apiSecret: string) {
+  constructor(apiKey?: string, apiSecret?: string) {
     this.client = Client({
       apiKey,
       apiSecret
@@ -28,7 +28,28 @@ export default class BinanceImplementation implements ExchangeImplementation {
   }
 
   async getRates(assets: string[]): Promise<Rate[]> {
-    const prices = await axios.get('https://api.binance.com/api/v3/ticker/price');
-    return []
+    try {
+      const prices: { data: { symbol: string, price: string }[] } = await axios.get('https://api.binance.com/api/v3/ticker/price');
+      const rates: Rate[] = [];
+
+      for(const asset of assets) {
+        const assetRates = prices.data.filter(p => p.symbol.startsWith(asset));
+        const rateObj: Rate = {
+          asset,
+          exchange: 'binance',
+          quote: {}
+        }
+        for(const rate of assetRates) {
+          rateObj.quote[rate.symbol.slice(asset.length)] = Number(rate.price)
+        }
+
+        rates.push(rateObj);
+      }
+
+      return rates
+    } catch(err) {
+      console.error(err);
+      return []
+    }
   }
 }

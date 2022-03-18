@@ -4,7 +4,7 @@ import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
 
-import { ExchangeBalance, ExchangeConnection } from '@/types/Exchange'
+import { ExchangeBalance, ExchangeConnection, Rate } from '@/types/Exchange'
 import { Mutations, MutationTypes } from '@/types/store/mutation-types'
 import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
@@ -19,8 +19,10 @@ export interface State {
   theme: 'light' | 'dark'
   exchangeConnections: ExchangeConnection[]
   balances: ExchangeBalance[]
-  rates: Record<string, number>
+  rates: Rate[]
   socket: Socket | undefined
+  denominateIn: 'BTC' | 'ETH' | 'USD',
+  assetRounding: Record<string, number>
 }
 
 const getters: GetterTree<State, State> & Getters = {
@@ -33,7 +35,9 @@ const getters: GetterTree<State, State> & Getters = {
   exchangeConnections: state => state.exchangeConnections,
   rates: state => state.rates,
   balances: state => state.balances,
-  socket: state => state.socket
+  socket: state => state.socket,
+  denominateIn: state => state.denominateIn,
+  getAssetRounding: state => asset => state.assetRounding[asset] || 4
 }
 
 const mutations: MutationTree<State> & Mutations = {
@@ -114,17 +118,44 @@ const mutations: MutationTree<State> & Mutations = {
   [MutationTypes.SET_BALANCES] (state, balances) {
     state.balances = balances
   },
-  [MutationTypes.SET_RATE] (state, { exchange, symbol, rate }) {
-    state.rates[`${exchange}-${symbol}`] = rate
+  [MutationTypes.SET_RATES] (state, rates) {
+    state.rates = rates
+  },
+  [MutationTypes.SET_RATE] (state, { exchange, asset, quoteAsset, rate }) {
+    const rateObj = state.rates.find(r => r.exchange === exchange && r.asset === asset)
+    if (rateObj) {
+      rateObj.quote[quoteAsset] = rate
+    } else {
+      const quoteObj: Record<string, number> = {}
+      quoteObj[quoteAsset] = rate
+
+      state.rates.push({
+        asset,
+        exchange,
+        quote: quoteObj
+      })
+    }
   }
 }
 
 const actions: ActionTree<State, State> & Actions = {
-  [ActionTypes.INIT] ({ dispatch }) {
+  async [ActionTypes.INIT] ({ dispatch }) {
     dispatch(ActionTypes.LOAD_STRATEGIES)
     dispatch(ActionTypes.LOAD_BOTS)
     dispatch(ActionTypes.LOAD_EXCHANGE_CONNECTIONS)
-    dispatch(ActionTypes.LOAD_BALANCES)
+    const balances: ExchangeBalance[] = await dispatch(ActionTypes.LOAD_BALANCES)
+    const mapping: Record<string, string[]> = {}
+    balances.forEach(b => {
+      if (mapping[b.exchange]) {
+        mapping[b.exchange] = [...mapping[b.exchange], b.asset]
+      } else {
+        mapping[b.exchange] = [b.asset]
+      }
+    })
+
+    for (const [exchange, coins] of Object.entries(mapping)) {
+      dispatch(ActionTypes.LOAD_RATES, { exchange, coins: [...coins, 'BTC', 'ETH'] })
+    }
   },
   [ActionTypes.CHANGE_COLOR_THEME] ({ commit, state }, theme) {
     // Toggle the color theme between dark & light
@@ -295,8 +326,22 @@ const actions: ActionTree<State, State> & Actions = {
     try {
       const response = await axios.get('/settings/balances')
       commit(MutationTypes.SET_BALANCES, response.data)
+      return response.data
     } catch (err) {
       console.error(err)
+      return []
+    }
+  },
+  async [ActionTypes.LOAD_RATES] ({ commit }, { exchange, coins }) {
+    try {
+      const response = await axios.get(`/rates?exchange=${exchange}&coins=${coins.join(',')}`)
+      if (response.status !== 200) return []
+
+      commit(MutationTypes.SET_RATES, response.data)
+      return response.data
+    } catch (err) {
+      console.error(err)
+      return []
     }
   }
 }
@@ -310,8 +355,15 @@ const store = createStore<State>({
     theme: 'dark',
     exchangeConnections: [],
     balances: [],
-    rates: {},
-    socket: undefined
+    rates: [],
+    socket: undefined,
+    denominateIn: 'BTC',
+    assetRounding: {
+      BTC: 6,
+      USD: 2,
+      USDT: 2,
+      ETH: 4
+    }
   },
   getters,
   mutations,

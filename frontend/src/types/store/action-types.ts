@@ -2,7 +2,7 @@ import { State } from '@/store'
 import { ActionContext } from 'vuex'
 import { BacktestRequestParameters, BacktestResult } from '../Backtest'
 import Bot, { LaunchParameters } from '../Bot'
-import { ExchangeConnection } from '../Exchange'
+import { Exchange, ExchangeBalance, ExchangeConnection, Rate } from '../Exchange'
 import { Theme } from '../general'
 import { Strategy } from '../Strategy'
 import { Mutations } from './mutation-types'
@@ -22,7 +22,8 @@ export enum ActionTypes {
   ADD_EXCHANGE_CONNECTION = 'ADD_EXCHANGE_CONNECTION',
   DELETE_EXCHANGE_CONNECTION = 'DELETE_EXCHANGE_CONNECTION',
   LAUNCH_BOT = 'LAUNCH_BOT',
-  LOAD_BALANCES = 'LOAD_BALANCES'
+  LOAD_BALANCES = 'LOAD_BALANCES',
+  LOAD_RATES = 'LOAD_RATES'
 }
 
 type AugmentedActionContext = {
@@ -65,5 +66,9 @@ export interface Actions {
     { commit }: AugmentedActionContext,
     params: LaunchParameters
   ): Promise<{ error?: string, data?: Bot }>
-  [ActionTypes.LOAD_BALANCES]({ commit }: AugmentedActionContext): Promise<void>
+  [ActionTypes.LOAD_BALANCES]({ commit }: AugmentedActionContext): Promise<ExchangeBalance[]>
+  [ActionTypes.LOAD_RATES](
+    { commit }: AugmentedActionContext,
+    { exchange, coins }: { exchange: Exchange, coins: string[] }
+  ): Promise<Rate[]>
 }

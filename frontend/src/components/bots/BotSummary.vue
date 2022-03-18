@@ -17,7 +17,7 @@
     <div class="right">
       <p class="balance" v-if="!compact">{{ bot.startBalance }} {{ bot.quoteCurrency }} => {{ bot.currentBalance }} {{ bot.quoteCurrency }}</p>
       <div class="status" :class="bot.status">
-        <p>{{ Number(changePercentage.toFixed(2)) }}% <span v-if="compact">(512.12 USDT)</span></p>
+        <p>{{ Number(changePercentage.toFixed(2)) }}% <span v-if="compact">(- {{ bot.quoteCurrency }})</span></p>
         <div class="circle" v-if="!compact"></div>
       </div>
     </div>

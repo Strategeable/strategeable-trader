@@ -3,26 +3,30 @@
     <div class="balance-summary">
       <div class="summary">
         <p class="header">Overall balance</p>
-        <p class="balance">0.892342 BTC</p>
-        <p class="estimation">~ $34212.12</p>
+        <p class="balance">{{ totalValues.value }} {{ totalValues.asset }}</p>
+        <p class="estimation">~ ${{ totalValues.usdValue }}</p>
       </div>
       <div class="summary">
         <p class="header">Managed by bots</p>
-        <p class="balance">0.892342 BTC</p>
-        <p class="estimation">~ $34212.12</p>
+        <p class="balance">- BTC</p>
+        <p class="estimation">~ $-</p>
       </div>
       <div class="summary">
         <p class="header">Balance + open positions</p>
-        <p class="balance">0.892342 BTC</p>
-        <p class="estimation">~ $34212.12</p>
+        <p class="balance">- BTC</p>
+        <p class="estimation">~ $-</p>
       </div>
     </div>
     <div class="content">
       <div class="wallets section">
         <h2>Wallets</h2>
         <div class="exchanges">
-          <exchange-balance :exchange="'binance'"/>
-          <exchange-balance :exchange="'kucoin'"/>
+          <exchange-balance
+            v-for="[exchange, value] in Object.entries(valuePerExchange)"
+            :key="exchange"
+            :exchange="(exchange as any)"
+            :value="value"
+          />
         </div>
       </div>
       <div class="bots section">
@@ -47,6 +51,7 @@ import { useStore } from '@/store'
 import Bot from '@/types/Bot'
 import BotSummary from '@/components/bots/BotSummary.vue'
 import ExchangeBalance from '@/components/exchange/ExchangeBalance.vue'
+import { ExchangeValue } from '@/types/Exchange'
 
 export default defineComponent({
   components: {
@@ -54,10 +59,74 @@ export default defineComponent({
   },
   setup () {
     const store = useStore()
-    const bots = computed<Bot[]>(() => store.getters.bots.filter((b: Bot) => b.status === 'online'))
+    const bots = computed(() => store.getters.bots.filter((b: Bot) => b.status === 'online'))
+    const rates = computed(() => store.getters.rates)
+    const balances = computed(() => store.getters.balances)
+    const denominateIn = computed(() => store.getters.denominateIn)
+    const exchanges = computed(() => Array.from(
+      new Set(store.getters.exchangeConnections.map(e => e.exchange))
+    ))
+
+    const valuePerExchange = computed(() => {
+      const value: Record<string, ExchangeValue> = {}
+
+      for (const exchange of exchanges.value) {
+        if (!rates.value) continue
+
+        let total = 0
+        for (const balance of balances.value.filter(b => b.exchange === exchange)) {
+          if (balance.asset === denominateIn.value) {
+            total += balance.amount
+            continue
+          }
+
+          const rate = rates.value.find(r => r.asset === balance.asset)
+          if (!rate) continue
+          if (!rate.quote[denominateIn.value]) {
+            const oppositeRate = rates.value.find(r => r.asset === denominateIn.value)
+            if (!oppositeRate) continue
+            const price = oppositeRate.quote[balance.asset]
+            if (!price) continue
+
+            total += balance.amount / price
+          } else {
+            total += rate.quote[denominateIn.value] * balance.amount
+          }
+        }
+
+        const toUsdRate = rates.value.find(r => r.asset === denominateIn.value)
+        let usdValue = 0
+        if (toUsdRate) usdValue = total * (toUsdRate.quote.USDT || toUsdRate.quote.USDC || toUsdRate.quote.DAI || toUsdRate.quote.BUSD || 0)
+
+        value[exchange] = {
+          asset: denominateIn.value,
+          value: Number(total.toFixed(store.getters.getAssetRounding(denominateIn.value))),
+          usdValue: Number(usdValue.toFixed(store.getters.getAssetRounding('USD')))
+        }
+      }
+
+      return value
+    })
+
+    const totalValues = computed(() => {
+      const value: ExchangeValue = {
+        asset: denominateIn.value,
+        usdValue: 0,
+        value: 0
+      }
+
+      for (const val of Object.values(valuePerExchange.value)) {
+        value.usdValue += val.usdValue
+        value.value += val.value
+      }
+
+      return value
+    })
 
     return {
-      bots
+      bots,
+      valuePerExchange,
+      totalValues
     }
   }
 })

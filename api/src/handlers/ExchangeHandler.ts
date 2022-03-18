@@ -70,22 +70,3 @@ export default class ExchangeHandler implements RequestHandler {
     }
   }
 }
-
-export async function handleGetExchangeBalances(req: ServerRequest, res: Response) {
-  try {
-    const exchangeConnections = await getExchangeConnections(req.user._id);
-    let balances: ExchangeBalance[] = []
-
-    for(const conn of exchangeConnections) {
-      const secretKey = crypto.AES.decrypt(conn.apiSecret, process.env.ENCRYPTION_KEY).toString(crypto.enc.Utf8);
-      const impl = getExchangeImplementation(conn.exchange, conn.apiKey, secretKey);
-
-      balances = [...balances, ...await impl.getBalances()];
-    }
-
-    return res.json(balances)
-  } catch(err) {
-    console.error(err);
-    return res.sendStatus(500);
-  }
-}

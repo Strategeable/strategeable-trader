@@ -5,32 +5,25 @@
       <p>{{ exchange }}</p>
     </div>
     <div class="right">
-      <p class="btc">0.89234 BTC</p>
-      <p class="estimation">~ $34212.12</p>
+      <p class="btc">{{ value.value }} {{ value.asset }}</p>
+      <p class="estimation">~ ${{ Number(value.usdValue.toFixed(2)) }}</p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Exchange } from '@/types/Exchange'
-import { computed, defineComponent, PropType } from 'vue'
-import { useStore } from '@/store'
+import { Exchange, ExchangeValue } from '@/types/Exchange'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   props: {
     exchange: {
       type: String as PropType<Exchange>,
       required: true
-    }
-  },
-  setup (props) {
-    const store = useStore()
-    const balances = computed(() => store.getters.balances.filter(b => b.exchange === props.exchange))
-    const rates = computed(() => store.getters.rates)
-
-    return {
-      balances,
-      rates
+    },
+    value: {
+      type: Object as PropType<ExchangeValue>,
+      required: true
     }
   }
 })

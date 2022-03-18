@@ -21,7 +21,5 @@ export interface ExchangeBalance {
 export interface Rate {
   exchange: string
   asset: string
-  priceInBtc: number
-  priceInEth: number
-  priceInUsdt: number
+  quote: Record<string, number>
 }
