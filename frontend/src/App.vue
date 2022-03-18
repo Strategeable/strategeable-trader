@@ -16,7 +16,7 @@ import jwtDecode from 'jwt-decode'
 
 import Navbar from '@/components/layout/Nav.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
-import { useStore } from './store'
+import { useStore } from '@/store'
 import { ActionTypes } from '@/types/store/action-types'
 import { MutationTypes } from '@/types/store/mutation-types'
 import { Theme } from './types/general'

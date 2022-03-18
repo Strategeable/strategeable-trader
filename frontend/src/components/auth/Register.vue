@@ -71,6 +71,7 @@ export default defineComponent({
       repeatPassword,
       valid,
       errorMsg,
+      loading,
       register
     }
   }

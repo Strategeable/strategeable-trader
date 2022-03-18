@@ -8,7 +8,7 @@
       />
       <exchange-tag
         v-else
-        :exchange="bot.strategy.exchange.toUpperCase()"
+        :exchange="(bot.strategy.exchange.toUpperCase() as any)"
         name="TEST"
       />
       <p class="strategy">{{ bot.strategy.name }}</p>
