@@ -11,7 +11,10 @@ export default {
   props: {
     name: String,
     to: String,
-    active: Boolean
+    active: {
+      type: Boolean,
+      default: false
+    }
   }
 }
 </script>

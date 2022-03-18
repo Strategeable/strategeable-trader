@@ -12,7 +12,7 @@
       />
       <exchange-tag
         v-else
-        :exchange="bot.strategy.exchange.toUpperCase()"
+        :exchange="(bot.strategy.exchange.toUpperCase() as any)"
         name="TEST"
       />
       <p class="strategy">{{ bot.strategy.name }}</p>
@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, onMounted, PropType, ref } from '@vue/runtime-core'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 import humanizeDuration from 'humanize-duration'
 
 import ExchangeTag from '@/components/bots/ExchangeTag.vue'
