@@ -8,26 +8,24 @@
       <p class="btc">0.89234 BTC</p>
       <p class="estimation">~ $34212.12</p>
     </div>
-    {{ balances }}
-    {{ rates }}
   </div>
 </template>
 
 <script lang="ts">
-import { ExchangeBalance } from '@/types/Exchange'
-import { computed, defineComponent } from 'vue'
-import { useStore } from 'vuex'
+import { Exchange } from '@/types/Exchange'
+import { computed, defineComponent, PropType } from 'vue'
+import { useStore } from '@/store'
 
 export default defineComponent({
   props: {
     exchange: {
-      type: String,
+      type: String as PropType<Exchange>,
       required: true
     }
   },
   setup (props) {
     const store = useStore()
-    const balances = computed<ExchangeBalance[]>(() => store.getters.balances[props.exchange])
+    const balances = computed(() => store.getters.balances.filter(b => b.exchange === props.exchange))
     const rates = computed(() => store.getters.rates)
 
     return {

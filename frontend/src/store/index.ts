@@ -4,7 +4,7 @@ import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
 
-import { Exchange, ExchangeBalance, ExchangeConnection } from '@/types/Exchange'
+import { ExchangeBalance, ExchangeConnection } from '@/types/Exchange'
 import { Mutations, MutationTypes } from '@/types/store/mutation-types'
 import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
