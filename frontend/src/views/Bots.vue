@@ -30,7 +30,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from '@vue/runtime-core'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
 import BotSummary from '@/components/bots/BotSummary.vue'
 import LaunchNewBot from '@/components/bots/LaunchNewBot.vue'

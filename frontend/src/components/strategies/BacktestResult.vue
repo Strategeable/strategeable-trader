@@ -45,7 +45,7 @@ import 'chartjs-adapter-moment'
 import moment from 'moment'
 
 import BacktestPosition from '@/handlers/BacktestPosition'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
 interface LineChartEntry {
   y: number

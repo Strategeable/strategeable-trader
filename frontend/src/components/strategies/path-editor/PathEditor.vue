@@ -15,18 +15,18 @@
           :key="step.id"
         >
           <signal-tile-comp
-            v-if="step.type === 'SIGNAL_TILE'"
-            :tile="step.data"
+            v-if="step.type === getStepType('SIGNAL_TILE')"
+            :tile="(step.data as any)"
             :variables="variables"
             @delete="deleteStep(step.id)"
           />
           <any-signal-tile-comp
-            v-if="step.type === 'ANY_SIGNAL_TILE'"
+            v-if="step.type === getStepType('ANY_SIGNAL_TILE')"
             :tiles="step.data"
             @delete="deleteStep(step.id)"
           />
           <chunk-tile
-            v-if="step.type === 'CHUNK_ID'"
+            v-if="step.type === getStepType('CHUNK_ID')"
             :name="getChunkName(typeof step.data === 'string' ? step.data || '' : '')"
             @delete="deleteStep(step.id)"
           />
@@ -63,7 +63,7 @@
     <select-chunk
       v-if="selectNewChunk"
       @close="selectNewChunk = false"
-      @select="id => addChunk(id)"
+      @select="id => addChunk(id as any)"
       :chunks="chunks"
     />
   </div>

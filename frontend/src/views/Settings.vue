@@ -8,7 +8,7 @@
           v-for="conn in exchangeConnections"
           :key="conn.id"
           :exchangeConnection="conn"
-          @delete="() => deleteConnection(conn.id)"
+          @delete="() => deleteConnection(conn.id || '')"
         />
       </div>
       <button @click="() => openCreateConnection = true">Create connection</button>
@@ -56,8 +56,9 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
+import { ActionTypes } from '@/types/store/action-types'
 import ExchangeConnectionComp from '@/components/settings/ExchangeConnection.vue'
 import DefaultPopup from '@/components/popups/DefaultPopup.vue'
 import { ExchangeConnection, exchanges } from '@/types/Exchange'
@@ -88,7 +89,7 @@ export default defineComponent({
     async function createExchangeConnection () {
       if (!validCreateConnection.value) return
 
-      const result = await store.dispatch('addExchangeConnection', exchangeConnection.value)
+      const result = await store.dispatch(ActionTypes.ADD_EXCHANGE_CONNECTION, exchangeConnection.value)
       if (result.error) {
         createConnectionError.value = result.error
       } else {
@@ -104,7 +105,7 @@ export default defineComponent({
     }
 
     function deleteConnection (id: string) {
-      store.dispatch('deleteExchangeConnection', id)
+      store.dispatch(ActionTypes.DELETE_EXCHANGE_CONNECTION, id)
     }
 
     return {

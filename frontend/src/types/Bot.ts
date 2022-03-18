@@ -12,3 +12,10 @@ export default interface Bot {
   status: 'online' | 'offline' | 'ended'
   quoteCurrency: string
 }
+
+export interface LaunchParameters {
+  type: 'LIVE' | 'TEST'
+  strategyId: string
+  startBalance: number
+  exchangeConnection: string
+}

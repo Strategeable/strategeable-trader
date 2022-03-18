@@ -15,7 +15,7 @@ import { computed, defineComponent, ref } from 'vue'
 
 import Login from '@/components/auth/Login.vue'
 import Register from '@/components/auth/Register.vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
 export default defineComponent({
   components: { Login, Register },
