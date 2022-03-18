@@ -28,6 +28,10 @@ const schema: Schema<Backtest> = new Schema({
   finished: {
     type: Boolean,
     default: false
+  },
+  positions: {
+    type: [],
+    required: true
   }
 });
 
@@ -37,6 +41,10 @@ schema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id.toString();
     delete ret._id;
+
+    if(!ret.strategy._id) return;
+    ret.strategy.id = ret.strategy._id.toString();
+    delete ret.strategy._id;
   }
 });
 

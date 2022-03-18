@@ -230,7 +230,7 @@ export default defineComponent({
     const backtestResults = computed<BacktestResult[]>(() => {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return []
-      return (store.getters.backtests[id] || [])
+      return (store.getters.backtestsByStrategy(id) || [])
         .sort((a: BacktestResult, b: BacktestResult) =>
           new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime()
         )
@@ -273,7 +273,14 @@ export default defineComponent({
       await store.dispatch(ActionTypes.LOAD_BACKTESTS, id)
 
       if (backtestResults.value.length > 0) {
-        selectedBacktestId.value = backtestResults.value[0].id
+        const backtest = backtestResults.value[0]
+        selectedBacktestId.value = backtest.id
+
+        if (!backtest.finished) {
+          if (store.getters.socket) {
+            store.getters.socket.emit('subscribeBacktest', backtest.id)
+          }
+        }
       }
     }
 
@@ -430,7 +437,12 @@ export default defineComponent({
         if (!backtestObj) {
           runningBacktest.value = 'Something went wrong. Refresh page.'
         } else {
-          selectedBacktestId.value = backtestObj.id
+          const backtestId = backtestObj.id
+          if (store.getters.socket) {
+            store.getters.socket.emit('subscribeBacktest', backtestId)
+          }
+
+          selectedBacktestId.value = backtestId
           runningBacktest.value = undefined
         }
       } catch (err) {
