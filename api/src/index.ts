@@ -51,7 +51,6 @@ const port = process.env.PORT || 3000;
   app.get('/position', handleGetPositions);
   app.get('/position/open', handleGetOpenPositions);
 
-  app.listen(port, () => console.log(`Server running on port ${port}`));
   server.listen(port, () => console.log(`Server running on port ${port}`));
 })();
 
