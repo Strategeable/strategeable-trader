@@ -3,24 +3,28 @@ import axios from '@/helpers/axios'
 import { Strategy } from '@/types/Strategy'
 import { BacktestResult } from '@/types/Backtest'
 import Bot from '@/types/Bot'
-import { ExchangeConnection } from '@/types/Exchange'
+import { ExchangeBalance, ExchangeConnection } from '@/types/Exchange'
 
 export default createStore({
   state: {
     token: undefined,
     strategies: [] as Strategy[],
     bots: [] as Bot[],
+    balances: {} as Record<string, ExchangeBalance[]>,
     backtestsByStrategyId: {} as Record<string, BacktestResult[]>,
     theme: 'dark',
-    exchangeConnections: [] as ExchangeConnection[]
+    exchangeConnections: [] as ExchangeConnection[],
+    rates: {} as Record<string, number>
   },
   getters: {
     loggedIn: state => !!state.token,
     strategies: state => state.strategies,
     bots: state => state.bots,
+    balances: state => state.balances,
     backtests: state => state.backtestsByStrategyId,
     theme: state => state.theme,
-    exchangeConnections: state => state.exchangeConnections
+    exchangeConnections: state => state.exchangeConnections,
+    rates: state => state.rates
   },
   mutations: {
     SET_JWT (state, token) {
@@ -28,6 +32,9 @@ export default createStore({
     },
     SET_STRATEGIES (state, strategies) {
       state.strategies = strategies
+    },
+    SET_BALANCES (state, balances) {
+      state.balances = balances
     },
     SET_STRATEGY (state, strategy) {
       if (!strategy.id) {
@@ -66,6 +73,9 @@ export default createStore({
     },
     SET_BOTS (state, bots) {
       state.bots = bots
+    },
+    SET_RATE (state, { exchange, symbol, rate }) {
+      state.rates[`${exchange}-${symbol}`] = rate
     }
   },
   actions: {
@@ -73,6 +83,8 @@ export default createStore({
       dispatch('loadStrategies')
       dispatch('loadBots')
       dispatch('loadExchangeConnections')
+      dispatch('loadBalances')
+      dispatch('loadRates')
     },
     changeColorTheme ({ commit, state }, theme) {
       // Toggle the color theme between dark & light
@@ -205,6 +217,20 @@ export default createStore({
       } catch (err) {
         console.error(err)
       }
+    },
+    async loadBalances ({ commit }) {
+      try {
+        const response = await axios.get('/settings/balances')
+        commit('SET_BALANCES', response.data)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    async loadRates ({ commit, state }) {
+      const prices = await axios.get('https://api.binance.com/api/v3/ticker/price')
+      prices.data.forEach((p: { symbol: string, price: string }) => {
+        commit('SET_RATE', { exchange: 'binance', symbol: p.symbol, rate: Number(p.price) })
+      })
     },
     async addExchangeConnection ({ commit }, exchangeConnection: ExchangeConnection) {
       try {

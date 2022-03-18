@@ -11,3 +11,16 @@ export interface ExchangeConnection {
   apiKey: string
   apiSecret: string
 }
+
+export interface ExchangeBalance {
+  asset: string
+  amount: number
+}
+
+export interface Rate {
+  exchange: string
+  asset: string
+  priceInBtc: number
+  priceInEth: number
+  priceInUsdt: number
+}

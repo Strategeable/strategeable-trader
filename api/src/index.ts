@@ -7,7 +7,7 @@ dotenv.config();
 import { handleGetBacktestsById, handleGetBacktestsByStrategyId, handleRunBacktest } from './handlers/BacktestHandler';
 import { handleCreateStrategy, handleGetStrategies, handleGetStrategyById, handleUpdateStrategy } from './handlers/StrategyHandler';
 import { handleLogin, handleRegistration } from './handlers/AuthHandler';
-import { handleCreateExchangeConnection, handleDeleteExchangeConnection, handleGetExchangeConnections } from './handlers/ExchangeHandler';
+import { handleCreateExchangeConnection, handleDeleteExchangeConnection, handleGetExchangeBalances, handleGetExchangeConnections } from './handlers/ExchangeHandler';
 import auth from './middleware/auth';
 import { handleCreateBot, handleGetBots } from './handlers/BotHandler';
 
@@ -35,6 +35,7 @@ const port = process.env.PORT || 3000;
   app.put('/strategy', handleUpdateStrategy);
 
   app.get('/settings/exchange-connection', handleGetExchangeConnections);
+  app.get('/settings/balances', handleGetExchangeBalances);
   app.post('/settings/exchange-connection', handleCreateExchangeConnection);
   app.delete('/settings/exchange-connection/:id', handleDeleteExchangeConnection);
 

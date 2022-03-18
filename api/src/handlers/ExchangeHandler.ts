@@ -5,6 +5,8 @@ import crypto from 'crypto-js';
 import { createExchangeConnection, deleteExchangeConnection, getExchangeConnections } from "../services/ExchangeConnectionService";
 import ServerRequest from "../types/ServerRequest";
 import { ObjectId } from "mongodb";
+import { ExchangeBalance } from "../types/Exchange";
+import { getExchangeImplementation } from "../exchanges";
 
 export async function handleCreateExchangeConnection(req: ServerRequest, res: Response) {
   try {
@@ -54,5 +56,25 @@ export async function handleDeleteExchangeConnection(req: ServerRequest, res: Re
   } catch(err) {
     console.error(err);
     res.sendStatus(500);
+  }
+}
+
+export async function handleGetExchangeBalances(req: ServerRequest, res: Response) {
+  try {
+    const exchangeConnections = await getExchangeConnections(req.user._id);
+    const balances: Record<string, ExchangeBalance[]> = {}
+
+    for(const conn of exchangeConnections) {
+      const secretKey = crypto.AES.decrypt(conn.apiSecret, process.env.ENCRYPTION_KEY).toString(crypto.enc.Utf8);
+      const impl = getExchangeImplementation(conn.exchange, conn.apiKey, secretKey);
+
+      if(!balances[conn.exchange]) balances[conn.exchange] = [];
+      balances[conn.exchange] = [...balances[conn.exchange], ...await impl.getBalances()];
+    }
+
+    return res.json(balances)
+  } catch(err) {
+    console.error(err);
+    return res.sendStatus(500);
   }
 }

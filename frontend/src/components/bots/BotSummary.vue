@@ -12,13 +12,13 @@
         name="TEST"
       />
       <p class="strategy">{{ bot.strategy.name }}</p>
-      <p class="running">{{ runningTime }}</p>
+      <p class="running" v-if="!compact">{{ runningTime }}</p>
     </div>
     <div class="right">
-      <p class="balance">{{ bot.startBalance }} {{ bot.quoteCurrency }} => {{ bot.currentBalance }} {{ bot.quoteCurrency }}</p>
+      <p class="balance" v-if="!compact">{{ bot.startBalance }} {{ bot.quoteCurrency }} => {{ bot.currentBalance }} {{ bot.quoteCurrency }}</p>
       <div class="status" :class="bot.status">
-        <p>{{ Number(changePercentage.toFixed(2)) }}%</p>
-        <div class="circle"></div>
+        <p>{{ Number(changePercentage.toFixed(2)) }}% <span v-if="compact">(512.12 USDT)</span></p>
+        <div class="circle" v-if="!compact"></div>
       </div>
     </div>
   </div>
@@ -39,6 +39,9 @@ export default defineComponent({
     bot: {
       type: Object as PropType<Bot>,
       required: true
+    },
+    compact: {
+      type: Boolean
     }
   },
   setup (props) {

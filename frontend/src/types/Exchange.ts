@@ -26,3 +26,8 @@ export interface ExchangeConnection {
   apiKey: string
   apiSecret: string
 }
+
+export interface ExchangeBalance {
+  asset: string
+  amount: string
+}
