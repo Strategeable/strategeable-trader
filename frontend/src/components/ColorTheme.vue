@@ -6,7 +6,9 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
+
+import { ActionTypes } from '@/types/store/action-types'
 
 export default defineComponent({
   setup () {
@@ -14,7 +16,7 @@ export default defineComponent({
     const theme = computed(() => store.getters.theme)
 
     function change () {
-      store.dispatch('changeColorTheme')
+      store.dispatch(ActionTypes.CHANGE_COLOR_THEME, undefined)
     }
 
     return {

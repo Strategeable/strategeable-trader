@@ -26,19 +26,13 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import moment from 'moment'
-
-interface StrategyEntry {
-  id: string
-  name: string
-  lastEdited: Date
-  createdAt: Date
-}
+import { Strategy } from '@/types/Strategy'
 
 export default defineComponent({
   props: {
     data: {
       // eslint-disable-next-line
-      type: Array as PropType<StrategyEntry[]>,
+      type: Array as PropType<Strategy[]>,
       required: true
     },
     dataKey: {

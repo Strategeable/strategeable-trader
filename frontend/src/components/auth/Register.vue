@@ -36,7 +36,9 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
+
+import { ActionTypes } from '@/types/store/action-types'
 
 export default defineComponent({
   setup () {
@@ -55,7 +57,11 @@ export default defineComponent({
 
     async function register () {
       loading.value = true
-      errorMsg.value = await store.dispatch('registerAccount', { username: username.value, password: password.value })
+      errorMsg.value = await store.dispatch(ActionTypes.REGISTER_ACCOUNT, {
+        username: username.value as string,
+        password: password.value as string
+      }
+      )
       loading.value = false
     }
 
