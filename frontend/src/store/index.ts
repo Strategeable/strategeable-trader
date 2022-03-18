@@ -286,7 +286,8 @@ const actions: ActionTree<State, State> & Actions = {
         exchange: exchangeConnection.exchange,
         name: exchangeConnection.name,
         apiKey: exchangeConnection.apiKey,
-        apiSecret: exchangeConnection.apiSecret
+        apiSecret: exchangeConnection.apiSecret,
+        passPhrase: exchangeConnection.passPhrase
       })
 
       if (response.status !== 200) return { error: 'Something went wrong' }

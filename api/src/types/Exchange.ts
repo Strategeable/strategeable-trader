@@ -10,6 +10,7 @@ export interface ExchangeConnection {
   createdOn: Date
   apiKey: string
   apiSecret: string
+  passPhrase?: string
 }
 
 export interface ExchangeBalance {

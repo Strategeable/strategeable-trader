@@ -4,7 +4,7 @@ import { ExchangeConnection } from "../types/Exchange";
 const schema: Schema<ExchangeConnection> = new Schema({
   exchange: {
     type: String,
-    enum: ['binance'],
+    enum: ['binance', 'kucoin'],
     required: true
   },
   name: {
@@ -22,6 +22,9 @@ const schema: Schema<ExchangeConnection> = new Schema({
   apiSecret: {
     type: String,
     required: true
+  },
+  passPhrase: {
+    type: String
   }
 });
 

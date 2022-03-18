@@ -25,6 +25,7 @@ export interface ExchangeConnection {
   createdOn: string
   apiKey: string
   apiSecret: string
+  passPhrase?: string
 }
 
 export interface ExchangeBalance {

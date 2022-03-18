@@ -6,7 +6,7 @@
     </div>
     <div class="right">
       <p class="btc">{{ value.value }} {{ value.asset }}</p>
-      <p class="estimation">~ ${{ Number(value.usdValue.toFixed(2)) }}</p>
+      <p class="estimation">~ ${{ value.usdValue }}</p>
     </div>
   </div>
 </template>

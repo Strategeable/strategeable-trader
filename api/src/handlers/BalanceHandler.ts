@@ -23,7 +23,11 @@ export default class BalanceHandler implements RequestHandler {
 
       for(const conn of exchangeConnections) {
         const secretKey = crypto.AES.decrypt(conn.apiSecret, process.env.ENCRYPTION_KEY).toString(crypto.enc.Utf8);
-        const impl = getExchangeImplementation(conn.exchange, conn.apiKey, secretKey);
+
+        let passPhrase: string | undefined
+        if(conn.passPhrase) passPhrase = crypto.AES.decrypt(conn.passPhrase, process.env.ENCRYPTION_KEY).toString(crypto.enc.Utf8);
+
+        const impl = getExchangeImplementation(conn.exchange, conn.apiKey, secretKey, passPhrase);
 
         balances = [...balances, ...await impl.getBalances()];
       }
