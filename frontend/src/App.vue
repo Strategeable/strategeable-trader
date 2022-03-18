@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, defineComponent, onMounted } from 'vue'
 import jwtDecode from 'jwt-decode'
 
 import Navbar from '@/components/layout/Nav.vue'
@@ -21,7 +21,7 @@ import { ActionTypes } from '@/types/store/action-types'
 import { MutationTypes } from '@/types/store/mutation-types'
 import { Theme } from './types/general'
 
-export default {
+export default defineComponent({
   components: { Navbar, AuthLayout },
   setup () {
     const store = useStore()
@@ -42,8 +42,16 @@ export default {
     return {
       isLoggedIn
     }
+  },
+  sockets: {
+    connect () {
+      const vm: any = this as any
+      if (!vm.$store.getters.loggedIn) return
+
+      vm.$socket.emit('authorization', localStorage.getItem('jwt'))
+    }
   }
-}
+})
 </script>
 
 <style lang="scss" scoped>

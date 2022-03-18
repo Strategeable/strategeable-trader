@@ -22,4 +22,5 @@ export default interface Backtest {
   startBalance: number
   endBalance?: number
   finished: boolean
+  positions: any[]
 }

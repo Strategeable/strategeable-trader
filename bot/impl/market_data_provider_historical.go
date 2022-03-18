@@ -27,7 +27,8 @@ type historicalMarketDataProvider struct {
 	ackCh   chan string
 	closeCh chan string
 
-	stopped bool
+	stopped     bool
+	initialized bool
 }
 
 func NewHistoricalMarketDataProvider(
@@ -49,6 +50,10 @@ func NewHistoricalMarketDataProvider(
 	}
 	provider.InitCandleCollection()
 	return provider
+}
+
+func (h *historicalMarketDataProvider) IsInitialized() bool {
+	return h.initialized
 }
 
 func (h *historicalMarketDataProvider) Init() error {
@@ -162,6 +167,8 @@ func (h *historicalMarketDataProvider) Init() error {
 
 		close(h.closeCh)
 	}()
+
+	h.initialized = true
 	return nil
 }
 

@@ -8,26 +8,55 @@ import { Mutations, MutationTypes } from '@/types/store/mutation-types'
 import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
 import { Getters } from '@/types/store/getter-types'
+import { Socket } from 'socket.io-client'
 
 export interface State {
   token: string | undefined
   strategies: Strategy[]
   bots: Bot[]
-  backtestsByStrategyId: Record<string, BacktestResult[]>
+  backtests: BacktestResult[]
   theme: 'light' | 'dark'
-  exchangeConnections: ExchangeConnection[]
+  exchangeConnections: ExchangeConnection[],
+  socket: Socket | undefined
 }
 
 const getters: GetterTree<State, State> & Getters = {
   loggedIn: state => !!state.token,
   strategies: state => state.strategies,
   bots: state => state.bots,
-  backtests: state => state.backtestsByStrategyId,
+  backtests: state => state.backtests,
+  backtestsByStrategy: state => strategyId => state.backtests.filter(b => b.strategy.id === strategyId),
   theme: state => state.theme,
-  exchangeConnections: state => state.exchangeConnections
+  exchangeConnections: state => state.exchangeConnections,
+  socket: state => state.socket
 }
 
 const mutations: MutationTree<State> & Mutations = {
+  [MutationTypes.IO_BACKTEST_EVENT] (state, payload) {
+    const backtestId = payload.id
+
+    const backtest = state.backtests.find(b => b.id === backtestId)
+    if (!backtest) return
+
+    const event = payload.event
+
+    if (event.status === 'FINISHED') {
+      backtest.finished = true
+    }
+
+    backtest.status = event.status
+
+    if (!event.eventData) return
+
+    if (event.eventData.type === 'POSITION_CLOSED') {
+      backtest.positions.push(event.eventData.data)
+    } else if (event.eventData.type === 'TOTAL_BALANCE_CHANGED') {
+      backtest.endBalance = event.eventData.data
+    }
+  },
+  [MutationTypes.SET_SOCKET] (state, socket) {
+    state.socket = socket
+  },
   [MutationTypes.SET_JWT] (state, token) {
     state.token = token
   },
@@ -47,12 +76,17 @@ const mutations: MutationTree<State> & Mutations = {
     }
   },
   [MutationTypes.ADD_BACKTEST_RESULT] (state, result) {
-    let backtests = state.backtestsByStrategyId[result.strategy.id || '']
-    if (!backtests) backtests = []
-    backtests.push(result)
+    const exists = state.backtests.some(b => b.id === result.id)
+    if (exists) return
+    state.backtests.push(result)
   },
-  [MutationTypes.SET_BACKTESTS] (state, { strategyId, backtests }) {
-    state.backtestsByStrategyId[strategyId] = backtests
+  [MutationTypes.ADD_BACKTEST_RESULTS] (state, backtests) {
+    for (const backtest of backtests) {
+      const exists = state.backtests.some(b => b.id === backtest.id)
+      if (exists) continue
+
+      state.backtests.push(backtest)
+    }
   },
   [MutationTypes.SET_THEME] (state, theme) {
     state.theme = theme
@@ -175,23 +209,8 @@ const actions: ActionTree<State, State> & Actions = {
   async [ActionTypes.RUN_BACKTEST] ({ commit }, backtestParams) {
     try {
       const response = await axios.post('/backtest', backtestParams)
-
-      // Start polling for the backtest result
-      // TODO: this preferably shouldn't keep polling the API, websockets could potentially help
-      while (true) {
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        try {
-          const backtestResponse = await axios.get(`/backtest/${response.data.backtestId}`)
-          if (backtestResponse.status === 200) {
-            if (backtestResponse.data.finished) {
-              commit(MutationTypes.ADD_BACKTEST_RESULT, backtestResponse.data)
-              return backtestResponse.data
-            }
-          }
-        } catch (err) {
-          continue
-        }
-      }
+      commit(MutationTypes.ADD_BACKTEST_RESULT, response.data)
+      return response.data
     } catch (err) {
       console.error(err)
       return undefined
@@ -201,7 +220,8 @@ const actions: ActionTree<State, State> & Actions = {
     if (!strategyId) return
     try {
       const response = await axios.get(`/backtest/strategy/${strategyId}`)
-      commit(MutationTypes.SET_BACKTESTS, { strategyId, backtests: response.data })
+
+      commit(MutationTypes.ADD_BACKTEST_RESULTS, response.data)
       return response.data
     } catch (err) {
       console.error(err)
@@ -266,9 +286,10 @@ const store = createStore<State>({
     token: undefined,
     strategies: [],
     bots: [],
-    backtestsByStrategyId: {},
+    backtests: [],
     theme: 'dark',
-    exchangeConnections: []
+    exchangeConnections: [],
+    socket: undefined
   },
   getters,
   mutations,

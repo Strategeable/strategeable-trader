@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type PositionHandlerEventType int
+type PositionHandlerEventType string
 
 type PositionHandlerEvent struct {
 	Time time.Time
@@ -14,10 +14,10 @@ type PositionHandlerEvent struct {
 }
 
 const (
-	TOTAL_BALANCE_CHANGED PositionHandlerEventType = iota
-	POSITION_CREATED
-	POSITION_STATE_CHANGED
-	POSITION_CLOSED
+	TOTAL_BALANCE_CHANGED  PositionHandlerEventType = "TOTAL_BALANCE_CHANGED"
+	POSITION_CREATED       PositionHandlerEventType = "POSITION_CREATED"
+	POSITION_STATE_CHANGED PositionHandlerEventType = "POSITION_STATE_CHANGED"
+	POSITION_CLOSED        PositionHandlerEventType = "POSITION_CLOSED"
 )
 
 // Handles opening and closing positions.
