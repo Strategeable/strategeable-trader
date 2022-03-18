@@ -10,7 +10,8 @@ export type Getters = {
   loggedIn(state: State): boolean
   strategies(state: State): Strategy[]
   bots(state: State): Bot[]
-  backtests(state: State): Record<string, BacktestResult[]>
+  backtests(state: State): BacktestResult[],
+  backtestsByStrategy(state: State): (strategyId: string) => BacktestResult[];
   theme(state: State): Theme
   exchangeConnections(state: State): ExchangeConnection[]
   socket(state: State): Socket | undefined

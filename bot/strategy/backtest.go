@@ -7,18 +7,18 @@ import (
 )
 
 type BacktestPositionValue struct {
-	Date      time.Time `bson:"date"`
-	Rate      float64   `bson:"rate"`
-	BaseSize  float64   `bson:"baseSize"`
-	QuoteFees float64   `bson:"quoteFees"`
+	Date      time.Time `bson:"date" json:"date"`
+	Rate      float64   `bson:"rate" json:"rate"`
+	BaseSize  float64   `bson:"baseSize" json:"baseSize"`
+	QuoteFees float64   `bson:"quoteFees" json:"quoteFees"`
 }
 
 type BacktestPosition struct {
-	OpenedAt   time.Time             `bson:"openedAt"`
-	ClosedAt   time.Time             `bson:"closedAt"`
-	Symbol     string                `bson:"symbol"`
-	EntryValue BacktestPositionValue `bson:"entryValue"`
-	ExitValue  BacktestPositionValue `bson:"exitValue"`
+	OpenedAt   time.Time             `bson:"openedAt" json:"openedAt"`
+	ClosedAt   time.Time             `bson:"closedAt" json:"closedAt"`
+	Symbol     string                `bson:"symbol" json:"symbol"`
+	EntryValue BacktestPositionValue `bson:"entryValue" json:"entryValue"`
+	ExitValue  BacktestPositionValue `bson:"exitValue" json:"exitValue"`
 }
 
 type Backtest struct {

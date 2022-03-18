@@ -53,7 +53,8 @@ export default class BacktestHandler implements RequestHandler {
       fromDate,
       toDate,
       startBalance: Number(startBalance),
-      finished: false
+      finished: false,
+      positions: []
     });
   
     if(!backtest) return res.sendStatus(500);

@@ -5,8 +5,8 @@ type QueuedBacktest struct {
 }
 
 type BacktestEventData struct {
-	Type PositionHandlerEventType
-	Data interface{}
+	Type PositionHandlerEventType `json:"type"`
+	Data interface{}              `json:"data"`
 }
 
 type BacktestEvent struct {

@@ -230,7 +230,7 @@ export default defineComponent({
     const backtestResults = computed<BacktestResult[]>(() => {
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return []
-      return (store.getters.backtests[id] || [])
+      return (store.getters.backtestsByStrategy(id) || [])
         .sort((a: BacktestResult, b: BacktestResult) =>
           new Date(b.startedOn).getTime() - new Date(a.startedOn).getTime()
         )

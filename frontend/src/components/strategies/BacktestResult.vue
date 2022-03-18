@@ -2,7 +2,9 @@
   <div class="backtest-result" :class="{ open }">
     <div class="banner">
       <div class="left">
-        <span class="change" :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span> {{ backtest.strategy.name }}
+        <span v-if="!isNaN(backtestData.change)" class="change" :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span>
+        <span v-else class="change">-</span>
+        {{ backtest.strategy.name }}
       </div>
       <div class="right">
         <p>Backtested on {{ moment(backtest.startedOn).format('DD MMM HH:mm') }}</p>
@@ -20,7 +22,9 @@
             <p
               class="result"
             >
-              Result <span :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span>
+              Result
+              <span v-if="!isNaN(backtestData.change)" :class="{ negative: backtestData.change < 0 }">{{ backtestData.change }}%</span>
+              <span v-else>-</span>
             </p>
             <p>{{ backtestData.winsLosses.wins }} wins / {{ backtestData.winsLosses.losses }} losses (win rate: {{ Number((backtestData.winsLosses.winRate || 0).toFixed(2)) }})</p>
             <p>Max drawdown {{ calculateMaxDrawdown(backtestData.balances.map(x => x.y), true) }}%</p>
@@ -78,13 +82,13 @@ export default defineComponent({
 
     const quoteSymbol = props.backtest.strategy.symbols[0].split('/')[1]
 
-    const backtestData = {
+    const backtestData = computed(() => ({
       change: Number(((props.backtest.endBalance - props.backtest.startBalance) / props.backtest.startBalance * 100).toFixed(2)),
       fromDate: new Date(props.backtest.fromDate),
       toDate: new Date(props.backtest.toDate),
       winsLosses: calculateWinRate(props.backtest.positions),
       balances: calculateBalances(props.backtest.startBalance, props.backtest.positions)
-    }
+    }))
 
     function calculateWinRate (positions: Position[]): { winRate: number, wins: number, losses: number } {
       if (!positions) return { winRate: 0, wins: 0, losses: 0 }
@@ -163,7 +167,7 @@ export default defineComponent({
     const chartData = computed<ChartData<'line'>>(() => ({
       datasets: [
         {
-          data: backtestData.balances as any,
+          data: backtestData.value.balances as any,
           label: 'Balance',
           borderColor: '#7F79FF',
           backgroundColor: '#7F79FF',
