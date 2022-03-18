@@ -20,6 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import vSelect from 'vue-select'
 import VueSocketIo from 'vue-3-socket.io'
 import socketIoClient from 'socket.io-client'
+import { MutationTypes } from './types/store/mutation-types'
 
 const icons: IconDefinition[] = [
   faTimes, faAngleDown, faGreaterThan, faGreaterThanEqual, faLessThan, faLessThanEqual,
@@ -42,8 +43,8 @@ const socketio = new VueSocketIo({
   }),
   vuex: {
     store,
-    actionPrefix: 'io_',
-    mutationPrefix: 'io_'
+    actionPrefix: 'IO_',
+    mutationPrefix: 'IO_'
   }
 })
 
@@ -55,4 +56,4 @@ createApp(App)
   .component('v-select', vSelect)
   .mount('#app')
 
-store.commit('SET_SOCKET', (socketio as any).io)
+store.commit(MutationTypes.SET_SOCKET, (socketio as any).io)

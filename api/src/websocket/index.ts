@@ -29,7 +29,7 @@ export default class Websocket {
             await channel.bindQueue(queue.queue, 'backtest_x', 'backtests.*');
 
             channel.consume(queue.queue, message => {
-                this.io.in(message.fields.routingKey).emit('backtestEvent', {
+                this.io.in(message.fields.routingKey).emit('BACKTEST_EVENT', {
                     id: message.fields.routingKey.split('.')[1],
                     event: JSON.parse(message.content.toString())
                 });

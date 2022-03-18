@@ -76,25 +76,26 @@
       >+ New chunk</button>
     </div>
     <div class="paths section">
-      <div class="buy-sell-paths"
-        v-for="type in ['BUY', 'SELL']"
-        :key="type"
-        :class="type.toLowerCase()"
+      <div
+        class="buy-sell-paths"
+        v-for="editorType in editorTypes"
+        :key="editorType"
+        :class="editorType.toLowerCase()"
       >
-        <h2>{{ type }} paths</h2>
+        <h2>{{ editorType }} paths</h2>
         <button
-          @click="newPath(getType(type))"
+          @click="newPath(getType(editorType))"
           class="outline small"
-        >+ New {{ type.toLowerCase() }} path</button>
+        >+ New {{ editorType.toLowerCase() }} path</button>
         <div class="edit-space">
           <div class="list">
             <div class="path"
-              v-for="(path, index) in paths.filter(p => p.type === type)"
+              v-for="(path, index) in paths.filter(p => p.type === editorType)"
               :key="path.id + index"
-              :class="{ active: path.id === openEditor[getType(type)] }"
-              @click.self="editPath(getType(type), path.id)"
+              :class="{ active: path.id === openEditor[getType(editorType)] }"
+              @click.self="editPath(getType(editorType), path.id)"
             >
-              <p @click="editPath(getType(type), path.id)">
+              <p @click="editPath(getType(editorType), path.id)">
                 {{ path.name && path.name !== '<signal path>' ? path.name : `#${index + 1}` }}
               </p>
               <fa-icon
@@ -104,11 +105,11 @@
             </div>
           </div>
           <path-editor
-            v-if="openEditor[getType(type)] && paths.some(p => p.id === openEditor[getType(type)])"
+            v-if="openEditor[getType(editorType)] && paths.some(p => p.id === openEditor[getType(editorType)])"
             :chunks="chunks"
-            :path="paths.find(p => p.id === openEditor[getType(type)])"
+            :path="paths.find(p => p.id === openEditor[getType(editorType)])"
             :variables="variables"
-            :key="openEditor[getType(type)]"
+            :key="openEditor[getType(editorType)]"
           />
         </div>
       </div>
@@ -129,7 +130,7 @@
             <input
               type="date"
               :value="moment(backtestParameters.fromDate.toString()).format('YYYY-MM-DD')"
-              @change="e => backtestParameters.fromDate = new Date(e.target.value)"
+              @change="(e: any) => backtestParameters.fromDate = new Date(e.target.value)"
             >
           </div>
           <div class="input">
@@ -137,7 +138,7 @@
             <input
               type="date"
               :value="moment(backtestParameters.toDate.toString()).format('YYYY-MM-DD')"
-              @change="e => backtestParameters.toDate = new Date(e.target.value)"
+              @change="(e: any) => backtestParameters.toDate = new Date(e.target.value)"
             >
           </div>
         </div>
@@ -179,6 +180,7 @@ import { v4 } from 'uuid'
 import exportFromJSON from 'export-from-json'
 import moment from 'moment'
 
+import { ActionTypes } from '@/types/store/action-types'
 import { Chunk, Path } from '@/types/Path'
 import { Strategy, Variable } from '@/types/Strategy'
 import { BacktestRequestParameters, BacktestResult } from '@/types/Backtest'
@@ -186,7 +188,7 @@ import { BacktestRequestParameters, BacktestResult } from '@/types/Backtest'
 import PathEditor from '@/components/strategies/path-editor/PathEditor.vue'
 import ControlBar from '@/components/strategies/path-editor/ControlBar.vue'
 import BacktestResultComp from '@/components/strategies/BacktestResult.vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 import { useRoute, useRouter } from 'vue-router'
 
 type EditorType = 'BUY' | 'SELL'
@@ -207,6 +209,7 @@ export default defineComponent({
     const symbols = ref<string[]>([])
     const variables = ref<Variable[]>([])
     const quoteCurrency = ref<string>()
+    const editorTypes = ['BUY', 'SELL']
 
     const editingChunk = ref<Chunk>()
     const canSave = ref<boolean>(false)
@@ -267,20 +270,22 @@ export default defineComponent({
       const id = route.path.split('/')[route.path.split('/').length - 1]
       if (id === 'new') return
 
-      await store.dispatch('loadBacktests', id)
+      await store.dispatch(ActionTypes.LOAD_BACKTESTS, id)
 
       if (backtestResults.value.length > 0) {
         const backtest = backtestResults.value[0]
         selectedBacktestId.value = backtest.id
 
         if (!backtest.finished) {
-          store.getters.socket.emit('subscribeBacktest', backtest.id)
+          if (store.getters.socket) {
+            store.getters.socket.emit('subscribeBacktest', backtest.id)
+          }
         }
       }
     }
 
     async function loadStrategy (id: string) {
-      const strat: Strategy | undefined = await store.dispatch('loadStrategy', id)
+      const strat: Strategy | undefined = await store.dispatch(ActionTypes.LOAD_STRATEGY, id)
       if (strat) {
         paths.value = strat.paths
         chunks.value = strat.chunks
@@ -378,7 +383,7 @@ export default defineComponent({
     }
 
     async function save () {
-      const stratId = await store.dispatch('saveStrategy', strategy.value)
+      const stratId = await store.dispatch(ActionTypes.SAVE_STRATEGY, strategy.value)
       if (stratId && route.path.endsWith('new')) {
         router.push(`/strategies/${stratId}`)
       }
@@ -424,13 +429,22 @@ export default defineComponent({
         backtestParameters.value.strategyId = stratId
         runningBacktest.value = 'Backtesting...'
 
-        const backtestObj = await store.dispatch('runBacktest', backtestParameters.value)
+        const backtestObj = await store.dispatch(
+          ActionTypes.RUN_BACKTEST,
+          backtestParameters.value as BacktestRequestParameters
+        )
 
-        const backtestId = backtestObj.backtestId
-        store.getters.socket.emit('subscribeBacktest', backtestId)
+        if (!backtestObj) {
+          runningBacktest.value = 'Something went wrong. Refresh page.'
+        } else {
+          const backtestId = backtestObj.id
+          if (store.getters.socket) {
+            store.getters.socket.emit('subscribeBacktest', backtestId)
+          }
 
-        selectedBacktestId.value = backtestId
-        runningBacktest.value = undefined
+          selectedBacktestId.value = backtestId
+          runningBacktest.value = undefined
+        }
       } catch (err) {
         console.error(err)
         runningBacktest.value = 'Something went wrong with the backtest... Try again.'
@@ -465,6 +479,7 @@ export default defineComponent({
       variables,
       selectedBacktestId,
       quoteCurrency,
+      editorTypes,
       newPath,
       newChunk,
       deletePath,

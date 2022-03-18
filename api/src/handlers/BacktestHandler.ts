@@ -45,6 +45,7 @@ export default class BacktestHandler implements RequestHandler {
     const { strategyId, startBalance, fromDate, toDate } = req.body;
     const strategy = await getStrategyById(strategyId);
     if(!strategy) return res.sendStatus(400);
+    if(strategy.creator.toString() !== req.user._id.toString()) return res.sendStatus(403);
   
     const backtest = await createBacktest({
       startedOn: new Date(),
@@ -59,7 +60,7 @@ export default class BacktestHandler implements RequestHandler {
   
     this.amqpConnection.queueBacktest(backtest._id.toString());
     
-    res.json({ backtestId: backtest._id });
+    res.json(backtest);
   }
   
 }

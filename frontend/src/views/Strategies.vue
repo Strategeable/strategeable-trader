@@ -15,7 +15,7 @@
 import StrategiesTable from '@/components/strategies/Table.vue'
 import { computed, defineComponent } from '@vue/runtime-core'
 import { useRouter } from 'vue-router'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
 export default defineComponent({
   components: { StrategiesTable },

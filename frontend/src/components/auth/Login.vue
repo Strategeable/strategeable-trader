@@ -26,7 +26,8 @@
   </div>
 </template>
 
-<script lang="js">
+<script>
+import { ActionTypes } from '@/types/store/action-types'
 
 export default {
   data () {
@@ -44,7 +45,7 @@ export default {
   },
   methods: {
     async login () {
-      this.$store.dispatch('login', { username: this.username, password: this.password })
+      this.$store.dispatch(ActionTypes.LOGIN, { username: this.username, password: this.password })
     }
   }
 }
