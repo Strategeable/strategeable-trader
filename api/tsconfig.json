@@ -15,7 +15,7 @@
                 "node_modules/*"
             ]
         },
-        "typeRoots": ["./typings", "./node_modules/@types"]
+        "typeRoots": ["./typings", "./node_modules/@types", "./src/types", "./types"]
     },
     "include": [
         "**/*"
@@ -23,6 +23,6 @@
     "exclude": [
       "./node_modules/**/*"
     ],
-    "typeRoots": ["./typings", "./node_modules/@types"]
+    "typeRoots": ["./typings", "./node_modules/@types", "./src/types", "./types"]
   }
   

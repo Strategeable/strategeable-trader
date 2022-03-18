@@ -25,4 +25,23 @@ export interface ExchangeConnection {
   createdOn: string
   apiKey: string
   apiSecret: string
+  passPhrase?: string
+}
+
+export interface ExchangeBalance {
+  exchange: Exchange
+  asset: string
+  amount: number
+}
+
+export interface Rate {
+  exchange: string
+  asset: string
+  quote: Record<string, number>
+}
+
+export interface ExchangeValue {
+  asset: string
+  value: number
+  usdValue: number
 }

@@ -2,7 +2,7 @@ import { State } from "@/store"
 import { Socket } from "socket.io-client"
 import { BacktestResult } from "../Backtest"
 import Bot from "../Bot"
-import { ExchangeConnection } from "../Exchange"
+import {  ExchangeBalance, ExchangeConnection, Rate } from "../Exchange"
 import { Theme } from "../general"
 import { Strategy } from "../Strategy"
 
@@ -13,6 +13,10 @@ export type Getters = {
   backtests(state: State): BacktestResult[],
   backtestsByStrategy(state: State): (strategyId: string) => BacktestResult[];
   theme(state: State): Theme
-  exchangeConnections(state: State): ExchangeConnection[]
-  socket(state: State): Socket | undefined
+  exchangeConnections(state: State): ExchangeConnection[],
+  balances(state: State): ExchangeBalance[],
+  rates(state: State): Rate[],
+  socket(state: State): Socket | undefined,
+  denominateIn(state: State): 'BTC' | 'ETH' | 'USD',
+  getAssetRounding(state: State): (asset: string) => number
 }

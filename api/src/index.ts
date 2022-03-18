@@ -5,9 +5,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 
+import ExchangeHandler from './handlers/ExchangeHandler';
 import StrategyHandler from './handlers/StrategyHandler';
 import AuthHandler from './handlers/AuthHandler';
-import ExchangeHandler from './handlers/ExchangeHandler';
 import auth from './middleware/auth';
 import BotHandler from './handlers/BotHandler';
 import RequestHandler from './common/RequestHandler';
@@ -15,6 +15,8 @@ import { container } from 'tsyringe';
 import BacktestHandler from './handlers/BacktestHandler';
 import { createServer, Server } from 'http';
 import Websocket from './websocket';
+import BalanceHandler from './handlers/BalanceHandler';
+import RateHandler from './handlers/RateHandler';
 
 const port = process.env.PORT || 3000;
 
@@ -35,6 +37,7 @@ const port = process.env.PORT || 3000;
   app.use(cors());
 
   route(app, '/auth', container.resolve(AuthHandler));
+  route(app, '/rates', container.resolve(RateHandler));
 
   app.use(auth);
 
@@ -46,6 +49,7 @@ const port = process.env.PORT || 3000;
   app.use('/settings', settingsRouter);
 
   route(settingsRouter, '/exchange-connection', container.resolve(ExchangeHandler))
+  route(settingsRouter, '/balances', container.resolve(BalanceHandler))
 
   server.listen(port, () => console.log(`Server running on port ${port}`));
 })();

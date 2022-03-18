@@ -10,4 +10,17 @@ export interface ExchangeConnection {
   createdOn: Date
   apiKey: string
   apiSecret: string
+  passPhrase?: string
+}
+
+export interface ExchangeBalance {
+  exchange: Exchange
+  asset: string
+  amount: number
+}
+
+export interface Rate {
+  exchange: string
+  asset: string
+  quote: Record<string, number>
 }

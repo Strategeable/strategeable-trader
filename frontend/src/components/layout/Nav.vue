@@ -6,6 +6,11 @@
         <div class="inner">
           <div class="left">
             <nav-item
+              :active="activeRoute === 'Dashboard'"
+              name="Dashboard"
+              to="/"
+            />
+            <nav-item
               :active="activeRoute === 'Bots'"
               name="Bots"
               to="/bots"
