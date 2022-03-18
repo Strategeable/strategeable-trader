@@ -12,7 +12,7 @@
       <p>Strategy</p>
       <v-select
         :options="strategies"
-        :reduce="x => x.id"
+        :reduce="(x: any) => x.id"
         label="name"
         v-model="strategy"
       />
@@ -21,7 +21,7 @@
       <p>Account</p>
       <v-select
         :options="exchangeConnections"
-        :reduce="x => x.id"
+        :reduce="(x: any) => x.id"
         label="name"
         v-model="exchangeConnection"
       />
@@ -42,10 +42,12 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
 
+import { ActionTypes } from '@/types/store/action-types'
 import DefaultPopup from '@/components/popups/DefaultPopup.vue'
 import { Strategy } from '@/types/Strategy'
+import { LaunchParameters } from '@/types/Bot'
 
 export default defineComponent({
   emits: ['close'],
@@ -76,14 +78,14 @@ export default defineComponent({
     })
 
     async function launch () {
-      const params = {
-        type: type.value,
-        strategyId: strategy.value,
-        startBalance: startBalance.value,
-        exchangeConnection: exchangeConnection.value
+      const params: LaunchParameters = {
+        type: type.value as 'LIVE' | 'TEST',
+        strategyId: strategy.value as string,
+        startBalance: startBalance.value as number,
+        exchangeConnection: exchangeConnection.value as string
       }
 
-      const result = await store.dispatch('launchBot', params)
+      const result = await store.dispatch(ActionTypes.LAUNCH_BOT, params)
 
       if (result.error) {
         errorRef.value = result.error

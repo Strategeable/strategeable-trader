@@ -3,7 +3,7 @@
     <v-select
       :options="indicators.filter(i => i.hasTimeframe)"
       label="name"
-      :reduce="x => x.key"
+      :reduce="(x: any) => x.key"
       :disabled="last"
       v-model="selectedIndicatorKey"
     />

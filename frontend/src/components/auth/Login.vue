@@ -28,7 +28,9 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { useStore } from 'vuex'
+import { useStore } from '@/store'
+
+import { ActionTypes } from '@/types/store/action-types'
 
 export default defineComponent({
   setup () {
@@ -42,7 +44,7 @@ export default defineComponent({
     })
 
     function login () {
-      store.dispatch('login', { username: username.value, password: password.value })
+      store.dispatch(ActionTypes.LOGIN, { username: username.value as string, password: password.value as string })
     }
 
     return {

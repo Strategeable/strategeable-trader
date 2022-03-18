@@ -4,7 +4,7 @@
       <v-select
         :options="chunks"
         label="name"
-        :reduce="x => x.id"
+        :reduce="(x: any) => x.id"
         v-model="chunkId"
       />
       <button

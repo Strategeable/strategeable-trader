@@ -35,7 +35,7 @@
             />
             <edit-indicator
               v-if="finalTile.indicatorA"
-              :indicator="tile.indicatorA"
+              :indicator="(tile.indicatorA as any)"
               :variables="variables"
               @delete="() => tile.indicatorA = undefined"
             />
