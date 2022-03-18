@@ -76,7 +76,7 @@ func startBacktestConsumer(connection *amqp.Connection, databaseHandler *databas
 		var mu sync.Mutex
 
 		go func() {
-			for !done {
+			for !done || len(events) > 0 {
 				mu.Lock()
 				if len(events) > 0 {
 					body, err := json.Marshal(events)
