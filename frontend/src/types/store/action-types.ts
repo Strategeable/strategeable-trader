@@ -17,6 +17,7 @@ export enum ActionTypes {
   LOAD_STRATEGY = 'LOAD_STRATEGY',
   SAVE_STRATEGY = 'SAVE_STRATEGY',
   RUN_BACKTEST = 'RUN_BACKTEST',
+  STOP_BACKTEST = 'STOP_BACKTEST',
   LOAD_BACKTESTS = 'LOAD_BACKTESTS',
   LOAD_EXCHANGE_CONNECTIONS = 'LOAD_EXCHANGE_CONNECTIONS',
   ADD_EXCHANGE_CONNECTION = 'ADD_EXCHANGE_CONNECTION',
@@ -49,6 +50,10 @@ export interface Actions {
   [ActionTypes.RUN_BACKTEST](
     { commit }: AugmentedActionContext,
     backtestParams: BacktestRequestParameters
+  ): Promise<BacktestResult | undefined>
+  [ActionTypes.STOP_BACKTEST](
+    { commit }: AugmentedActionContext,
+    backtestId: string
   ): Promise<BacktestResult | undefined>
   [ActionTypes.LOAD_BACKTESTS]({ commit }: AugmentedActionContext, id: string): Promise<BacktestResult[]>
   [ActionTypes.LOAD_EXCHANGE_CONNECTIONS]({ commit }: AugmentedActionContext): Promise<ExchangeConnection[]>

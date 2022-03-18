@@ -13,3 +13,8 @@ type BacktestEvent struct {
 	Status    string             `json:"status"`
 	EventData *BacktestEventData `json:"eventData,omitempty"`
 }
+
+type BacktestControl struct {
+	Action     string
+	BacktestId string
+}

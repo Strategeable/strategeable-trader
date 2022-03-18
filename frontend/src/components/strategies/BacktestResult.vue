@@ -31,6 +31,7 @@
             <p>Max change {{ calculateMaxChange(backtestData.balances.map(x => x.y), backtest.startBalance, true) }}%</p>
           </div>
           <div class="bottom">
+            <button v-if="!backtest.finished" class="outline" @click="$emit('stop')">Stop backtest</button>
             <button class="outline" @click="$emit('restore')">Restore strategy</button>
             <button class="outline" @click="$emit('export')">Export strategy</button>
           </div>
@@ -58,7 +59,7 @@ interface LineChartEntry {
 
 Chart.register(...registerables)
 export default defineComponent({
-  emits: ['restore', 'export'],
+  emits: ['restore', 'export', 'stop'],
   components: { LineChart },
   props: {
     backtest: {
