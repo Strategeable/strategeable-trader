@@ -25,13 +25,24 @@ func NewEngine(strategy *strategy.Strategy, marketDataProvider types.MarketDataP
 	}
 }
 
-// Initializes the market data and starts responding to
-// new incoming trades.
-func (e *Engine) Start() error {
-	// Prepare required market data
+func (e *Engine) InitializeMarketData() error {
 	err := e.marketDataProvider.Init()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// Initializes the market data and starts responding to
+// new incoming trades.
+func (e *Engine) Start() error {
+	if !e.marketDataProvider.IsInitialized() {
+		// Prepare required market data
+		err := e.marketDataProvider.Init()
+		if err != nil {
+			return err
+		}
 	}
 
 	defer e.marketDataProvider.Close()

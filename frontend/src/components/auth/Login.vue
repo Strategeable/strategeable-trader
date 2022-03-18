@@ -26,35 +26,29 @@
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
-import { useStore } from '@/store'
-
+<script>
 import { ActionTypes } from '@/types/store/action-types'
 
-export default defineComponent({
-  setup () {
-    const store = useStore()
-    const username = ref<string>()
-    const password = ref<string>()
-    const valid = computed(() => {
-      if (!username.value || !password.value) return false
-      if (username.value.length <= 2) return false
-      return true
-    })
-
-    function login () {
-      store.dispatch(ActionTypes.LOGIN, { username: username.value as string, password: password.value as string })
-    }
-
+export default {
+  data () {
     return {
-      username,
-      password,
-      valid,
-      login
+      username: '',
+      password: ''
+    }
+  },
+  computed: {
+    valid () {
+      if (!this.username || !this.password) return false
+      if (this.username.length <= 2) return false
+      return true
+    }
+  },
+  methods: {
+    async login () {
+      this.$store.dispatch(ActionTypes.LOGIN, { username: this.username, password: this.password })
     }
   }
-})
+}
 </script>
 
 <style lang="scss" scoped>
