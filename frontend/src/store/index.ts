@@ -175,7 +175,7 @@ const actions: ActionTree<State, State> & Actions = {
   },
   async [ActionTypes.LOGIN] ({ commit, dispatch }, { username, password }) {
     try {
-      const response = await axios.post('/login', { username, password })
+      const response = await axios.post('/auth/login', { username, password })
       if (!response.data || !response.data.token) return false
 
       const { token } = response.data
@@ -190,7 +190,7 @@ const actions: ActionTree<State, State> & Actions = {
   },
   async [ActionTypes.REGISTER_ACCOUNT] ({ commit }, { username, password }) {
     try {
-      const response = await axios.post('/register', { username, password })
+      const response = await axios.post('/auth/register', { username, password })
       if (!response.data) return 'Something went wrong'
       if (response.data.error) return response.data.error
 
