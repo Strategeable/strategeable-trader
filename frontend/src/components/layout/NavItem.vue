@@ -21,6 +21,7 @@ export default {
 
 <style lang="scss" scoped>
 .nav-item {
+  user-select: none;
   a {
     padding: 1.2rem 1rem;
     display: block;

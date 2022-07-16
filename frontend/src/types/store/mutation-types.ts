@@ -4,6 +4,7 @@ import { BacktestResult } from '../Backtest'
 import Bot from '../Bot'
 import { Exchange, ExchangeBalance, ExchangeConnection, Rate } from '../Exchange'
 import { Theme } from '../general'
+import Position from '../Position'
 import { Strategy } from '../Strategy'
 
 export enum MutationTypes {
@@ -21,6 +22,7 @@ export enum MutationTypes {
   DELETE_EXCHANGE_CONNECTION = 'DELETE_EXCHANGE_CONNECTION',
   ADD_BOT = 'ADD_BOT',
   SET_BOTS = 'SET_BOTS',
+  ADD_POSITIONS = 'ADD_POSITIONS',
   SET_BALANCES = 'SET_BALANCES',
   SET_RATE = 'SET_RATE',
   SET_RATES = 'SET_RATES'
@@ -41,6 +43,7 @@ export type Mutations<S = State> = {
   [MutationTypes.DELETE_EXCHANGE_CONNECTION](state: S, payload: string): void
   [MutationTypes.ADD_BOT](state: S, payload: Bot): void
   [MutationTypes.SET_BOTS](state: S, payload: Bot[]): void
+  [MutationTypes.ADD_POSITIONS](state: S, payload: Position[]): void
   [MutationTypes.SET_BALANCES](state: S, payload: ExchangeBalance[]): void
   [MutationTypes.SET_RATE](state: S, payload: { exchange: Exchange, asset: string, quoteAsset: string, rate: number }): void
   [MutationTypes.SET_RATES](state: S, payload: Rate[]): void

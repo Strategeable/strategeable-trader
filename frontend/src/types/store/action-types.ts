@@ -4,6 +4,7 @@ import { BacktestRequestParameters, BacktestResult } from '../Backtest'
 import Bot, { LaunchParameters } from '../Bot'
 import { Exchange, ExchangeBalance, ExchangeConnection, Rate } from '../Exchange'
 import { Theme } from '../general'
+import Position from '../Position'
 import { Strategy } from '../Strategy'
 import { Mutations } from './mutation-types'
 
@@ -23,6 +24,7 @@ export enum ActionTypes {
   ADD_EXCHANGE_CONNECTION = 'ADD_EXCHANGE_CONNECTION',
   DELETE_EXCHANGE_CONNECTION = 'DELETE_EXCHANGE_CONNECTION',
   LAUNCH_BOT = 'LAUNCH_BOT',
+  LOAD_POSITIONS = 'LOAD_POSITIONS',
   LOAD_BALANCES = 'LOAD_BALANCES',
   LOAD_RATES = 'LOAD_RATES'
 }
@@ -71,6 +73,10 @@ export interface Actions {
     { commit }: AugmentedActionContext,
     params: LaunchParameters
   ): Promise<{ error?: string, data?: Bot }>
+  [ActionTypes.LOAD_POSITIONS](
+    { commit }: AugmentedActionContext,
+    open: boolean
+  ): Promise<{ error?: string, data?: Position[] }>
   [ActionTypes.LOAD_BALANCES]({ commit }: AugmentedActionContext): Promise<ExchangeBalance[]>
   [ActionTypes.LOAD_RATES](
     { commit }: AugmentedActionContext,

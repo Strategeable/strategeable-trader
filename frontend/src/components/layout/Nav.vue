@@ -44,7 +44,7 @@ import ColorTheme from '@/components/ColorTheme.vue'
 export default {
   components: { NavItem, ColorTheme },
   computed: {
-    activeRoute () {
+    activeRoute (): string {
       return (this as any).$route.name
     }
   }

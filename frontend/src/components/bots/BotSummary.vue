@@ -1,5 +1,9 @@
 <template>
-  <div class="bot-summary" :class="bot.status">
+  <div
+    class="bot-summary"
+    :class="bot.status"
+    @click="() => notClickable ? undefined : $router.push(`/bots/${bot.id}`)"
+  >
     <div class="left">
       <exchange-tag
         v-if="bot.type === 'LIVE' && exchangeConnection"
@@ -41,6 +45,9 @@ export default defineComponent({
       required: true
     },
     compact: {
+      type: Boolean
+    },
+    notClickable: {
       type: Boolean
     }
   },
@@ -102,6 +109,7 @@ export default defineComponent({
   }
   .left {
     margin-right: 1rem;
+    position: relative;
   }
   .left, .right {
     display: flex;

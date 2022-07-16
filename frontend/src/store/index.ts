@@ -9,6 +9,7 @@ import { Mutations, MutationTypes } from '@/types/store/mutation-types'
 import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
 import { Getters } from '@/types/store/getter-types'
+import Position from '@/types/Position'
 import { Socket } from 'socket.io-client'
 
 export interface State {
@@ -18,6 +19,7 @@ export interface State {
   backtests: BacktestResult[]
   theme: 'light' | 'dark'
   exchangeConnections: ExchangeConnection[]
+  positions: Record<string, Position[]>
   balances: ExchangeBalance[]
   rates: Rate[]
   socket: Socket | undefined
@@ -33,9 +35,10 @@ const getters: GetterTree<State, State> & Getters = {
   backtestsByStrategy: state => strategyId => state.backtests.filter(b => b.strategy.id === strategyId),
   theme: state => state.theme,
   exchangeConnections: state => state.exchangeConnections,
+  positions: state => state.positions,
+  socket: state => state.socket,
   rates: state => state.rates,
   balances: state => state.balances,
-  socket: state => state.socket,
   denominateIn: state => state.denominateIn,
   getAssetRounding: state => asset => state.assetRounding[asset] || 4
 }
@@ -136,6 +139,12 @@ const mutations: MutationTree<State> & Mutations = {
         exchange,
         quote: quoteObj
       })
+    }
+  },
+  [MutationTypes.ADD_POSITIONS] (state, positions) {
+    for (const position of positions) {
+      if (!state.positions[position.botId]) state.positions[position.botId] = []
+      state.positions[position.botId].push(position)
     }
   }
 }
@@ -334,6 +343,22 @@ const actions: ActionTree<State, State> & Actions = {
       return { error: 'Something went wrong' }
     }
   },
+  async [ActionTypes.LOAD_POSITIONS] ({ commit }, open) {
+    try {
+      let response: any
+      if (!open) {
+        response = await axios.get('/position')
+      } else {
+        response = await axios.get('/position/open')
+      }
+      if (response.status !== 200) return { error: 'Something went wrong' }
+
+      commit(MutationTypes.ADD_POSITIONS, response.data)
+      return { data: response.data }
+    } catch (err: any) {
+      return { error: 'Something went wrong' }
+    }
+  },
   async [ActionTypes.LOAD_BALANCES] ({ commit }) {
     try {
       const response = await axios.get('/settings/balances')
@@ -366,9 +391,10 @@ const store = createStore<State>({
     backtests: [],
     theme: 'dark',
     exchangeConnections: [],
+    positions: {},
+    socket: undefined,
     balances: [],
     rates: [],
-    socket: undefined,
     denominateIn: 'BTC',
     assetRounding: {
       BTC: 6,
