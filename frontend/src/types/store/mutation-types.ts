@@ -3,6 +3,7 @@ import { Socket } from 'socket.io-client'
 import { BacktestResult } from '../Backtest'
 import Bot from '../Bot'
 import { Exchange, ExchangeBalance, ExchangeConnection, Rate } from '../Exchange'
+import ExchangeManager from '../ExchangeManager'
 import { Theme } from '../general'
 import { Strategy } from '../Strategy'
 
@@ -23,7 +24,8 @@ export enum MutationTypes {
   SET_BOTS = 'SET_BOTS',
   SET_BALANCES = 'SET_BALANCES',
   SET_RATE = 'SET_RATE',
-  SET_RATES = 'SET_RATES'
+  SET_RATES = 'SET_RATES',
+  ADD_EXCHANGE_SUBSCRIPTION = 'ADD_EXCHANGE_SUBSCRIPTION'
 }
 
 export type Mutations<S = State> = {
@@ -43,5 +45,6 @@ export type Mutations<S = State> = {
   [MutationTypes.SET_BOTS](state: S, payload: Bot[]): void
   [MutationTypes.SET_BALANCES](state: S, payload: ExchangeBalance[]): void
   [MutationTypes.SET_RATE](state: S, payload: { exchange: Exchange, asset: string, quoteAsset: string, rate: number }): void
-  [MutationTypes.SET_RATES](state: S, payload: Rate[]): void
+  [MutationTypes.SET_RATES](state: S, payload: Rate[]): void,
+  [MutationTypes.ADD_EXCHANGE_SUBSCRIPTION](state: S, payload: ExchangeManager): void
 }

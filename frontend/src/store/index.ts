@@ -10,6 +10,8 @@ import { Actions, ActionTypes } from '@/types/store/action-types'
 import { Theme } from '@/types/general'
 import { Getters } from '@/types/store/getter-types'
 import { Socket } from 'socket.io-client'
+import ExchangeManager from '@/types/ExchangeManager'
+import BinanceHandler from '@/handlers/BinanceHandler'
 
 export interface State {
   token: string | undefined
@@ -22,7 +24,8 @@ export interface State {
   rates: Rate[]
   socket: Socket | undefined
   denominateIn: 'BTC' | 'ETH' | 'USD',
-  assetRounding: Record<string, number>
+  assetRounding: Record<string, number>,
+  exchangeManagers: ExchangeManager[]
 }
 
 const getters: GetterTree<State, State> & Getters = {
@@ -41,6 +44,9 @@ const getters: GetterTree<State, State> & Getters = {
 }
 
 const mutations: MutationTree<State> & Mutations = {
+  [MutationTypes.ADD_EXCHANGE_SUBSCRIPTION] (state, payload) {
+    state.exchangeManagers.push(payload)
+  },
   [MutationTypes.IO_BACKTEST_EVENT] (state, event) {
     const backtestId = event.id
     const backtest = state.backtests.find(b => b.id === backtestId)
@@ -141,10 +147,22 @@ const mutations: MutationTree<State> & Mutations = {
 }
 
 const actions: ActionTree<State, State> & Actions = {
+  [ActionTypes.INIT_EXCHANGE_SUBSCRIPTION] ({ commit, state }, { exchange, tickers }) {
+    const handler = new BinanceHandler(tickers)
+    handler.on('TRADE', (trade: any) => {
+      commit(MutationTypes.SET_RATE, {
+        exchange: 'binance',
+        asset: trade.baseAsset + '/' + trade.quoteAsset,
+        quoteAsset: trade.quoteAsset,
+        rate: trade.rate
+      })
+    })
+  },
   async [ActionTypes.INIT] ({ dispatch }) {
     dispatch(ActionTypes.LOAD_STRATEGIES)
     dispatch(ActionTypes.LOAD_BOTS)
     dispatch(ActionTypes.LOAD_EXCHANGE_CONNECTIONS)
+    dispatch(ActionTypes.INIT_EXCHANGE_SUBSCRIPTION, { exchange: 'Binance', tickers: ['BTC/USDT', 'BNB/USDT'] })
     const balances: ExchangeBalance[] = await dispatch(ActionTypes.LOAD_BALANCES)
     const mapping: Record<string, string[]> = {}
     balances.forEach(b => {
@@ -375,7 +393,8 @@ const store = createStore<State>({
       USD: 2,
       USDT: 2,
       ETH: 4
-    }
+    },
+    exchangeManagers: []
   },
   getters,
   mutations,

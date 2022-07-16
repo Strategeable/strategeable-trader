@@ -81,6 +81,7 @@ export default defineComponent({
           }
 
           const rate = rates.value.find(r => r.asset === balance.asset)
+          console.log(rate, balance.asset)
           if (!rate) continue
           if (!rate.quote[denominateIn.value]) {
             const oppositeRate = rates.value.find(r => r.asset === denominateIn.value)

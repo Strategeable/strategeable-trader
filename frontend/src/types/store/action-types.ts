@@ -24,7 +24,8 @@ export enum ActionTypes {
   DELETE_EXCHANGE_CONNECTION = 'DELETE_EXCHANGE_CONNECTION',
   LAUNCH_BOT = 'LAUNCH_BOT',
   LOAD_BALANCES = 'LOAD_BALANCES',
-  LOAD_RATES = 'LOAD_RATES'
+  LOAD_RATES = 'LOAD_RATES',
+  INIT_EXCHANGE_SUBSCRIPTION = 'INIT_EXCHANGE_SUBSCRIPTION'
 }
 
 type AugmentedActionContext = {
@@ -76,4 +77,8 @@ export interface Actions {
     { commit }: AugmentedActionContext,
     { exchange, coins }: { exchange: Exchange, coins: string[] }
   ): Promise<Rate[]>
+  [ActionTypes.INIT_EXCHANGE_SUBSCRIPTION](
+    { commit }: AugmentedActionContext,
+    { exchange, tickers }: { exchange: Exchange, tickers: string[] }
+  ): void
 }
