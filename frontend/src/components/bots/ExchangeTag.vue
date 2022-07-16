@@ -4,6 +4,7 @@
     <div class="name">
       <p>{{ name }}</p>
     </div>
+    <img class="quote-currency" :src="quoteCurrencyImage" alt="" />
   </div>
 </template>
 
@@ -20,6 +21,17 @@ export default defineComponent({
     exchange: {
       type: String as PropType<Exchange>,
       required: true
+    },
+    quoteCurrency: {
+      type: String,
+      default: 'USDT'
+    }
+  },
+  setup (props) {
+    const quoteCurrencyImage = `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.16.1/svg/color/${props.quoteCurrency.toLowerCase()}.svg`
+
+    return {
+      quoteCurrencyImage
     }
   }
 })
@@ -27,6 +39,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .exchange-tag {
+  position: relative;
   display: inline-flex;
   align-items: center;
   background-color: var(--tag-color);
@@ -44,6 +57,14 @@ export default defineComponent({
       color: var(--text-tertiary);
       font-size: 13px;
     }
+  }
+  .quote-currency {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 16px;
+    height: 16px;
+    transform: translate(25%, 25%);
   }
 }
 </style>

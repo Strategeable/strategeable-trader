@@ -109,6 +109,7 @@ export default defineComponent({
   }
   .left {
     margin-right: 1rem;
+    position: relative;
   }
   .left, .right {
     display: flex;
