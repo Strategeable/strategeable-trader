@@ -54,6 +54,7 @@ import { useStore } from '@/store'
 
 interface LineChartEntry {
   y: number
+  z: number
   x: Date
 }
 
@@ -116,7 +117,8 @@ export default defineComponent({
       const entries: LineChartEntry[] = []
       entries.push({
         x: new Date(props.backtest.fromDate),
-        y: balance
+        y: balance,
+        z: balance
       })
 
       // Cumulatively build up the historical balance of this backtest
@@ -129,7 +131,8 @@ export default defineComponent({
 
         entries.push({
           x: new Date(position.closedAt),
-          y: balance
+          y: balance,
+          z: 0
         })
       }
 
@@ -167,6 +170,26 @@ export default defineComponent({
 
     const chartData = computed<ChartData<'line'>>(() => ({
       datasets: [
+        {
+          data: props.backtest.positions.map(p => ({ x: p.openedAt, y: p.entryValue.baseSize * p.entryValue.rate })) as any,
+          label: 'Buy',
+          borderColor: 'transparent',
+          backgroundColor: 'transparent',
+          pointBackgroundColor: 'green',
+          pointBorderColor: 'green',
+          pointRadius: 2,
+          animation: false
+        },
+        {
+          data: props.backtest.positions.map(p => ({ x: p.closedAt, y: p.exitValue.baseSize * p.exitValue.rate })) as any,
+          label: 'Sell',
+          borderColor: 'transparent',
+          backgroundColor: 'transparent',
+          pointBackgroundColor: 'red',
+          pointBorderColor: 'red',
+          pointRadius: 2,
+          animation: false
+        },
         {
           data: backtestData.value.balances as any,
           label: 'Balance',

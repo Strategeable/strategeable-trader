@@ -13,7 +13,7 @@ export const exchangeDetails: Record<Exchange, ExchangeDetails> = {
     logo: ''
   },
   kucoin: {
-    icon: '',
+    icon: '/img/kucoin.png',
     logo: ''
   }
 }

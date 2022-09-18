@@ -20,6 +20,15 @@ export async function getUserById(id: string): Promise<User | null> {
   }
 }
 
+export async function getUsers(): Promise<User[]> {
+  try {
+    return await UserModel.find();
+  } catch(err) {
+    console.error(err);
+    return [];
+  }
+}
+
 export async function createUser(username: string, password: string): Promise<User | undefined> {
   try {
     return await UserModel.create({ username, password })

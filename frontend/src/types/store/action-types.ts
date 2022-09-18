@@ -11,6 +11,7 @@ import { Mutations } from './mutation-types'
 export enum ActionTypes {
   INIT = 'INIT',
   CHANGE_COLOR_THEME = 'CHANGE_COLOR_THEME',
+  CHECK_AUTH_STATE = 'CHECK_AUTH_STATE',
   LOGIN = 'LOGIN',
   REGISTER_ACCOUNT = 'REGISTER_ACCOUNT',
   LOAD_STRATEGIES = 'LOAD_STRATEGIES',
@@ -41,13 +42,14 @@ export interface Actions {
   [ActionTypes.CHANGE_COLOR_THEME]({ commit, state }: AugmentedActionContext, theme?: Theme): void
   [ActionTypes.LOGIN](
     { commit, dispatch }: AugmentedActionContext,
-    details: { username: string, password: string }
+    details: { password: string }
   ): Promise<boolean>
   [ActionTypes.REGISTER_ACCOUNT](
     { commit }: AugmentedActionContext,
-    details: { username: string, password: string }
+    details: { password: string }
   ): Promise<string | undefined>
   [ActionTypes.LOAD_STRATEGIES]({ commit }: AugmentedActionContext): void
+  [ActionTypes.CHECK_AUTH_STATE]({ commit }: AugmentedActionContext): Promise<boolean>
   [ActionTypes.LOAD_BOTS]({ commit }: AugmentedActionContext): void
   [ActionTypes.LOAD_STRATEGY]({ commit, state }: AugmentedActionContext, id: string): Promise<Strategy | undefined>
   [ActionTypes.SAVE_STRATEGY]({ commit, state }: AugmentedActionContext, strategy: Strategy): Promise<string | undefined>

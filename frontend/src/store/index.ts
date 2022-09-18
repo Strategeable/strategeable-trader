@@ -24,7 +24,8 @@ export interface State {
   rates: Rate[]
   socket: Socket | undefined
   denominateIn: 'BTC' | 'ETH' | 'USD',
-  assetRounding: Record<string, number>
+  assetRounding: Record<string, number>,
+  hasUser: boolean
 }
 
 const getters: GetterTree<State, State> & Getters = {
@@ -40,7 +41,8 @@ const getters: GetterTree<State, State> & Getters = {
   rates: state => state.rates,
   balances: state => state.balances,
   denominateIn: state => state.denominateIn,
-  getAssetRounding: state => asset => state.assetRounding[asset] || 4
+  getAssetRounding: state => asset => state.assetRounding[asset] || 4,
+  hasUser: state => state.hasUser
 }
 
 const mutations: MutationTree<State> & Mutations = {
@@ -146,6 +148,9 @@ const mutations: MutationTree<State> & Mutations = {
       if (!state.positions[position.botId]) state.positions[position.botId] = []
       state.positions[position.botId].push(position)
     }
+  },
+  [MutationTypes.HAS_USER] (state, hasUser) {
+    state.hasUser = hasUser
   }
 }
 
@@ -154,6 +159,7 @@ const actions: ActionTree<State, State> & Actions = {
     dispatch(ActionTypes.LOAD_STRATEGIES)
     dispatch(ActionTypes.LOAD_BOTS)
     dispatch(ActionTypes.LOAD_EXCHANGE_CONNECTIONS)
+
     const balances: ExchangeBalance[] = await dispatch(ActionTypes.LOAD_BALANCES)
     const mapping: Record<string, string[]> = {}
     balances.forEach(b => {
@@ -182,9 +188,14 @@ const actions: ActionTree<State, State> & Actions = {
 
     commit(MutationTypes.SET_THEME, newTheme)
   },
-  async [ActionTypes.LOGIN] ({ commit, dispatch }, { username, password }) {
+  async [ActionTypes.CHECK_AUTH_STATE] ({ commit }): Promise<boolean> {
+    const hasUserResponse = await axios.get('/has-user')
+    commit(MutationTypes.HAS_USER, hasUserResponse.data)
+    return hasUserResponse.data
+  },
+  async [ActionTypes.LOGIN] ({ commit, dispatch }, { password }) {
     try {
-      const response = await axios.post('/auth/login', { username, password })
+      const response = await axios.post('/auth/login', { password })
       if (!response.data || !response.data.token) return false
 
       const { token } = response.data
@@ -197,9 +208,9 @@ const actions: ActionTree<State, State> & Actions = {
       return false
     }
   },
-  async [ActionTypes.REGISTER_ACCOUNT] ({ commit }, { username, password }) {
+  async [ActionTypes.REGISTER_ACCOUNT] ({ commit }, { password }) {
     try {
-      const response = await axios.post('/auth/register', { username, password })
+      const response = await axios.post('/auth/register', { password })
       if (!response.data) return 'Something went wrong'
       if (response.data.error) return response.data.error
 
@@ -229,7 +240,7 @@ const actions: ActionTree<State, State> & Actions = {
       if (!response.data) return
 
       commit(MutationTypes.SET_BOTS, response.data)
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
     }
   },
@@ -401,7 +412,8 @@ const store = createStore<State>({
       USD: 2,
       USDT: 2,
       ETH: 4
-    }
+    },
+    hasUser: true
   },
   getters,
   mutations,
