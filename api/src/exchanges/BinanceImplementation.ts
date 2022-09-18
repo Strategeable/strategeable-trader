@@ -17,7 +17,9 @@ export default class BinanceImplementation implements ExchangeImplementation {
 
   async getBalances(): Promise<ExchangeBalance[]> {
     try {
-      const account = await this.client.accountInfo();
+      const account = await this.client.accountInfo({
+        useServerTime: true
+      });
       return account.balances
         .map(b => ({ exchange: 'binance' as Exchange, asset: b.asset, amount: Number(b.free) + Number(b.locked) }))
         .filter(b => b.amount > 0);

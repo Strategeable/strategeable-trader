@@ -1,13 +1,7 @@
 <template>
   <div class="register">
-    <form @submit="register">
-      <div class="input">
-        <p>Username</p>
-        <input
-          type="text"
-          v-model="username"
-        >
-      </div>
+    <p>Set a password for your Strategable trader</p>
+    <form>
       <div class="input">
         <p>Password</p>
         <input
@@ -43,11 +37,9 @@ import { ActionTypes } from '@/types/store/action-types'
 export default defineComponent({
   setup () {
     const store = useStore()
-    const username = ref<string>()
     const password = ref<string>()
     const repeatPassword = ref<string>()
     const valid = computed(() => {
-      if (!username.value || username.value === '') return false
       if (!password.value || password.value === '') return false
       if (repeatPassword.value !== password.value) return false
       return true
@@ -58,7 +50,6 @@ export default defineComponent({
     async function register () {
       loading.value = true
       errorMsg.value = await store.dispatch(ActionTypes.REGISTER_ACCOUNT, {
-        username: username.value as string,
         password: password.value as string
       }
       )
@@ -66,7 +57,6 @@ export default defineComponent({
     }
 
     return {
-      username,
       password,
       repeatPassword,
       valid,
@@ -81,6 +71,12 @@ export default defineComponent({
 <style lang="scss" scoped>
 .register {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  p {
+    margin-bottom: 1.5rem;
+  }
   form {
     width: 100%;
     display: flex;

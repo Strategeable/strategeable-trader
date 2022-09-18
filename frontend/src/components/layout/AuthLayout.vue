@@ -2,10 +2,8 @@
   <div class="auth">
     <div class="inner">
       <img :src="theme === 'dark' ? require('@/assets/img/logo-white.svg') : require('@/assets/img/logo-purple.svg')" alt="logo"/>
-      <login v-if="showLogin"/>
+      <login v-if="hasUser"/>
       <register v-else/>
-      <p v-if="showLogin" class="or">Or <span @click="showLogin = false">make an account ></span></p>
-      <p v-else class="or">Or <span @click="showLogin = true">log in ></span></p>
     </div>
   </div>
 </template>
@@ -22,11 +20,13 @@ export default defineComponent({
   setup () {
     const store = useStore()
     const theme = computed(() => store.getters.theme)
+    const hasUser = computed(() => store.getters.hasUser)
     const showLogin = ref<boolean>(true)
 
     return {
       showLogin,
-      theme
+      theme,
+      hasUser
     }
   }
 })

@@ -7,7 +7,7 @@ dotenv.config();
 
 import ExchangeHandler from './handlers/ExchangeHandler';
 import StrategyHandler from './handlers/StrategyHandler';
-import AuthHandler from './handlers/AuthHandler';
+import AuthHandler, { hasUserRegistered } from './handlers/AuthHandler';
 import auth from './middleware/auth';
 import { handleGetOpenPositions, handleGetPositions } from './handlers/PositionHandler';
 import BotHandler from './handlers/BotHandler';
@@ -39,6 +39,8 @@ const port = process.env.PORT || 3000;
 
   route(app, '/auth', container.resolve(AuthHandler));
   route(app, '/rates', container.resolve(RateHandler));
+
+  app.get('/has-user', hasUserRegistered);
 
   app.use(auth);
 

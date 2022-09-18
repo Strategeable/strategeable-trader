@@ -1,6 +1,10 @@
 <template>
+  <div id="loader" v-if="loading">
+    <!-- Still needs a nice loading screen -->
+    Loading.
+  </div>
   <auth-layout
-    v-if="!isLoggedIn"
+    v-else-if="!isLoggedIn"
   />
   <div v-else>
     <navbar/>
@@ -11,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import jwtDecode from 'jwt-decode'
 
 import Navbar from '@/components/layout/Nav.vue'
@@ -26,21 +30,39 @@ export default defineComponent({
   setup () {
     const store = useStore()
     const isLoggedIn = computed(() => store.getters.loggedIn)
+    const loading = ref(true)
 
-    onMounted(() => {
+    const init = async () => {
       store.dispatch(ActionTypes.CHANGE_COLOR_THEME, localStorage.getItem('theme') as Theme)
+
+      const hasUser = await store.dispatch(ActionTypes.CHECK_AUTH_STATE, undefined)
+      if (!hasUser) {
+        loading.value = false
+        return
+      }
+
       const token = localStorage.getItem('jwt')
-      if (!token) return
+      if (!token) {
+        loading.value = false
+        return
+      }
 
       const decoded: any = jwtDecode(token)
       if (decoded && decoded.exp && Date.now() / 1000 < decoded.exp) {
         store.commit(MutationTypes.SET_JWT, token)
         store.dispatch(ActionTypes.INIT, undefined)
       }
+
+      loading.value = false
+    }
+
+    onMounted(() => {
+      init()
     })
 
     return {
-      isLoggedIn
+      isLoggedIn,
+      loading
     }
   },
   sockets: {

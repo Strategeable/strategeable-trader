@@ -2,13 +2,6 @@
   <div class="login">
     <form @submit="login">
       <div class="input">
-        <p>Username</p>
-        <input
-          type="text"
-          v-model="username"
-        >
-      </div>
-      <div class="input">
         <p>Password</p>
         <input
           type="password"
@@ -32,20 +25,18 @@ import { ActionTypes } from '@/types/store/action-types'
 export default {
   data () {
     return {
-      username: '',
       password: ''
     }
   },
   computed: {
     valid () {
-      if (!this.username || !this.password) return false
-      if (this.username.length <= 2) return false
+      if (!this.password) return false
       return true
     }
   },
   methods: {
     async login () {
-      this.$store.dispatch(ActionTypes.LOGIN, { username: this.username, password: this.password })
+      this.$store.dispatch(ActionTypes.LOGIN, { password: this.password })
     }
   }
 }

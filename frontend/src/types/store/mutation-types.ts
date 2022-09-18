@@ -14,6 +14,7 @@ export enum MutationTypes {
   SET_STRATEGIES = 'SET_STRATEGIES',
   SET_STRATEGY = 'SET_STRATEGY',
   ADD_BACKTEST_RESULT = 'ADD_BACKTEST_RESULT',
+  HAS_USER = 'HAS_USER',
   DELETE_BACKTEST_RESULT = 'DELETE_BACKTEST_RESULT',
   ADD_BACKTEST_RESULTS = 'ADD_BACKTEST_RESULTS',
   SET_THEME = 'SET_THEME',
@@ -47,4 +48,5 @@ export type Mutations<S = State> = {
   [MutationTypes.SET_BALANCES](state: S, payload: ExchangeBalance[]): void
   [MutationTypes.SET_RATE](state: S, payload: { exchange: Exchange, asset: string, quoteAsset: string, rate: number }): void
   [MutationTypes.SET_RATES](state: S, payload: Rate[]): void
+  [MutationTypes.HAS_USER](state: S, payload: boolean): void
 }

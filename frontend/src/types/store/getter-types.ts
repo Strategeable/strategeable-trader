@@ -19,4 +19,5 @@ export type Getters = {
   socket(state: State): Socket | undefined,
   denominateIn(state: State): 'BTC' | 'ETH' | 'USD',
   getAssetRounding(state: State): (asset: string) => number
+  hasUser(state: State): boolean
 }
